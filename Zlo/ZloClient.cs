@@ -57,11 +57,11 @@ namespace Zlo
 
         private void ZloClient_DataReceived(byte obj)
         {
-            Console.WriteLine(obj);
+            Console.WriteLine($"Received : {obj}");
         }
         private void ZloClient_DataSent(byte obj)
         {
-            Console.WriteLine(obj);
+            Console.WriteLine($"Sent : {obj}");
         }
         private void Client_Disconnected(object sender , EventArgs e)
         {
@@ -77,32 +77,13 @@ namespace Zlo
         public async void Connect()
         {
             await ListenerClient.ConnectAsync();
-            await ListenerClient.SendAsync(new byte[] { 1,0,0,0 });
-           
-            Console.WriteLine("Done");
+            await ListenerClient.SendAsync(new byte[] { 1,1,0,0 });
+
+            await Task.Run(() => {
+                Console.WriteLine("Done");
+            });
+          
         }
 
-    }
-    public class StateObject
-    {
-        // Client socket.
-        public Socket workSocket = null;
-        // Receive buffer.
-        public byte[] buffer = null;
-        // Received data string.
-        public StringBuilder sb = new StringBuilder();
-    }
-    public class ClientDataReceivedEventArgs : EventArgs
-    {
-        private StateObject m_state;
-
-        public StateObject State
-        {
-            get { return m_state; }
-        }
-        public ClientDataReceivedEventArgs(StateObject s)
-        {
-            m_state = s;
-        }
-    }
+    } 
 }
