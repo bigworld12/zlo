@@ -29,18 +29,26 @@ namespace Zlo
             try
             {
                 client = new TcpClient();
+
+                DataReceived += ZloClient_DataReceived;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
+
+        private void ZloClient_DataReceived(TcpClient sender , ClientDataReceivedEventArgs args)
+        {
+            Console.WriteLine(args.State.buffer.Length);
+        }
+
         public async Task<bool> Connect()
         {
             try
             {
-                IPAddress localhostaddress = Dns.GetHostEntry("localhost").AddressList[0];
-                await client.ConnectAsync(localhostaddress , 48486);
+                
+                await client.ConnectAsync("127.0.0.1" , 48486);
                 var stream = client.GetStream();
                 StartListenLoop(stream);
                 return true;
