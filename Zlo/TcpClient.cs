@@ -288,7 +288,8 @@ namespace Zlo
         private IPAddress _IP = IPAddress.None;
         private ConnectionStatus _ConStat;
         private TcpClient _client;
-        private byte[] dataBuffer = new byte[5000];
+        
+        private byte[] dataBuffer = new byte[1024 * 1024 * 5];
         private bool _AutoReconnect = false;
         private int _Port = 0;
         private Encoding _encode = Encoding.Default;

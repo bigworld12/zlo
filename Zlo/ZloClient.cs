@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using static Zlo.Extentions.Helpers;
+using System.Diagnostics;
 
 namespace Zlo
 {
@@ -30,12 +32,14 @@ namespace Zlo
                 m_client = new EventDrivenTCPClient(new IPAddress(new byte[] { 127 , 0 , 0 , 1 }) , 48486 , false);
 
                 ListenerClient.ConnectionStatusChanged += Client_ConnectionStatusChanged;
-                ListenerClient.DataReceived += ListenerClient_DataReceived; ;
+                ListenerClient.DataReceived += ListenerClient_DataReceived;
                 ListenerClient.DataEncoding = Enc;
 
                 ListenerClient.ConnectTimeout = 2000;
                 ListenerClient.SendTimeout = 2000;
                 ListenerClient.ReceiveTimeout = 2000;
+
+
             }
             catch (Exception ex)
             {
@@ -43,15 +47,17 @@ namespace Zlo
             }
         }
 
+
         public enum ZloRequest : byte
         {
             Ping = 0,
             User_Info = 1,
             Player_Info = 2,
             Server_List = 3,
-            Stats = 4
+            Stats = 4,
+            Items = 5
         }
-       
+
         public enum ZloGame : byte
         {
             BF_3 = 0,
@@ -60,7 +66,36 @@ namespace Zlo
         }
         public void SendRequest(ZloRequest request , ZloGame game)
         {
+            List<byte> final = new List<byte>();
+            final.Add((byte)request);
+            uint size = 0;
+            switch (request)
+            {
+                case ZloRequest.Ping:
+                case ZloRequest.User_Info:
+                    size = 0;
+                    break;
 
+                case ZloRequest.Player_Info:
+                case ZloRequest.Server_List:
+                case ZloRequest.Stats:
+                case ZloRequest.Items:
+                    size = 1;
+                    break;
+                default:
+                    break;
+            }
+            var finalsizebytes = BitConverter.GetBytes(size);
+            Array.Reverse(finalsizebytes);
+            final.AddRange(finalsizebytes);
+            if (size > 0)
+            {
+                final.Add((byte)game);
+            }
+            var ar = final.ToArray();
+
+            Console.WriteLine($"Sending Array : {{{string.Join("," , ar)}}}");
+            ListenerClient.Send(ar);
         }
 
 
@@ -68,8 +103,10 @@ namespace Zlo
         private void ListenerClient_DataReceived(EventDrivenTCPClient sender , object data)
         {
             var bytes = Enc.GetBytes(data.ToString());
-            string final = string.Join(Environment.NewLine , bytes);
-            Console.WriteLine($"Received Raw :\n{final}");
+
+            File.WriteAllLines($@"E:\TestPackets\Stats Full.txt" , bytes.Select(x => x.ToString()));
+            //string final = string.Join(Environment.NewLine , bytes);
+            //Console.WriteLine($"Received Raw :\n{final}");
             if (bytes.Length == 1)
             {
                 //it's a pid
@@ -82,82 +119,96 @@ namespace Zlo
                 {
                     try
                     {
-                        uint len = ReadZUInt(br);
-
+                        uint len = br.ReadZUInt();
+                        /*
+       0 - ping, just send it every 20secs
+1 - userinfo, request - empty payload, responce - 4byte id, string
+2 - playerinfo - dogtag, clantag, not done
+3 - serverlist, not done
+4 - stats, req - 1byte game, resp - 1byte game, 2byte size, (string, float)[size]
+5 - items - uint8 game, uint16 count, (string, uint8)[count]
+       */
                         switch (temppid)
                         {
                             case 1:
-                                uint id = ReadZUInt(br);
-                                string name = ReadZString(br);
-                                Console.WriteLine($"User Info Received (Packet Size = {len})\nPlayer id : {id},Player name : {name}");
-                                break;
-                            case 4:
-                                byte game = br.ReadByte();
-                                ushort count = br.ReadUInt16();
-                                for (ushort i = 0; i < count; i++)
                                 {
-                                    string statname = ReadZString(br);
-                                    float statvalue = br.ReadSingle();
-                                    Console.WriteLine($"Stats Received  (Packet Size = {len}) \nstatname : {statname},statvalue : {statvalue}");
+                                    uint id = br.ReadZUInt();
+                                    string name = br.ReadZString();
+                                    Console.WriteLine($"User Info Received \nPlayer id : {id},Player name : {name}");
+                                    break;
                                 }
-                                break;
+                            case 4:
+                                {
+
+                                    byte game = br.ReadByte();
+                                    ushort count = br.ReadZUInt16();
+                                    for (ushort i = 0; i < count; i++)
+                                    {
+                                        try
+                                        {
+                                            string statname = br.ReadZString();
+                                            float statvalue = br.ReadZFloat();
+                                            Debug.WriteLine($"statname : {statname},statvalue : {statvalue}");
+                                            if (statname == "sc_vehicleah")
+                                            {
+                                                Console.WriteLine("error here");
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Debug.WriteLine(ex.ToString());
+                                            throw;
+                                        }
+                                    }
+                                    break;
+                                }
+                            case 5:
+                                {
+                                    byte game = br.ReadByte();
+                                    ushort count = br.ReadZUInt16();
+
+                                    for (ushort i = 0; i < count; i++)
+                                    {
+                                        string statname = br.ReadZString();
+                                        float statvalue = br.ReadByte();
+
+                                    }
+
+                                    break;
+                                }
                             default:
                                 break;
+
                         }
                         temppid = -1;
-
-
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
                     }
-
                 }
-
             }
-
-
-
         }
+
+
 
         private void Client_ConnectionStatusChanged(EventDrivenTCPClient sender , EventDrivenTCPClient.ConnectionStatus status)
         {
-            Console.WriteLine($"Log 0 : Client Connection Became : {status}");
             if (status == EventDrivenTCPClient.ConnectionStatus.Connected)
             {
-                ListenerClient.Send(new byte[] { 4 , 0 , 0 , 0 , 0 });
-                Console.WriteLine("Done Sending");
-
+                SendRequest(ZloRequest.Stats , ZloGame.BF_3);
+                Console.WriteLine($"Log 0 : Client Connection Became : {status}");
             }
         }
 
-        uint ReadZUInt(BinaryReader br)
-        {
-            var rawidarray = br.ReadBytes(4);
-            Array.Reverse(rawidarray);
-            return BitConverter.ToUInt32(rawidarray , 0);
-        }
-        string ReadZString(BinaryReader br)
-        {
-            StringBuilder s = new StringBuilder();
-            char t;
-            while ((t = br.ReadChar()) > 0)
-                s.Append(t);
-            return s.ToString();
-        }
+
+
 
         public void Connect()
         {
             ListenerClient.Connect();
         }
-        /*
-         0 - ping, just send it every 20secs
-1 - userinfo, request - empty payload, responce - 4byte id, string
-2 - playerinfo - dogtag, clantag, not done
-3 - serverlist, not done
-4 - stats, req - 1byte game, resp - 1byte game, 2byte size, (string, float)[size]
-         */
+
 
     }
 }

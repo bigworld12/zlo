@@ -26,6 +26,7 @@ namespace Demo
         {
             Client = new ZloClient();
             Client.Connect();
+            
         }
 
       
