@@ -24,22 +24,29 @@ namespace Zlo
         {
             get { return m_client; }
         }
-        
+
         public ZloClient()
         {
             try
             {
                 m_client = new ReactiveClient("127.0.0.1" , 48486);
-                
+
 
                 ListenerClient.Connected += Client_Connected;
-                ListenerClient.Disconnected += Client_Disconnected;               
+                ListenerClient.Disconnected += Client_Disconnected;
 
                 ListenerClient.Receiver.SubscribeOn(TaskPoolScheduler.Default).Subscribe(
                     s => ZloClient_DataReceived(s) ,
                     e => Console.WriteLine(e.ToString()) ,
                     () => Console.WriteLine("Socket receiver completed")
                     );
+
+
+                ListenerClient.Sender.SubscribeOn(TaskPoolScheduler.Default).Subscribe(
+                s => ZloClient_DataSent(s) ,
+                   e => Console.WriteLine(e.ToString()) ,
+                   () => Console.WriteLine("Socket Sender completed")
+               );
 
             }
             catch (Exception ex)
@@ -52,7 +59,10 @@ namespace Zlo
         {
             Console.WriteLine(obj);
         }
-
+        private void ZloClient_DataSent(byte obj)
+        {
+            Console.WriteLine(obj);
+        }
         private void Client_Disconnected(object sender , EventArgs e)
         {
             Console.WriteLine("Log 0 : Client Disconnected");
@@ -62,11 +72,14 @@ namespace Zlo
         {
             Console.WriteLine("Log 0 : Client Connected");
         }
-        
+
 
         public async void Connect()
         {
             await ListenerClient.ConnectAsync();
+            await ListenerClient.SendAsync(new byte[] { 0, 0, 0 ,0 ,1 });
+           
+            Console.WriteLine("Done");
         }
 
     }
