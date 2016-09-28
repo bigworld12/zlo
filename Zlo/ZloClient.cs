@@ -77,7 +77,7 @@ namespace Zlo
         public async void Connect()
         {
             await ListenerClient.ConnectAsync();
-            await ListenerClient.SendAsync(new byte[] { 0, 0, 0 ,0 ,1 });
+            await ListenerClient.SendAsync(new byte[] { 1,0,0,0 });
            
             Console.WriteLine("Done");
         }
