@@ -11,8 +11,8 @@ namespace Demo
      
         public static void Main(string[] args)
         {
-            new TestProgram();          
-            
+            new TestProgram();
+            Console.ReadLine();   
         }
     }
     public class TestProgram
@@ -20,7 +20,14 @@ namespace Demo
         public ZloClient Client { get; set; }
         public TestProgram()
         {
-
+            Start();
         }
+        public  void Start()
+        {
+            Client = new ZloClient();
+            Client.Connect();
+        }
+
+      
     }
 }

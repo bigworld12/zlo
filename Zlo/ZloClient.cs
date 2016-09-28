@@ -4,7 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using ReactiveSockets;
 
 namespace Zlo
 {
@@ -14,23 +19,28 @@ namespace Zlo
          connect to localhost:48486
          packet - 4byte size, 1byte type, payload[size]
          */
-        private TcpClient client;
-        public TcpClient Client
+        private ReactiveClient m_client;
+        public ReactiveClient ListenerClient
         {
-            get { return client; }
+            get { return m_client; }
         }
-
-        public event ClientDataReceived DataReceived;
-
-
-        public delegate void ClientDataReceived(TcpClient sender , ClientDataReceivedEventArgs args);
+        
         public ZloClient()
         {
             try
             {
-                client = new TcpClient();
+                m_client = new ReactiveClient("127.0.0.1" , 48486);
+                
 
-                DataReceived += ZloClient_DataReceived;
+                ListenerClient.Connected += Client_Connected;
+                ListenerClient.Disconnected += Client_Disconnected;               
+
+                ListenerClient.Receiver.SubscribeOn(TaskPoolScheduler.Default).Subscribe(
+                    s => ZloClient_DataReceived(s) ,
+                    e => Console.WriteLine(e.ToString()) ,
+                    () => Console.WriteLine("Socket receiver completed")
+                    );
+
             }
             catch (Exception ex)
             {
@@ -38,56 +48,32 @@ namespace Zlo
             }
         }
 
-        private void ZloClient_DataReceived(TcpClient sender , ClientDataReceivedEventArgs args)
+        private void ZloClient_DataReceived(byte obj)
         {
-            Console.WriteLine(args.State.buffer.Length);
+            Console.WriteLine(obj);
         }
 
-        public async Task<bool> Connect()
+        private void Client_Disconnected(object sender , EventArgs e)
         {
-            try
-            {
-                
-                await client.ConnectAsync("127.0.0.1" , 48486);
-                var stream = client.GetStream();
-                StartListenLoop(stream);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return false;
-            }
-            
+            Console.WriteLine("Log 0 : Client Disconnected");
         }
-        private void StartListenLoop(NetworkStream stream)
-        {
-            Task.Run(async () =>
-            {
-                byte[] buffer = new byte[client.ReceiveBufferSize];
-                
-                while (true)
-                {
-                    int bytesRead = await stream.ReadAsync(buffer , 0 , buffer.Length);
-                    if (bytesRead > 0)
-                    {
-                        var state = new StateObject();
-                        state.buffer = buffer;
-                        state.workSocket = client.Client;   
-                        
-                                             
-                        ClientDataReceivedEventArgs a = new ClientDataReceivedEventArgs(state);
-                        DataReceived?.Invoke(Client , a);                      
-                    }
-                }
 
-            });
+        private void Client_Connected(object sender , EventArgs e)
+        {
+            Console.WriteLine("Log 0 : Client Connected");
         }
+        
+
+        public async void Connect()
+        {
+            await ListenerClient.ConnectAsync();
+        }
+
     }
     public class StateObject
     {
         // Client socket.
-        public Socket workSocket = null;    
+        public Socket workSocket = null;
         // Receive buffer.
         public byte[] buffer = null;
         // Received data string.
@@ -99,7 +85,7 @@ namespace Zlo
 
         public StateObject State
         {
-            get { return m_state; }           
+            get { return m_state; }
         }
         public ClientDataReceivedEventArgs(StateObject s)
         {
