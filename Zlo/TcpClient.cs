@@ -267,7 +267,7 @@ namespace Zlo
                 }
             }
             if (DataReceived != null)
-                DataReceived.BeginInvoke(this , _encode.GetString(dataBuffer , 0 , bytes) , new AsyncCallback(cbDataRecievedCallbackComplete) , this);
+                DataReceived.BeginInvoke(this ,dataBuffer , new AsyncCallback(cbDataRecievedCallbackComplete) , this);
         }
         private void cbDataRecievedCallbackComplete(IAsyncResult result)
         {

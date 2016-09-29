@@ -102,7 +102,7 @@ namespace Zlo
         public int temppid = -1;
         private void ListenerClient_DataReceived(EventDrivenTCPClient sender , object data)
         {
-            var bytes = Enc.GetBytes(data.ToString());
+            var bytes = (byte[])data;
 
             //File.WriteAllLines($@"E:\TestPackets\Stats Full.txt" , bytes.Select(x => x.ToString()));
             //string final = string.Join(Environment.NewLine , bytes);
