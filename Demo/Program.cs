@@ -26,7 +26,7 @@ namespace Demo
         {
             Client = new ZloClient();
             Client.Connect();
-            
+            Client.SendRequest(ZloClient.ZloRequest.Stats , ZloClient.ZloGame.BF_3);
         }
 
       

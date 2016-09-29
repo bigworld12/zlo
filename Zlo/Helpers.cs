@@ -43,8 +43,9 @@ namespace Zlo.Extentions
         }
         public static ushort ReadZUInt16(this BinaryReader br)
         {
-            return BitConverter.ToUInt16(br.ReadReversedBytes(4) , 0);
+            return BitConverter.ToUInt16(br.ReadReversedBytes(2) , 0);
         }
+
         public static float ReadZFloat(this BinaryReader br)
         {
             return BitConverter.ToSingle(br.ReadReversedBytes(4) , 0);
