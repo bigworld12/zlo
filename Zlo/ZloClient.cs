@@ -104,7 +104,7 @@ namespace Zlo
         {
             var bytes = Enc.GetBytes(data.ToString());
 
-            File.WriteAllLines($@"E:\TestPackets\Stats Full.txt" , bytes.Select(x => x.ToString()));
+            //File.WriteAllLines($@"E:\TestPackets\Stats Full.txt" , bytes.Select(x => x.ToString()));
             //string final = string.Join(Environment.NewLine , bytes);
             //Console.WriteLine($"Received Raw :\n{final}");
             if (bytes.Length == 1)
@@ -148,11 +148,7 @@ namespace Zlo
                                         {
                                             string statname = br.ReadZString();
                                             float statvalue = br.ReadZFloat();
-                                            Debug.WriteLine($"statname : {statname},statvalue : {statvalue}");
-                                            if (statname == "sc_vehicleah")
-                                            {
-                                                Console.WriteLine("error here");
-                                            }
+                                            Debug.WriteLine($"statname : {statname},statvalue : {statvalue}");                                           
                                         }
                                         catch (Exception ex)
                                         {
