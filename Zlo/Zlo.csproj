@@ -30,10 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SimpleTCP, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleTCP.1.0.14\lib\net45\SimpleTCP.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -45,12 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extras\Enums.cs" />
+    <Compile Include="Extras\Item.cs" />
+    <Compile Include="Extras\Stat.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="ZloClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\..\SimpleTCP\SimpleTCP\SimpleTCP.csproj">
+      <Project>{c9c99f87-e188-49d2-a323-09fe79f39f8d}</Project>
+      <Name>SimpleTCP</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
