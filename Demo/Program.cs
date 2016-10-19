@@ -58,7 +58,7 @@ namespace Demo
                         break;
                     default:
                         break;
-                }              
+                }
             }
 
         }
@@ -104,12 +104,17 @@ namespace Demo
             Client.StatsReceived += Client_StatsReceived;
             Client.UserInfoReceived += Client_UserInfoReceived;
             Client.ItemsReceived += Client_ItemsReceived;
-
+            Client.GameStateReceived += Client_GameStateReceived;
             //Client.SendRequest(ZloRequest.User_Info);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_3);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_4);
             //Client.SendRequest(ZloRequest.Items , ZloGame.BF_4);            
 
+        }
+
+        private void Client_GameStateReceived(ZloGame game , string type , string message)
+        {
+            Console.WriteLine($"{game.ToString().Replace("_" , string.Empty)} : [{type}] {message}");
         }
 
         private void Client_Disconnected(DisconnectionReasons Reason)

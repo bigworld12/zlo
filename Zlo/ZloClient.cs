@@ -80,9 +80,7 @@ namespace Zlo
 
                 BF4_Pipe_Listener.Start();
 
-                BFH_Pipe_Listener.Start();
-
-                GameStateReceived += ZloClient_GameStateReceived;
+                BFH_Pipe_Listener.Start();                
             }
             catch (Exception ex)
             {
@@ -90,10 +88,7 @@ namespace Zlo
             }
         }
 
-        private void ZloClient_GameStateReceived(ZloGame game , string type , string message)
-        {
-            Console.WriteLine($"{game.ToString().Replace("_" , string.Empty)} : [{type}] {message}");
-        }
+      
 
         Thread BF3_Pipe_Listener;
         Thread BF4_Pipe_Listener;
