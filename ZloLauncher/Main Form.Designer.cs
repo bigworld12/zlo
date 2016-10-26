@@ -40,6 +40,8 @@
             this.PlayerLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.GameStateLabel = new System.Windows.Forms.Label();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button8 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -161,11 +163,33 @@
             this.GameStateLabel.TabIndex = 12;
             this.GameStateLabel.Text = "some state";
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(448, 42);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(97, 23);
+            this.button7.TabIndex = 13;
+            this.button7.Text = "Get BF4 Stats";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.GetBF4StatsButton_Click);
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(551, 42);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(113, 23);
+            this.button8.TabIndex = 14;
+            this.button8.Text = "Get BF4 Items";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.GetBF4ItemsButton_Click);
+            // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(676, 395);
+            this.Controls.Add(this.button8);
+            this.Controls.Add(this.button7);
             this.Controls.Add(this.GameStateLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.PlayerLabel);
@@ -200,5 +224,7 @@
         private System.Windows.Forms.Label PlayerLabel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label GameStateLabel;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
     }
 }

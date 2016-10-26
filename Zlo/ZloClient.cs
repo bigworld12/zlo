@@ -10,7 +10,6 @@ using System.IO;
 using static Zlo.Extentions.Helpers;
 using System.Diagnostics;
 using System.Timers;
-using SimpleTCP;
 using Zlo.Extras;
 using System.IO.Pipes;
 
@@ -22,7 +21,7 @@ namespace Zlo
         {
             try
             {
-                m_client = new SimpleTcpClient();
+                m_client = new ZloTCPClient(this);
                 PingTimer = new System.Timers.Timer(20 * 1000);
 
                 //CreateFile(@"\\\\.\\pipe\\warsaw_snowroller", FileAccess.ReadWrite,0,IntPtr.Zero, FileMode.Open, FileAttributes.Wr)
@@ -46,7 +45,7 @@ namespace Zlo
 
                 BFH_Pipe_Listener.Start();
 
-                ListenerClient.DataReceived += ListenerClient_DataReceived;
+                ListenerClient.ZloPacketReceived += new ZloTCPClient.ZloPacketReceivedEventHandler(ListenerClient_DataReceived);
                 //uint UserID , string UserName
                 UserInfoReceived += ZloClient_UserInfoReceived;
 
@@ -68,8 +67,8 @@ namespace Zlo
        connect to localhost:48486
        packet - 4byte size, 1byte type, payload[size]
        */
-        private SimpleTcpClient m_client;
-        private SimpleTcpClient ListenerClient
+        private ZloTCPClient m_client;
+        private ZloTCPClient ListenerClient
         {
             get { return m_client; }
         }
@@ -151,13 +150,13 @@ namespace Zlo
         #endregion
 
         #region API Methods
-        bool IsPingTimerStarted = false;
+
         public bool Connect()
         {
             try
             {
 
-                ListenerClient.Connect("127.0.0.1" , 48486);
+                ListenerClient.Connect();
 
                 GetUserInfo();
                 return true;
@@ -165,6 +164,7 @@ namespace Zlo
             catch (Exception ex)
             {
                 PingTimer.Elapsed -= PingTimer_Elapsed;
+                PingTimer.Stop();
                 ErrorOccured?.Invoke(ex , "Error when connecting");
                 return false;
             }
@@ -261,18 +261,18 @@ namespace Zlo
         #endregion
 
         #region Other Methods
-
-        int temppid = -1;
-        private void ListenerClient_DataReceived(object sender , Message e)
+        public void RaiseError(Exception ex , string message)
         {
-            var bytes = e.Data;
-            if (CurrentRequest.IsRespondable && CurrentRequest.IsDone == false)
+            ErrorOccured?.Invoke(ex , message);
+        }
+
+        private void ListenerClient_DataReceived(byte pid , byte[] bytes)
+        {
+            hexlike(bytes , bytes.Length);
+            if (CurrentRequest != null && CurrentRequest.IsDone == false && CurrentRequest.IsRespondable)
             {
-                CurrentRequest.IsDone = true;
-                CurrentRequest.Responce = bytes;
-                ProcessQueue();
+                CurrentRequest.GiveResponce(bytes);
             }
-            Debug.WriteLine($"RECV : {e.Data.Length}");
             using (MemoryStream tempstream = new MemoryStream(bytes))
             using (BinaryReader br = new BinaryReader(tempstream))
             {
@@ -280,23 +280,7 @@ namespace Zlo
                 {
                     if (bytes.Length > 0)
                     {
-                        byte pid;
-                        if (temppid != -1)
-                        {
-                            pid = (byte)temppid;
-                            temppid = -1;
-                        }
-                        else
-                        {
-                            pid = br.ReadByte();
-                        }
-
-                        if (bytes.Length < 5)
-                        {
-                            temppid = pid;
-                            return;
-                        }
-                        uint len = br.ReadZUInt32();
+                        uint len = (uint)bytes.Length;
                         /*
         0 - ping, just send it every 20secs
         1 - userinfo, request - empty payload, responce - 4byte id, string
@@ -308,25 +292,21 @@ namespace Zlo
                         switch (pid)
                         {
                             case 0:
-                                string bytestr = bytes.Select(x => x.ToString()).Aggregate((x , y) => $"{x};{y}");
-                                Console.WriteLine($"Received Ping,Packet Info : \n{bytestr}");
+                                //receives just ping
                                 break;
                             case 1:
                                 {
                                     try
                                     {
                                         uint id = br.ReadZUInt32();
-                                        string name = br.ReadZString();
+                                        string name = br.ReadZString();                                       
 
                                         UserInfoReceived?.Invoke(id , name);
-                                        if (!IsPingTimerStarted)
+                                        if (!PingTimer.Enabled)
                                         {
                                             PingTimer.Elapsed += PingTimer_Elapsed;
                                             PingTimer.Start();
-
-                                            IsPingTimerStarted = true;
                                         }
-
                                     }
                                     catch (Exception ex)
                                     {
@@ -336,8 +316,34 @@ namespace Zlo
                                 }
                             case 3:
                                 {
-                                    Console.WriteLine($"ServerList Packet Recv : {bytes.Length}");
-                                    Console.WriteLine($"{string.Join(";" , bytes)}");
+                                    /*(byte) 0 - server, 1 - players, 2 - server removed
+                                     *(byte) game
+                                     *(uint32) server id
+                                     *next is buffer
+                                     */
+                                    byte server_event_id = br.ReadByte();
+                                    ZloGame game = (ZloGame)br.ReadByte();
+                                    uint server_id = br.ReadZUInt32();
+
+                                    switch (server_event_id)
+                                    {
+                                        case 0:
+                                            //server info
+                                            Console.WriteLine($"Server Info Packet,game : {game.ToString()},server id = {server_id}");
+                                            break;
+                                        case 1:
+                                            Console.WriteLine($"Players Info Packet,game : {game.ToString()},server id = {server_id}");
+                                            //players info
+                                            break;
+                                        case 2:
+                                            //server removed
+                                            Console.WriteLine($"Server Removed Packet,game : {game.ToString()},server id = {server_id}");
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    //read buffer here
+
                                     break;
                                 }
                             case 4:
@@ -348,8 +354,6 @@ namespace Zlo
 
                                     try
                                     {
-
-
                                         for (ushort i = 0; i < count; i++)
                                         {
                                             string statname = br.ReadZString();
@@ -398,11 +402,43 @@ namespace Zlo
                     ErrorOccured?.Invoke(ex , "Failed to read packet id/Packet length");
                 }
             }
-
+            if (CurrentRequest.IsRespondable && CurrentRequest.IsDone == false)
+            {
+                CurrentRequest.IsDone = true;
+                CurrentRequest.Responce = bytes;
+                ProcessQueue();
+            }
         }
 
+        void hexlike(byte[] buf , int size)
+        {
+            Console.Write($"STORAGE_SIZE: {size}\n");
+            uint j;
+            for (uint i = 0; i < size; i += 16)
+            {
+                for (j = 0; j < 16; j++)
+                    if (i + j < size)
+                        Console.Write("{0:X2} " , buf[i + j]);
+                    else
+                        Console.Write("   ");
+                Console.Write(" | ");
+                for (j = 0; j < 16; j++)
+                    if (i + j < size)
+                        Console.Write(isprint(buf[i + j]) ? Convert.ToChar(buf[i + j]) : '.');
+                Console.Write("\n");
+            }
+        }
 
-
+        ///CharINDec-is the character in ascii
+        ///returns true or false.
+        ///is char is printable ascii then returns true and if it's not then false
+        bool isprint(int CharINDec)
+        {
+            if (CharINDec >= 32 && CharINDec <= 126)
+                return true;
+            else
+                return false;
+        }
         private void PingTimer_Elapsed(object sender , ElapsedEventArgs e)
         {
             try
@@ -590,7 +626,7 @@ namespace Zlo
         bool IsProcessing = false;
         private void ProcessQueue()
         {
-            if (IsProcessing) return;
+            if (IsProcessing && (CurrentRequest == null || (CurrentRequest.IsRespondable == true && CurrentRequest.IsDone == false))) return;
 
             if (RequestQueue.Count == 0) return;
             else
@@ -609,17 +645,14 @@ namespace Zlo
                     else
                     {
                         CurrentRequest = req;
-                        try
+                        if (!ListenerClient.WritePacket(req.data))
                         {
-                            ListenerClient.Write(req.data);
-                        }
-                        catch (Exception ex)
-                        {
-                            ErrorOccured?.Invoke(ex , "Error Occured when sending the Request");
                             req.GiveResponce(null);
                         }
                         if (!CurrentRequest.IsRespondable)
+                        {
                             req.GiveResponce(null);
+                        }
                         break;
                     }
                 }
@@ -635,7 +668,7 @@ namespace Zlo
         public void SubToServerList(ZloGame game)
         {
             var req = new Request();
-            req.IsRespondable = true;
+            req.IsRespondable = false;
 
 
             List<byte> ar = new List<byte>();
@@ -653,7 +686,7 @@ namespace Zlo
         public void UnSubServerList(ZloGame game)
         {
             var req = new Request();
-            req.IsRespondable = true;
+            req.IsRespondable = false;
 
             List<byte> ar = new List<byte>();
             ar.Add(3);
@@ -662,7 +695,6 @@ namespace Zlo
             ar.AddRange(size);
             ar.Add(1);
             ar.Add((byte)game);
-            ListenerClient.Write(ar.ToArray());
 
             req.data = ar.ToArray();
             RequestQueue.Add(req);

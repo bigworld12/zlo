@@ -66,20 +66,31 @@ namespace ZloLauncher
 
         private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Stat> List)
         {
-            //useless for now
+            this.Invoke((Action)delegate
+            {
+                StatsForm sf = new StatsForm();
+                sf.ShowWithStats(Game , List);
+            });
         }
 
         private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Item> List)
         {
             //useless for now
+            this.Invoke((Action)delegate
+            {
+                StatsForm sf = new StatsForm();
+                sf.ShowWithItems(Game , List);
+            });
         }
+
+
 
         private void Client_GameStateReceived(Zlo.Extras.ZloGame game , string type , string message)
         {
             var action = (MethodInvoker)delegate
             {
-                string final = $"[{type}] {message}".Replace('\0'.ToString(),string.Empty);
-                GameStateLabel.Text = final;               
+                string final = $"[{type}] {message}".Replace('\0'.ToString() , string.Empty);
+                GameStateLabel.Text = final;
             };
 
             //gives id and name
@@ -149,7 +160,7 @@ namespace ZloLauncher
         {
             webBrowser1.Navigate(@"http://bf4.zloemu.org/servers");
         }
-   
+
         private void JoinMultiButton_Click(object sender , EventArgs e)
         {
             Server selected = dataGridView1.SelectedRows[0].DataBoundItem as Server;
@@ -189,6 +200,17 @@ namespace ZloLauncher
         {
             Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Single_Player);
         }
+
+        private void GetBF4StatsButton_Click(object sender , EventArgs e)
+        {
+
+            Client.GetStats(Zlo.Extras.ZloGame.BF_4);
+        }
+
+        private void GetBF4ItemsButton_Click(object sender , EventArgs e)
+        {
+            Client.GetItems(Zlo.Extras.ZloGame.BF_4);
+        }
     }
     public class ServerList : BindingList<Server>
     {
@@ -201,7 +223,7 @@ namespace ZloLauncher
         }
     }
     public class Server
-    {        
+    {
         public Server(List<string> row)
         {
             Name = row[0];

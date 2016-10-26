@@ -48,12 +48,7 @@
     <Compile Include="Helpers.cs" />
     <Compile Include="ZloClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\SimpleTCP\SimpleTCP\SimpleTCP.csproj">
-      <Project>{c9c99f87-e188-49d2-a323-09fe79f39f8d}</Project>
-      <Name>SimpleTCP</Name>
-    </ProjectReference>
+    <Compile Include="ZloTCPReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -9,6 +9,7 @@ using HtmlAgilityPack;
 using System.Net;
 using System.Threading;
 using System.Diagnostics;
+using System.IO;
 
 namespace Demo
 {
@@ -67,7 +68,10 @@ namespace Demo
                         Client.SubToServerList(ZloGame.BF_4);
                         break;
                     case ConsoleKey.NumPad5:
-                        Client.UnSubServerList(ZloGame.BF_3);
+                        Client.UnSubServerList(ZloGame.BF_4);
+                        break;  
+                    case ConsoleKey.NumPad6:
+                        Process.Start(@"origin2://game/launch/?offerIds=1007968,1010268,1010960,1011576,1010959&title=Battlefield4&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%225%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%2214%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
                         break;
                     default:
                         break;
