@@ -12,15 +12,22 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 
+using Zlo;
+
 namespace ZloLauncher
 {
 
     public partial class Main_Form : Form
     {
+        public ZloClient Client { get; set; }
 
         public Main_Form()
         {
             InitializeComponent();
+            Client = new ZloClient();
+            AddEvents();
+            Client.Connect();
+            //Client.GetUserInfo();
 
             webBrowser1.DocumentCompleted +=
                 (x , y) =>
@@ -32,6 +39,65 @@ namespace ZloLauncher
                         LoadListFromHTML(webBrowser1.DocumentText);
                 };
             webBrowser1.Navigate(@"http://bf4.zloemu.org/servers");
+        }
+
+        void AddEvents()
+        {
+            Client.Disconnected += Client_Disconnected;
+            Client.ErrorOccured += Client_ErrorOccured;
+            Client.GameStateReceived += Client_GameStateReceived;
+            Client.ItemsReceived += Client_ItemsReceived;
+            Client.StatsReceived += Client_StatsReceived;
+            Client.UserInfoReceived += Client_UserInfoReceived;
+        }
+
+        private void Client_UserInfoReceived(uint UserID , string UserName)
+        {
+            var action = (MethodInvoker)delegate
+            {
+                PlayerLabel.Text = $"{UserName} ({UserID})";
+            };
+            //gives id and name
+            if (PlayerLabel.InvokeRequired)
+                PlayerLabel.Invoke(action);
+            else
+                action.Invoke();
+        }
+
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Stat> List)
+        {
+            //useless for now
+        }
+
+        private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Item> List)
+        {
+            //useless for now
+        }
+
+        private void Client_GameStateReceived(Zlo.Extras.ZloGame game , string type , string message)
+        {
+            var action = (MethodInvoker)delegate
+            {
+                string final = $"[{type}] {message}".Replace('\0'.ToString(),string.Empty);
+                GameStateLabel.Text = final;               
+            };
+
+            //gives id and name
+
+            if (GameStateLabel.InvokeRequired)
+                GameStateLabel.Invoke(action);
+            else
+                action.Invoke();
+        }
+
+        private void Client_ErrorOccured(Exception Error , string CustomMessage)
+        {
+            MessageBox.Show($"{CustomMessage}\n{Error.ToString()}");
+        }
+
+        private void Client_Disconnected(Zlo.Extras.DisconnectionReasons Reason)
+        {
+            MessageBox.Show($"Client Disconnected,Reason : {Reason.ToString()}");
         }
 
         public ServerList Servers { get; set; }
@@ -79,32 +145,49 @@ namespace ZloLauncher
             dataGridView1.Refresh();
         }
 
-        private void button1_Click(object sender , EventArgs e)
+        private void RefreshListButton_Click(object sender , EventArgs e)
         {
             webBrowser1.Navigate(@"http://bf4.zloemu.org/servers");
         }
-
-        private void JoinServerButton_Click(object sender , EventArgs e)
+   
+        private void JoinMultiButton_Click(object sender , EventArgs e)
         {
             Server selected = dataGridView1.SelectedRows[0].DataBoundItem as Server;
 
-            ProcessStartInfo si = new ProcessStartInfo();
-            si.WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-            si.Arguments = selected.BF4StartupParams;
-            string bf4procname;
-            if (Environment.Is64BitOperatingSystem)
+            if (selected != null)
             {
-                bf4procname = "bf4.exe";
+                Client.JoinOnlineGame(Zlo.Extras.OnlinePlayModes.BF4_Multi_Player , selected.ID);
             }
-            else
+        }
+
+        private void JoinCommanderButton_Click(object sender , EventArgs e)
+        {
+            Server selected = dataGridView1.SelectedRows[0].DataBoundItem as Server;
+
+            if (selected != null)
             {
-                bf4procname = "bf4_x86.exe";
+                Client.JoinOnlineGame(Zlo.Extras.OnlinePlayModes.BF4_Commander , selected.ID);
             }
-            si.FileName = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath) , bf4procname);
-            Process bf4proc = new Process();
-            bf4proc.StartInfo = si;
-            bf4proc.Start();
-            MessageBox.Show($"Joined the server Successfully\n{selected.Name}");
+        }
+
+        private void JoinSpectatorButton_Click(object sender , EventArgs e)
+        {
+            Server selected = dataGridView1.SelectedRows[0].DataBoundItem as Server;
+
+            if (selected != null)
+            {
+                Client.JoinOnlineGame(Zlo.Extras.OnlinePlayModes.BF4_Spectator , selected.ID);
+            }
+        }
+
+        private void JoinTestRangeButton_Click(object sender , EventArgs e)
+        {
+            Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Test_Range);
+        }
+
+        private void JoinSinglePlayerButton_Click(object sender , EventArgs e)
+        {
+            Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Single_Player);
         }
     }
     public class ServerList : BindingList<Server>
@@ -118,14 +201,7 @@ namespace ZloLauncher
         }
     }
     public class Server
-    {
-        /*
-         [RU] ZloGames Official TEST server
-         0/62
-         Operation Mortar
-         ConquestLarge
-         origin2://game/launch/?offerIds=1007968,1010268,1010960,1011576,1010959&title=Battlefield4&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%221%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%2214%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22
-         */
+    {        
         public Server(List<string> row)
         {
             Name = row[0];
@@ -157,7 +233,7 @@ namespace ZloLauncher
                         if (sparam.StartsWith("gameid"))
                         {
                             var splitted = sparam.Split('=');
-                            ID = int.Parse(splitted[1]);
+                            ID = uint.Parse(splitted[1]);
                             break;
                         }
                     }
@@ -167,7 +243,7 @@ namespace ZloLauncher
             }
             //"-webMode MP -Origin_NoAppFocus -requestState State_ClaimReservation -requestStateParams \"<data putinsquad=\\\"true\\\" gameid=\\\"1\\\" role=\\\"soldier\\\" personaref=\\\"14\\\" levelmode=\\\"mp\\\"></data>\""
         }
-        public int ID { get; set; }
+        public uint ID { get; set; }
         public string Name { get; set; }
         public string MapName { get; set; }
         public string GameMode { get; set; }

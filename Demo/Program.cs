@@ -8,6 +8,7 @@ using Zlo.Extras;
 using HtmlAgilityPack;
 using System.Net;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Demo
 {
@@ -34,6 +35,11 @@ namespace Demo
                     case ConsoleKey.S:
                         GetServerList();
                         break;
+                    case ConsoleKey.L:
+                        int serverid = 2;
+                        int playerid = 14;
+                        Process.Start($@"origin2://game/launch/?offerIds=1007968,1010268,1010960,1011576,1010959&title=Battlefield4&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{serverid}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{playerid}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                        break;
 
                     case ConsoleKey.R:
                         {
@@ -45,19 +51,27 @@ namespace Demo
                             break;
                         }
                     case ConsoleKey.I:
-                        Client.SendRequest(ZloRequest.User_Info);
+                        Client.GetUserInfo();
+
                         break;
                     case ConsoleKey.NumPad1:
-                        Client.SendRequest(ZloRequest.Stats , ZloGame.BF_3);
+                        Client.GetStats(ZloGame.BF_3);
                         break;
                     case ConsoleKey.NumPad2:
-                        Client.SendRequest(ZloRequest.Stats , ZloGame.BF_4);
+                        Client.GetStats(ZloGame.BF_4);
                         break;
                     case ConsoleKey.NumPad3:
-                        Client.SendRequest(ZloRequest.Items , ZloGame.BF_4);
+                        Client.GetItems(ZloGame.BF_3);
+                        break;
+                    case ConsoleKey.NumPad4:
+                        Client.SubToServerList(ZloGame.BF_4);
+                        break;
+                    case ConsoleKey.NumPad5:
+                        Client.UnSubServerList(ZloGame.BF_3);
                         break;
                     default:
                         break;
+
                 }
             }
 
