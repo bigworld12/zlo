@@ -69,7 +69,7 @@ namespace Demo
                         break;
                     case ConsoleKey.NumPad5:
                         Client.UnSubServerList(ZloGame.BF_4);
-                        break;  
+                        break;
                     case ConsoleKey.NumPad6:
                         Process.Start(@"origin2://game/launch/?offerIds=1007968,1010268,1010960,1011576,1010959&title=Battlefield4&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%225%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%2214%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
                         break;
@@ -123,10 +123,51 @@ namespace Demo
             Client.UserInfoReceived += Client_UserInfoReceived;
             Client.ItemsReceived += Client_ItemsReceived;
             Client.GameStateReceived += Client_GameStateReceived;
+
+            Client.BF3ServerAdded += Client_BF3ServerAdded;
+            Client.BF4ServerAdded += Client_BF4ServerAdded;
+            Client.BFHServerAdded += Client_BFHServerAdded;
+
+            Client.BF3ServerUpdated += Client_BF3ServerUpdated;
+            Client.BF4ServerUpdated += Client_BF4ServerUpdated;
+            Client.BFHServerUpdated += Client_BFHServerUpdated;
+
+            Client.ServerRemoved += Client_ServerRemoved;
             //Client.SendRequest(ZloRequest.User_Info);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_3);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_4);
             //Client.SendRequest(ZloRequest.Items , ZloGame.BF_4);            
+
+        }
+
+        private void Client_ServerRemoved(ZloGame game , uint id , IServerBase server)
+        {
+            
+        }
+
+        private void Client_BFHServerUpdated(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
+        {
+           
+        }
+
+        private void Client_BF4ServerUpdated(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
+        {
+        }
+
+        private void Client_BF3ServerUpdated(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
+        {
+        }
+
+        private void Client_BFHServerAdded(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
+        {
+        }
+
+        private void Client_BF4ServerAdded(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
+        {
+        }
+
+        private void Client_BF3ServerAdded(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
+        {
 
         }
 

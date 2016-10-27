@@ -44,6 +44,7 @@
     <Compile Include="Extras\Enums.cs" />
     <Compile Include="Extras\Item.cs" />
     <Compile Include="Extras\Request.cs" />
+    <Compile Include="Extras\Servers.cs" />
     <Compile Include="Extras\Stat.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="ZloClient.cs" />

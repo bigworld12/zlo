@@ -8,6 +8,8 @@ namespace Zlo.Extras
 {
     class Request
     {
+        public byte pid = 0;
+
         public byte[] data = null;
         public bool IsDone = false;
 
@@ -19,7 +21,7 @@ namespace Zlo.Extras
 
         public void GiveResponce(byte[] resp)
         {
-            data = resp;
+            Responce = resp;
             IsDone = true;
             ReceivedResponce?.Invoke(this);
         }

@@ -96,6 +96,10 @@ namespace Zlo.Extentions
         {
             return BitConverter.ToUInt32(br.ReadReversedBytes(4) , 0);
         }
+        public static ulong ReadZUInt64(this BinaryReader br)
+        {
+            return BitConverter.ToUInt64(br.ReadReversedBytes(8) , 0);
+        }
         public static ushort ReadZUInt16(this BinaryReader br)
         {
             return BitConverter.ToUInt16(br.ReadReversedBytes(2) , 0);
