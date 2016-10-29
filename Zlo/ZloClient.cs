@@ -324,6 +324,13 @@ namespace Zlo
         public List<BF3ServerBase> BF3Servers { get; set; }
         public List<BF4ServerBase> BF4Servers { get; set; }
         public List<BFHServerBase> BFHServers { get; set; }
+
+
+        public bool IsConnectedToZCLient
+        {
+            get { return ListenerClient.IsConnected; }
+        }
+
         #endregion
 
         #region Other Methods

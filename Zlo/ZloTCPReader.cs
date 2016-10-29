@@ -14,6 +14,11 @@ namespace Zlo
         public delegate void ZloPacketReceivedEventHandler(byte pid , byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
 
+        public bool IsConnected
+        {
+            get { return Client.Connected; }
+        }
+
         private TcpClient Client { get; set; }
 
         private ZloClient parent { get; set; }
