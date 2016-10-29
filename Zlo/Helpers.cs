@@ -46,7 +46,7 @@ namespace Zlo.Extentions
         static public bool NamedPipeExists(string pipeName)
         {
             try
-            {                
+            {
                 string normalizedPath = Path.GetFullPath($@"\\.\pipe\{pipeName}");
                 bool exists = WaitNamedPipe(normalizedPath , 0);
                 if (!exists)
@@ -74,13 +74,22 @@ namespace Zlo.Extentions
             return bytes;
         }
         public static string ReadZString(this BinaryReader br)
-        {
+        {            
             StringBuilder s = new StringBuilder();
-            char t;
+            try
+            {
+                char t;
+                
+                while (br.PeekChar() != -1 && (t = br.ReadChar()) > 0)
+                    s.Append(t);
+                return s.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return s.ToString();
 
-            while (br.PeekChar() != -1 && (t = br.ReadChar()) > 0)
-                s.Append(t);
-            return s.ToString();
+            }
         }
         public static string ReadCountedString(this BinaryReader br , int count)
         {

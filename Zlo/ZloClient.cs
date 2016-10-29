@@ -57,7 +57,7 @@ namespace Zlo
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                WriteLog(ex.ToString());
             }
         }
 
@@ -169,8 +169,6 @@ namespace Zlo
         /// occurs when the game state changes (connecting to server/closing the server,etc..)
         /// </summary>
         public event GameStateReceivedEventHandler GameStateReceived;
-
-
         #endregion
 
         #region API Methods
@@ -334,9 +332,15 @@ namespace Zlo
             ErrorOccured?.Invoke(ex , message);
         }
 
-        private void WriteLog(string log)
+        public static void WriteLog(string log)
         {
-            File.AppendAllText(@".\Hex-Like.txt" , log);
+            try
+            {
+                File.AppendAllText(@".\Demo-Log.txt" , log);
+            }
+            catch
+            {
+            }
             Console.WriteLine(log);
         }
 
@@ -348,7 +352,7 @@ namespace Zlo
                 CurrentRequest.GiveResponce(bytes);
             }
             using (MemoryStream tempstream = new MemoryStream(bytes))
-            using (BinaryReader br = new BinaryReader(tempstream))
+            using (BinaryReader br = new BinaryReader(tempstream , Encoding.ASCII))
             {
                 try
                 {
@@ -392,173 +396,183 @@ namespace Zlo
                                 }
                             case 3:
                                 {
-                                    #region Server list packet
-                                    /*(byte) 0 - server, 1 - players, 2 - server removed
-                                     *(byte) game
-                                     *(uint32) server id
-                                     *next is buffer
-                                     */
-                                    byte server_event_id = br.ReadByte();
-                                    ZloGame game = (ZloGame)br.ReadByte();
-                                    uint server_id = br.ReadZUInt32();
-                                    if (server_id == 0)
+                                    try
                                     {
-                                        return;
+                                        #region Server list packet
+
+                                        /*(byte) 0 - server, 1 - players, 2 - server removed
+                                         *(byte) game
+                                         *(uint32) server id
+                                         *next is buffer
+                                         */
+                                        byte server_event_id = br.ReadByte();
+                                        ZloGame game = (ZloGame)br.ReadByte();
+                                        uint server_id = br.ReadZUInt32();
+                                        if (server_id == 0)
+                                        {
+                                            return;
+                                        }
+                                        switch (game)
+                                        {
+                                            case ZloGame.BF_3:
+                                                if (BF3Servers.Any(x => x.ServerID == server_id))
+                                                {
+                                                    //get the server
+                                                    var server = BF3Servers.Find(x => x.ServerID == server_id);
+                                                    if (server_event_id == 0)
+                                                    {
+                                                        server.Parse(bytes_list.Skip(6).ToArray());
+                                                        BF3ServerUpdated?.Invoke(server_id , server , false);
+                                                    }
+                                                    else if (server_event_id == 1)
+                                                    {
+                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                        BF3ServerUpdated?.Invoke(server_id , server , true);
+                                                    }
+                                                    else
+                                                    {
+                                                        // 2
+                                                        //remove the server
+                                                        BF3Servers.Remove(server);
+                                                        ServerRemoved?.Invoke(game , server_id , server);
+                                                    }
+                                                    //inform the user
+                                                }
+                                                else
+                                                {
+                                                    if (server_event_id != 2)
+                                                    {
+                                                        //create a new one
+                                                        var server = new BF3ServerBase(server_id);
+                                                        BF3Servers.Add(server);
+                                                        if (server_event_id == 0)
+                                                        {
+                                                            server.Parse(bytes_list.Skip(6).ToArray());
+                                                            BF3ServerAdded?.Invoke(server_id , server , false);
+                                                        }
+                                                        else if (server_event_id == 1)
+                                                        {
+                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                            BF3ServerAdded?.Invoke(server_id , server , true);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        //remove the already removed server
+                                                        ServerRemoved?.Invoke(game , server_id , null);
+                                                    }
+                                                }
+                                                break;
+                                            case ZloGame.BF_4:
+                                                //players : 01, bf4 : 01,server id : 00 00 00 01 ,buffer : 00 
+                                                if (BF4Servers.Any(x => x.ServerID == server_id))
+                                                {
+                                                    //get the server
+                                                    var server = BF4Servers.Find(x => x.ServerID == server_id);
+                                                    if (server_event_id == 0)
+                                                    {
+                                                        server.Parse(bytes_list.Skip(6).ToArray());
+                                                        BF4ServerUpdated?.Invoke(server_id , server , false);
+                                                    }
+                                                    else if (server_event_id == 1)
+                                                    {
+                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                        BF4ServerUpdated?.Invoke(server_id , server , true);
+                                                    }
+                                                    else
+                                                    {
+                                                        // 2
+                                                        //remove the server
+                                                        BF4Servers.Remove(server);
+                                                        ServerRemoved?.Invoke(game , server_id , server);
+                                                    }
+                                                    //inform the user
+                                                }
+                                                else
+                                                {
+                                                    if (server_event_id != 2)
+                                                    {
+                                                        //create a new one
+                                                        var server = new BF4ServerBase(server_id);
+                                                        BF4Servers.Add(server);
+                                                        if (server_event_id == 0)
+                                                        {
+                                                            server.Parse(bytes_list.Skip(6).ToArray());
+                                                            BF4ServerAdded?.Invoke(server_id , server , false);
+                                                        }
+                                                        else if (server_event_id == 1)
+                                                        {
+                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                            BF4ServerAdded?.Invoke(server_id , server , true);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        //remove the already removed server
+                                                        ServerRemoved?.Invoke(game , server_id , null);
+                                                    }
+                                                }
+                                                break;
+                                            case ZloGame.BF_HardLine:
+                                                if (BFHServers.Any(x => x.ServerID == server_id))
+                                                {
+                                                    //get the server
+                                                    var server = BFHServers.Find(x => x.ServerID == server_id);
+                                                    if (server_event_id == 0)
+                                                    {
+                                                        server.Parse(bytes_list.Skip(6).ToArray());
+                                                        BFHServerUpdated?.Invoke(server_id , server , false);
+                                                    }
+                                                    else if (server_event_id == 1)
+                                                    {
+                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                        BFHServerUpdated?.Invoke(server_id , server , true);
+                                                    }
+                                                    else
+                                                    {
+                                                        // 2
+                                                        //remove the server
+                                                        BFHServers.Remove(server);
+                                                        ServerRemoved?.Invoke(game , server_id , server);
+                                                    }
+                                                    //inform the user
+                                                }
+                                                else
+                                                {
+                                                    if (server_event_id != 2)
+                                                    {
+                                                        //create a new one
+                                                        var server = new BFHServerBase(server_id);
+                                                        BFHServers.Add(server);
+                                                        if (server_event_id == 0)
+                                                        {
+                                                            server.Parse(bytes_list.Skip(6).ToArray());
+                                                            BFHServerAdded?.Invoke(server_id , server , false);
+                                                        }
+                                                        else if (server_event_id == 1)
+                                                        {
+                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
+                                                            BFHServerAdded?.Invoke(server_id , server , true);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        //remove the already removed server
+                                                        ServerRemoved?.Invoke(game , server_id , null);
+                                                    }
+                                                }
+                                                break;
+                                            default:
+                                                break;
+                                        }
+
+                                        #endregion
                                     }
-                                    switch (game)
+                                    catch (Exception ex)
                                     {
-                                        case ZloGame.BF_3:
-                                            if (BF3Servers.Any(x => x.ServerID == server_id))
-                                            {
-                                                //get the server
-                                                var server = BF3Servers.Find(x => x.ServerID == server_id);
-                                                if (server_event_id == 0)
-                                                {
-                                                    server.Parse(bytes_list.Skip(6).ToArray());
-                                                    BF3ServerUpdated?.Invoke(server_id , server , false);
-                                                }
-                                                else if (server_event_id == 1)
-                                                {
-                                                    server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                    BF3ServerUpdated?.Invoke(server_id , server , true);
-                                                }
-                                                else
-                                                {
-                                                    // 2
-                                                    //remove the server
-                                                    BF3Servers.Remove(server);
-                                                    ServerRemoved?.Invoke(game , server_id , server);
-                                                }
-                                                //inform the user
-                                            }
-                                            else
-                                            {
-                                                if (server_event_id != 2)
-                                                {
-                                                    //create a new one
-                                                    var server = new BF3ServerBase(server_id);
-                                                    BF3Servers.Add(server);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BF3ServerAdded?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BF3ServerAdded?.Invoke(server_id , server , true);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //remove the already removed server
-                                                    ServerRemoved?.Invoke(game , server_id , null);
-                                                }
-                                            }
-                                            break;
-                                        case ZloGame.BF_4:
-                                            if (BF4Servers.Any(x => x.ServerID == server_id))
-                                            {
-                                                //get the server
-                                                var server = BF4Servers.Find(x => x.ServerID == server_id);
-                                                if (server_event_id == 0)
-                                                {
-                                                    server.Parse(bytes_list.Skip(6).ToArray());
-                                                    BF4ServerUpdated?.Invoke(server_id , server , false);
-                                                }
-                                                else if (server_event_id == 1)
-                                                {
-                                                    server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                    BF4ServerUpdated?.Invoke(server_id , server , true);
-                                                }
-                                                else
-                                                {
-                                                    // 2
-                                                    //remove the server
-                                                    BF4Servers.Remove(server);
-                                                    ServerRemoved?.Invoke(game , server_id , server);
-                                                }
-                                                //inform the user
-                                            }
-                                            else
-                                            {
-                                                if (server_event_id != 2)
-                                                {
-                                                    //create a new one
-                                                    var server = new BF4ServerBase(server_id);
-                                                    BF4Servers.Add(server);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BF4ServerAdded?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BF4ServerAdded?.Invoke(server_id , server , true);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //remove the already removed server
-                                                    ServerRemoved?.Invoke(game , server_id , null);
-                                                }
-                                            }
-                                            break;
-                                        case ZloGame.BF_HardLine:
-                                            if (BFHServers.Any(x => x.ServerID == server_id))
-                                            {
-                                                //get the server
-                                                var server = BFHServers.Find(x => x.ServerID == server_id);
-                                                if (server_event_id == 0)
-                                                {
-                                                    server.Parse(bytes_list.Skip(6).ToArray());
-                                                    BFHServerUpdated?.Invoke(server_id , server , false);
-                                                }
-                                                else if (server_event_id == 1)
-                                                {
-                                                    server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                    BFHServerUpdated?.Invoke(server_id , server , true);
-                                                }
-                                                else
-                                                {
-                                                    // 2
-                                                    //remove the server
-                                                    BFHServers.Remove(server);
-                                                    ServerRemoved?.Invoke(game , server_id , server);
-                                                }
-                                                //inform the user
-                                            }
-                                            else
-                                            {
-                                                if (server_event_id != 2)
-                                                {
-                                                    //create a new one
-                                                    var server = new BFHServerBase(server_id);
-                                                    BFHServers.Add(server);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BFHServerAdded?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BFHServerAdded?.Invoke(server_id , server , true);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    //remove the already removed server
-                                                    ServerRemoved?.Invoke(game , server_id , null);
-                                                }
-                                            }
-                                            break;
-                                        default:
-                                            break;
+                                        ErrorOccured?.Invoke(ex , "Error when Parsing server list packet");
                                     }
                                     break;
-                                    #endregion
                                 }
                             case 4:
                                 {
@@ -613,7 +627,7 @@ namespace Zlo
                 }
                 catch (Exception ex)
                 {
-                    ErrorOccured?.Invoke(ex , "Failed to read packet id/Packet length");
+                    ErrorOccured?.Invoke(ex , "Failed to parse packet");
                 }
             }
             if (CurrentRequest.IsRespondable && CurrentRequest.IsDone == false)
@@ -624,7 +638,7 @@ namespace Zlo
             }
         }
 
-        void hexlike(byte[] buf , int size)
+        public static void hexlike(byte[] buf , int size)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append('\n');
@@ -649,7 +663,7 @@ namespace Zlo
         ///CharINDec-is the character in ascii
         ///returns true or false.
         ///is char is printable ascii then returns true and if it's not then false
-        bool isprint(int CharINDec)
+        public static bool isprint(int CharINDec)
         {
             if (CharINDec >= 32 && CharINDec <= 126)
                 return true;
@@ -777,13 +791,13 @@ namespace Zlo
         private bool ProcessPipeMessage(ZloGame game , byte[] buffer , int readelements)
         {
             using (MemoryStream tempstream = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(tempstream))
+            using (BinaryReader br = new BinaryReader(tempstream , Encoding.ASCII))
             {
                 br.ReadBytes(2);
                 ushort len = br.ReadUInt16();
                 if (readelements < len - 4)
                 {
-                    Console.WriteLine($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {string.Join(";" , buffer)}");
+                    WriteLog($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {string.Join(";" , buffer)}");
                     return false;
                     //packet not full
                 }

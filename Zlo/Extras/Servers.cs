@@ -115,7 +115,7 @@ namespace Zlo.Extras
         {
             ATTRS = new Dictionary<string , string>();
             using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms))
+            using (var br = new BinaryReader(ms , Encoding.ASCII))
             {
 
                 EXIP = br.ReadZUInt32();
@@ -136,7 +136,9 @@ namespace Zlo.Extras
                 GSTA = br.ReadByte();
                 IGNO = br.ReadByte();
                 PMAX = br.ReadByte();
+                //was 64
                 NATT = br.ReadZUInt64();
+                //=========
                 NRES = br.ReadByte();
                 NTOP = br.ReadByte();
                 PGID = br.ReadZString();
@@ -148,11 +150,57 @@ namespace Zlo.Extras
                 VSTR = br.ReadZString();
             }
         }
+
+        public void Parse(BinaryReader br)
+        {
+            if (br == null)
+            {
+                return;
+            }
+            ATTRS = new Dictionary<string , string>();
+
+            EXIP = br.ReadZUInt32();
+            EXPORT = br.ReadZUInt16();
+            INIP = br.ReadZUInt32();
+            INPORT = br.ReadZUInt16();
+            byte t = br.ReadByte();
+
+            for (byte i = 0; i < t; ++i)
+            {
+                string key = br.ReadZString();
+                string value = br.ReadZString();
+                ATTRS.Add(key , value);
+            }
+
+            GNAM = br.ReadZString();
+            GSET = br.ReadZUInt32();
+            GSTA = br.ReadByte();
+            IGNO = br.ReadByte();
+            PMAX = br.ReadByte();
+            //was 64
+            NATT = br.ReadZUInt64();
+            //=========
+            NRES = br.ReadByte();
+            NTOP = br.ReadByte();
+            PGID = br.ReadZString();
+            PRES = br.ReadByte();
+            QCAP = br.ReadByte();
+            SEED = br.ReadZUInt32();
+            UUID = br.ReadZString();
+            VOIP = br.ReadByte();
+            VSTR = br.ReadZString();
+
+        }
         public void ParsePlayers(byte[] playersbuffer)
         {
+
             if (Players == null)
             {
                 Players = new PlayerListBase();
+            }
+            if (playersbuffer.Length < 2)
+            {
+                return;
             }
             Players.Parse(playersbuffer);
         }
@@ -176,10 +224,11 @@ namespace Zlo.Extras
 
         public new void Parse(byte[] serverbuffer)
         {
-            base.Parse(serverbuffer);
             using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms))
+            using (var br = new BinaryReader(ms , Encoding.ASCII))
             {
+                Parse(br);
+
                 PCAP = br.ReadByte();
                 TCAP = br.ReadZUInt32();
             }
@@ -216,55 +265,77 @@ namespace Zlo.Extras
         string SCID { get; set; }
         public new void Parse(byte[] serverbuffer)
         {
-            base.Parse(serverbuffer);
-
-            RNFO = new tRNFO();
-
-            using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms))
+            try
             {
-                //uint8 t, t1; string ts;
-                MACI = br.ReadZUInt32();
-
-                PCAP[0] = br.ReadByte();
-                PCAP[1] = br.ReadByte();
-                PCAP[2] = br.ReadByte();
-                PCAP[3] = br.ReadByte();
-
-                GMRG = br.ReadByte();
-
-                byte t = br.ReadByte();
-                for (byte i = 0; i < t; ++i)
+                using (var ms = new MemoryStream(serverbuffer))
+                using (var br = new BinaryReader(ms , Encoding.ASCII))
                 {
-                    string first_key = br.ReadZString();
-                    var second_dict = new Dictionary<string , string>();
-                    var value_dict = new Tuple<uint , Dictionary<string , string>>
-                        (
-                        br.ReadZUInt32() , //first
-                        second_dict //second
-                        );
+                    Parse(br);
+                    var z = this;
+                    RNFO = new tRNFO();
 
 
-                    byte t1 = br.ReadByte();
-                    for (byte j = 0; j < t1; ++j)
+
+                    //uint8 t, t1; string ts;
+                    MACI = br.ReadZUInt32();
+
+                    PCAP[0] = br.ReadByte();
+                    PCAP[1] = br.ReadByte();
+                    PCAP[2] = br.ReadByte();
+                    PCAP[3] = br.ReadByte();
+
+                    GMRG = br.ReadByte();
+
+                    byte t = br.ReadByte();
+                    for (byte i = 0; i < t; ++i)
                     {
-                        //server attributes
-                        string key = br.ReadZString();
-                        string value = br.ReadZString();
-                        if (second_dict.ContainsKey(key))
+                        string first_key = br.ReadZString();
+
+                        var second_dict = new Dictionary<string , string>();
+                        uint first = 0;
+
+                        first = br.ReadZUInt32();
+                        var value_dict = new Tuple<uint , Dictionary<string , string>>
+                            (
+                             first , //first
+                            second_dict //second
+                            );
+
+
+                        byte t1 = br.ReadByte();
+                        for (byte j = 0; j < t1; ++j)
                         {
-                            second_dict[key] = value;
+                            //server attributes
+                            string key = br.ReadZString();
+                            string value = br.ReadZString();
+                            if (second_dict.ContainsKey(key))
+                            {
+                                second_dict[key] = value;
+                            }
+                            else
+                            {
+                                second_dict.Add(key , value);
+                            }
+                        }
+
+                        if (RNFO.ContainsKey(first_key))
+                        {
+                            RNFO[first_key] = value_dict;
                         }
                         else
                         {
-                            second_dict.Add(key , value);
+                            RNFO.Add(first_key , value_dict);
                         }
                     }
-                    RNFO.Add(first_key , value_dict);
-                }
 
-                SCID = br.ReadZString();
+                    SCID = br.ReadZString();
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
         }
     }
     public class BFHServerBase : BF4ServerBase
@@ -293,7 +364,7 @@ namespace Zlo.Extras
         {
             Clear();
             using (var ms = new MemoryStream(buffer))
-            using (var br = new BinaryReader(ms))
+            using (var br = new BinaryReader(ms , Encoding.ASCII))
             {
                 byte t = br.ReadByte();
                 for (int i = 0; i < t; ++i)

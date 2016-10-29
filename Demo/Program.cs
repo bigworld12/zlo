@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Zlo;
 using Zlo.Extras;
 using HtmlAgilityPack;
 using System.Net;
-using System.Threading;
 using System.Diagnostics;
-using System.IO;
 
 namespace Demo
 {
@@ -72,6 +68,9 @@ namespace Demo
                         break;
                     case ConsoleKey.NumPad6:
                         Process.Start(@"origin2://game/launch/?offerIds=1007968,1010268,1010960,1011576,1010959&title=Battlefield4&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%225%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%2214%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                        break;
+                    case ConsoleKey.NumPad9:
+                        Console.Clear();
                         break;
                     default:
                         break;
@@ -142,34 +141,39 @@ namespace Demo
 
         private void Client_ServerRemoved(ZloGame game , uint id , IServerBase server)
         {
-            
+
         }
 
-        private void Client_BFHServerUpdated(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
+
+        private void Client_BF4ServerAdded(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
         {
-           
+            Console.WriteLine($"Added a new bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
         }
-
         private void Client_BF4ServerUpdated(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
         {
+            Console.WriteLine($"Updated an existing bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
         }
+
+
 
         private void Client_BF3ServerUpdated(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
         {
+            Console.WriteLine($"Updated an existing bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
         }
+        private void Client_BF3ServerAdded(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
+        {
+            Console.WriteLine($"Added a new bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
+        }
+
 
         private void Client_BFHServerAdded(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
         {
         }
-
-        private void Client_BF4ServerAdded(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
-        {
-        }
-
-        private void Client_BF3ServerAdded(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
+        private void Client_BFHServerUpdated(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
         {
 
         }
+
 
         private void Client_GameStateReceived(ZloGame game , string type , string message)
         {
@@ -188,7 +192,8 @@ namespace Demo
 
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
-            Console.WriteLine($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
+            ZloClient.WriteLog($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
+//            Console.WriteLine($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
         }
 
         private void Client_UserInfoReceived(uint UserID , string UserName)

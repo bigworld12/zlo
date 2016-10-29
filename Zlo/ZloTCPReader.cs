@@ -89,7 +89,7 @@ namespace Zlo
                                         if (CurrentBuffer.Count >= 4)
                                         {
                                             using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                            using (var br = new BinaryReader(actual_stream))
+                                            using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
                                             {
                                                 packetlen = br.ReadZUInt32();
                                                 CurrentBuffer.RemoveRange(0 , 4);
@@ -110,7 +110,7 @@ namespace Zlo
                                             if (CurrentBuffer.Count >= 4)
                                             {
                                                 using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                using (var br = new BinaryReader(actual_stream))
+                                                using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
                                                 {
                                                     packetlen = br.ReadZUInt32();
                                                     CurrentBuffer.RemoveRange(0 , 4);
@@ -135,7 +135,7 @@ namespace Zlo
                                                         {
                                                             //it includes len
                                                             using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                            using (var br = new BinaryReader(actual_stream))
+                                                            using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
                                                             {
                                                                 packetlen = br.ReadZUInt32();
                                                                 CurrentBuffer.RemoveRange(0 , 4);
@@ -183,7 +183,7 @@ namespace Zlo
                                                     {
                                                         //it includes len
                                                         using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                        using (var br = new BinaryReader(actual_stream))
+                                                        using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
                                                         {
                                                             packetlen = br.ReadZUInt32();
                                                             CurrentBuffer.RemoveRange(0 , 4);
