@@ -1,20 +1,32 @@
-﻿<Window x:Class="ZloGUILauncher.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ZloGUILauncher"
+        xmlns:Views="clr-namespace:ZloGUILauncher.Views" x:Class="ZloGUILauncher.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="385.981" Width="771.963">
+        Title="Bigworld12 new API launcher" Height="385.981" Width="771.963">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="ZClient Connected : "/>
-                <TextBlock Text="False" Foreground="Red"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock Text="ZClient State : "/>
+                <TextBlock x:Name="IsConnectedTextBlock" Text="DisConnected" Foreground="Red"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock Text="Player : "/>
+                <TextBlock x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
             </StackPanel>
         </Grid>
         <TabControl Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
@@ -22,24 +34,26 @@
                 <TabItem.Header>
                     <TextBlock Text="Battlefield 3"/>
                 </TabItem.Header>
-                <TabItem.Content>
-                    <Grid>
-                        <!--BF3-->
-                    </Grid>
-                </TabItem.Content>
+                <Grid>
+                    <!--BF3-->
+                    <Views:BF3View/>
+                </Grid>
             </TabItem>
             <TabItem>
                 <TabItem.Header>
-                    <TextBlock Text="Battlefield 4"></TextBlock>
+                    <TextBlock Text="Battlefield 4"/>
                 </TabItem.Header>
-                <TabItem.Content>
-                    <Grid>
-                        <!--BF4-->
-                        
-                    </Grid>
-                </TabItem.Content>
-                
+                <Grid>
+                    <!--BF4-->
+                    <Views:BF4View/>
+                </Grid>
+
             </TabItem>
         </TabControl>
+        <StatusBar Grid.Row="2">
+            <TextBlock VerticalAlignment="Center" Text="Lastest Game State : "/>
+            <TextBlock VerticalAlignment="Center" x:Name="LatestGameStateTextBlock" Text="[Game] [type] state"></TextBlock>
+            <Button Click="ViewAllGameStatesButton_Click" Content="View All"/>
+        </StatusBar>
     </Grid>
 </Window>

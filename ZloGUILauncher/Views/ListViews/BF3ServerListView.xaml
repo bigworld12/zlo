@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="ZloGUILauncher.Views.BF3ServerListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ZloGUILauncher.Views"
+             xmlns:servers="clr-namespace:ZloGUILauncher.Servers"
+             mc:Ignorable="d" 
+             d:DesignHeight="278.914" d:DesignWidth="465.815">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <CollectionViewSource x:Key="ServersView"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="White">
+       
+        <Grid>
+            <DataGrid ItemsSource="{Binding Source={StaticResource ServersView}}" 
+                      SelectionMode="Single" SelectionUnit="FullRow"
+                      IsSynchronizedWithCurrentItem="True" 
+                      IsTextSearchEnabled="True" AutoGenerateColumns="False" 
+                      IsReadOnly="True" >
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="HorizontalContentAlignment"
+                                        Value="Center" />
+                    </Style>
+                    <Style TargetType="{x:Type DataGridCell}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                    <Grid Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Path=ID}" Width="Auto"  Header="ID" SortMemberPath="ID"/>
+                    <DataGridTextColumn Binding="{Binding Path=Name}" Width="*" Header="Server Name" SortMemberPath="Name"/>
+                    <DataGridTextColumn Binding="{Binding Path=RepPlayers}" Width="*" Header="Players" SortMemberPath="Current_Players"/>
+                    <DataGridTextColumn Binding="{Binding Path=Map}" Width="*" Header="Map"/>
+                    <DataGridTextColumn Binding="{Binding Path=GameMode}" Width="*" Header="Game Mode"/>                    
+                </DataGrid.Columns>
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate DataType="{x:Type servers:BF3_Server}">
+                        <Grid Margin="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Click="JoinButton_Click" DataContext="{Binding}" Grid.Column="0" Content="Join"/>
+                            <Button DataContext="{Binding}" Grid.Column="1" IsEnabled="False" Content="Spectator"/>
+                            <Button DataContext="{Binding}" Grid.Column="2" IsEnabled="False" Content="Commander"/>
+                        </Grid>                        
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</UserControl>

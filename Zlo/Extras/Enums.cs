@@ -24,7 +24,8 @@ namespace Zlo.Extras
     {
         UnKnown = 0,
         PingFail = 1,
-        ServerRaised = 2
+        ServerRaised = 2,
+        ZClientNotOpen = 3
     }
     public enum OnlinePlayModes
     {

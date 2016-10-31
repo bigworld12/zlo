@@ -1,0 +1,26 @@
+﻿<Window x:Class="ZloGUILauncher.Views.GameStateViewer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ZloGUILauncher.Views"
+        mc:Ignorable="d"
+        Title="GameStateViewer" Height="240" Width="564" Closing="Window_Closing">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <RichTextBox VerticalScrollBarVisibility="Visible" BorderThickness="0" x:Name="StateTextBox" Background="#FF0D0D0D" IsReadOnly="True" Grid.ColumnSpan="2">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+            </RichTextBox.Resources>
+            <RichTextBox.Document>
+                <FlowDocument x:Name="LogDocument"/>
+            </RichTextBox.Document>
+        </RichTextBox>
+        <Button Grid.Row="1" Click="ClearButton_Click" Content="Clear All"/>
+    </Grid>
+</Window>

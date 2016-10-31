@@ -117,5 +117,24 @@ namespace Zlo.Extentions
         {
             return BitConverter.ToSingle(br.ReadReversedBytes(4) , 0);
         }
+
+        public static T Find<T>(this IEnumerable<T> Source , Predicate<T> predicate)
+        {
+            if (Source == null || predicate == null)
+            {
+                return default(T);
+            }
+
+            int count = Source.Count();
+            for (int i = 0; i < count; i++)
+            {
+                var elem = Source.ElementAt(i);
+                if (predicate(elem))
+                {
+                    return elem;
+                }
+            }
+            return default(T);
+        }
     }
 }

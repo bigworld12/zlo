@@ -108,7 +108,19 @@ namespace Zlo.Extras
         public string VSTR { get; set; }
 
 
-        public PlayerListBase Players { get; set; }
+        private PlayerListBase m_Players;
+
+        public PlayerListBase Players
+        {
+            get {
+                if (m_Players == null)
+                {
+                    m_Players = new PlayerListBase();
+                }
+                return m_Players; } 
+            set { m_Players = value; }           
+        }
+      
 
         #endregion
         public void Parse(byte[] serverbuffer)
@@ -215,12 +227,12 @@ namespace Zlo.Extras
         /// <summary>
         /// player cap
         /// </summary>
-        byte PCAP { get; set; }
+        public byte PCAP { get; set; }
 
         /// <summary>
         /// total cap
         /// </summary>
-        uint TCAP { get; set; }
+        public uint TCAP { get; set; }
 
         public new void Parse(byte[] serverbuffer)
         {
@@ -251,7 +263,7 @@ namespace Zlo.Extras
         {
 
         }
-        uint MACI { get; set; }
+        public uint MACI { get; set; }
 
         /// <summary>
         /// first : public slots;
@@ -259,10 +271,10 @@ namespace Zlo.Extras
         /// third : public spect;
         /// fourth : private spect;
         /// </summary>
-        byte[] PCAP { get; set; } = new byte[4];
-        uint GMRG { get; set; }
-        tRNFO RNFO { get; set; }
-        string SCID { get; set; }
+        public byte[] PCAP { get; set; } = new byte[4];
+        public uint GMRG { get; set; }
+        public tRNFO RNFO { get; set; }
+        public string SCID { get; set; }
         public new void Parse(byte[] serverbuffer)
         {
             try

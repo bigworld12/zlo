@@ -12,15 +12,27 @@ using System.Diagnostics;
 using System.Timers;
 using Zlo.Extras;
 using System.IO.Pipes;
+using System.ComponentModel;
+
 
 namespace Zlo
 {
-    public class ZloClient
+    public class ZloClient : INotifyPropertyChanged
     {
+        private Version _localVer = new Version(2 , 0 , 0 , 0);
+
+
         public ZloClient()
         {
             try
             {
+                QueueThread = new Thread(ProcessQueueLoop);
+                QueueThread.IsBackground = true;
+
+
+                Disconnected -= ZloClient_Disconnected;
+                Disconnected += ZloClient_Disconnected;
+
                 BF3Servers = new List<BF3ServerBase>();
                 BF4Servers = new List<BF4ServerBase>();
                 BFHServers = new List<BFHServerBase>();
@@ -44,21 +56,22 @@ namespace Zlo
                 BFH_Pipe_Listener = new Thread(BFH_Pipe_Loop);
                 BFH_Pipe_Listener.IsBackground = true;
 
-                BF3_Pipe_Listener.Start();
-
-                BF4_Pipe_Listener.Start();
-
-                BFH_Pipe_Listener.Start();
-
-                ListenerClient.ZloPacketReceived += new ZloTCPClient.ZloPacketReceivedEventHandler(ListenerClient_DataReceived);
+                ListenerClient.ZloPacketReceived -= ListenerClient_DataReceived;
+                ListenerClient.ZloPacketReceived += ListenerClient_DataReceived;
                 //uint UserID , string UserName
+                UserInfoReceived -= ZloClient_UserInfoReceived;
                 UserInfoReceived += ZloClient_UserInfoReceived;
 
             }
             catch (Exception ex)
             {
-                WriteLog(ex.ToString());
+                ErrorOccured?.Invoke(ex , "Error When Initializing the client");
             }
+        }
+
+        private void ZloClient_Disconnected(DisconnectionReasons Reason)
+        {
+            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
         }
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
@@ -72,6 +85,8 @@ namespace Zlo
        connect to localhost:48486
        packet - 4byte size, 1byte type, payload[size]
        */
+
+
         private ZloTCPClient m_client;
         private ZloTCPClient ListenerClient
         {
@@ -126,6 +141,8 @@ namespace Zlo
         public delegate void BFHServerEventHandler(uint id , BFHServerBase server , bool IsPlayerChangeOnly);
 
         public delegate void ServerRemovedEventHandler(ZloGame game , uint id , IServerBase server);
+
+        public delegate void APIVersionReceivedEventHandler(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress);
         #endregion
 
         #region API events
@@ -138,7 +155,6 @@ namespace Zlo
         public event BFHServerEventHandler BFHServerUpdated;
 
         public event ServerRemovedEventHandler ServerRemoved;
-
 
         /// <summary>
         /// Gets triggered after receiving user stats and passes the game and a list of stats
@@ -169,6 +185,8 @@ namespace Zlo
         /// occurs when the game state changes (connecting to server/closing the server,etc..)
         /// </summary>
         public event GameStateReceivedEventHandler GameStateReceived;
+
+        public event APIVersionReceivedEventHandler APIVersionReceived;
         #endregion
 
         #region API Methods
@@ -176,11 +194,61 @@ namespace Zlo
         {
             try
             {
+                //check for the version here
+                //download address https://bigworld12.tk/ZloFiles/Zlo.dll
+                //check address https://bigworld12.tk/ZloFiles/version.txt
+
+                string down = @"https://bigworld12.tk/ZloFiles/Zlo.dll";
+                string check = @"https://bigworld12.tk/ZloFiles/version.txt";
+                using (WebClient wc = new WebClient())
+                {
+                    string ver = wc.DownloadString(check);
+                    Version newver;
+                    if (!Version.TryParse(ver , out newver))
+                    {
+                        newver = _localVer;
+                    }
+                    bool isne = newver > _localVer;
+                    if (isne)
+                    {
+                        APIVersionReceived?.Invoke(_localVer , newver , true , down);
+                    }
+                    else
+                    {
+                        APIVersionReceived?.Invoke(_localVer , newver , false , string.Empty);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorOccured?.Invoke(ex , "Error when Checking updates");
+            }
+
+            try
+            {
+                IsOn = true;
+
+                BF3_Pipe_Listener.Start();
+
+                BF4_Pipe_Listener.Start();
+
+                BFH_Pipe_Listener.Start();
+
 
                 ListenerClient.Connect();
-
+                QueueThread.Start();
+                PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
+                Thread.Sleep(1000);
                 GetUserInfo();
                 return true;
+            }
+            catch (SocketException se)
+            {
+                Disconnected?.Invoke(DisconnectionReasons.ZClientNotOpen);
+                PingTimer.Elapsed -= PingTimer_Elapsed;
+                PingTimer.Stop();
+                ErrorOccured?.Invoke(se , "ZClient isn't open");
+                return false;
             }
             catch (Exception ex)
             {
@@ -297,7 +365,6 @@ namespace Zlo
 
             req.data = ar.ToArray();
             RequestQueue.Add(req);
-            ProcessQueue();
         }
         public void UnSubServerList(ZloGame game)
         {
@@ -316,7 +383,19 @@ namespace Zlo
 
             req.data = ar.ToArray();
             RequestQueue.Add(req);
-            ProcessQueue();
+        }
+
+        public bool IsOn = false;
+        public void Close()
+        {
+            try
+            {
+                IsOn = false;
+                ListenerClient.Disconnect();
+                PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
+            }
+            catch (Exception ex) { ErrorOccured?.Invoke(ex , "Error occured when disconnecting zclient"); }
+
         }
         #endregion
 
@@ -353,7 +432,7 @@ namespace Zlo
 
         private void ListenerClient_DataReceived(byte pid , byte[] bytes)
         {
-            hexlike(bytes , bytes.Length);
+            //hexlike(bytes , bytes.Length);
             if (CurrentRequest != null && CurrentRequest.pid == pid && CurrentRequest.IsDone == false && CurrentRequest.IsRespondable)
             {
                 CurrentRequest.GiveResponce(bytes);
@@ -425,7 +504,7 @@ namespace Zlo
                                                 if (BF3Servers.Any(x => x.ServerID == server_id))
                                                 {
                                                     //get the server
-                                                    var server = BF3Servers.Find(x => x.ServerID == server_id);
+                                                    var server = BF3Servers.FirstOrDefault(x => x.ServerID == server_id);
                                                     if (server_event_id == 0)
                                                     {
                                                         server.Parse(bytes_list.Skip(6).ToArray());
@@ -475,7 +554,7 @@ namespace Zlo
                                                 if (BF4Servers.Any(x => x.ServerID == server_id))
                                                 {
                                                     //get the server
-                                                    var server = BF4Servers.Find(x => x.ServerID == server_id);
+                                                    var server = BF4Servers.FirstOrDefault(x => x.ServerID == server_id);
                                                     if (server_event_id == 0)
                                                     {
                                                         server.Parse(bytes_list.Skip(6).ToArray());
@@ -637,12 +716,6 @@ namespace Zlo
                     ErrorOccured?.Invoke(ex , "Failed to parse packet");
                 }
             }
-            if (CurrentRequest.IsRespondable && CurrentRequest.IsDone == false)
-            {
-                CurrentRequest.IsDone = true;
-                CurrentRequest.Responce = bytes;
-                ProcessQueue();
-            }
         }
 
         public static void hexlike(byte[] buf , int size)
@@ -694,11 +767,15 @@ namespace Zlo
 
         private void BF3_Pipe_Loop()
         {
-            while (!BF3_Pipe.IsConnected)
+            while (true)
             {
                 try
                 {
-                    if (NamedPipeExists("venice_snowroller"))
+                    if (!IsOn)
+                    {
+                        return;
+                    }
+                    if (!BF3_Pipe.IsConnected && NamedPipeExists("venice_snowroller"))
                     {
                         BF3_Pipe.Connect();
                     }
@@ -707,6 +784,10 @@ namespace Zlo
                     while (BF3_Pipe.IsConnected)
                     {
 
+                        if (!IsOn)
+                        {
+                            return;
+                        }
                         byte[] buffer = new byte[1024];
                         int read = BF3_Pipe.Read(buffer , 0 , buffer.Length);
                         if (read != 0)
@@ -726,11 +807,15 @@ namespace Zlo
         }
         private void BF4_Pipe_Loop()
         {
-            while (!BF4_Pipe.IsConnected)
+            while (true)
             {
                 try
                 {
-                    if (NamedPipeExists("warsaw_snowroller"))
+                    if (!IsOn)
+                    {
+                        return;
+                    }
+                    if (!BF4_Pipe.IsConnected && NamedPipeExists("warsaw_snowroller"))
                     {
                         BF4_Pipe.Connect();
                     }
@@ -741,6 +826,10 @@ namespace Zlo
 
                     while (BF4_Pipe.IsConnected)
                     {
+                        if (!IsOn)
+                        {
+                            return;
+                        }
                         byte[] buffer = new byte[1024];
                         int read = BF4_Pipe.Read(buffer , 0 , buffer.Length);
                         if (read != 0)
@@ -761,12 +850,16 @@ namespace Zlo
         }
         private void BFH_Pipe_Loop()
         {
-            while (!BFH_Pipe.IsConnected)
+            while (true)
             {
+                if (!IsOn)
+                {
+                    return;
+                }
                 try
                 {
                     //omaha_snowroller                  
-                    if (NamedPipeExists("omaha_snowroller"))
+                    if (!BFH_Pipe.IsConnected && NamedPipeExists("omaha_snowroller"))
                     {
                         BFH_Pipe.Connect();
                     }
@@ -774,6 +867,10 @@ namespace Zlo
 
                     while (BFH_Pipe.IsConnected)
                     {
+                        if (!IsOn)
+                        {
+                            return;
+                        }
                         byte[] buffer = new byte[1024];
                         int read = BFH_Pipe.Read(buffer , 0 , buffer.Length);
                         if (read != 0)
@@ -814,7 +911,7 @@ namespace Zlo
                 byte secondlen = br.ReadByte();
                 string second = br.ReadCountedString(secondlen + 1);
 
-                GameStateReceived?.Invoke(game , first.Trim() , string.IsNullOrWhiteSpace(second) ? string.Empty : second.Trim().Replace('\0'.ToString() , string.Empty));
+                GameStateReceived?.Invoke(game , first.Trim() , string.IsNullOrWhiteSpace(second) ? string.Empty : Uri.UnescapeDataString(second.Trim().Replace('\0'.ToString() , string.Empty)));
                 return true;
             }
         }
@@ -826,6 +923,7 @@ namespace Zlo
             final.Add((byte)request);
             uint size = 0;
             var req = new Request();
+
             switch (request)
             {
                 case ZloRequest.Ping:
@@ -858,52 +956,79 @@ namespace Zlo
 
             req.data = final.ToArray();
             req.pid = (byte)request;
-            RequestQueue.Add(req);
-            ProcessQueue();
-        }
-        Request CurrentRequest = null;
-        bool IsProcessing = false;
-        private void ProcessQueue()
-        {
-            if (IsProcessing && (CurrentRequest == null || (CurrentRequest.IsRespondable == true && CurrentRequest.IsDone == false))) return;
-
-            if (RequestQueue.Count == 0) return;
-            else
+            if (req.IsRespondable)
             {
-                IsProcessing = true;
-                //check the first un-done request and process it
-                for (int i = 0; i < RequestQueue.Count; i++)
+                req.ReceivedResponce -= Req_ReceivedResponce;
+                req.ReceivedResponce += Req_ReceivedResponce;
+            }
+            RequestQueue.Add(req);
+        }
+
+        private void Req_ReceivedResponce(Request Sender)
+        {
+            IsProcessing = false;
+            Sender.ReceivedResponce -= Req_ReceivedResponce;
+        }
+
+        Request CurrentRequest = null;
+
+        bool IsProcessing = false;
+
+        Thread QueueThread;
+        public void ProcessQueueLoop()
+        {
+            while (true)
+            {
+                if (!IsOn)
                 {
-                    var req = RequestQueue[i];
-                    if (req.IsDone)
+                    return;
+                }
+                while (!IsProcessing && RequestQueue.Count > 0 && IsConnectedToZCLient)
+                {
+                    IsProcessing = true;
+                    for (int i = 0; i < RequestQueue.Count; i++)
                     {
-                        RequestQueue.Remove(req);
-                        i -= 1;
-                        continue;
+                        var req = RequestQueue[i];
+                        if (req.IsDone)
+                        {
+                            RequestQueue.Remove(req);
+                            i -= 1;
+                            continue;
+                        }
+                        else
+                        {
+                            CurrentRequest = req;
+                            if (!ListenerClient.WritePacket(req.data))
+                            {
+                                req.GiveResponce(null);
+                            }
+                            if (!CurrentRequest.IsRespondable)
+                            {
+                                req.GiveResponce(null);
+                            }
+                            break;
+                        }
+                    }
+                    Thread.Sleep(50);
+                    if (!CurrentRequest.IsRespondable)
+                    {
+                        IsProcessing = false;
                     }
                     else
                     {
-                        CurrentRequest = req;
-                        if (!ListenerClient.WritePacket(req.data))
+                        if (!CurrentRequest.IsDone)
                         {
-                            req.GiveResponce(null);
+                            IsProcessing = true;
                         }
-                        if (!CurrentRequest.IsRespondable)
+                        else
                         {
-                            req.GiveResponce(null);
+                            IsProcessing = false;
                         }
-                        break;
                     }
                 }
-                Thread.Sleep(50);
-                if (!CurrentRequest.IsRespondable)
-                {
-                    IsProcessing = false;
-                    if (RequestQueue.Count > 0) ProcessQueue();
-                }
+                Thread.Sleep(500);
             }
         }
-
 
         //todo
         /// <summary>
@@ -996,6 +1121,7 @@ namespace Zlo
         }
         #endregion
 
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
 }
