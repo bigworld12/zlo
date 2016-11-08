@@ -25,7 +25,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationRevision>4</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -84,13 +84,16 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helpers.cs" />
-    <Compile Include="Servers\BF3_Server.cs" />
-    <Compile Include="Servers\BF4_Server.cs" />
+    <Compile Include="Servers\BF3_GUI_Server.cs" />
+    <Compile Include="Servers\BF4_GUI_Server.cs" />
     <Compile Include="Views\BF3View.xaml.cs">
       <DependentUpon>BF3View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GameStateViewer.xaml.cs">
       <DependentUpon>GameStateViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InputBox.xaml.cs">
+      <DependentUpon>InputBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ListViews\BF4ServerListView.xaml.cs">
       <DependentUpon>BF4ServerListView.xaml</DependentUpon>
@@ -118,6 +121,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GameStateViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InputBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -41,18 +41,20 @@ namespace ZloGUILauncher
         }
 
         private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
-        {            
+        {
             if (IsNeedUpdate)
             {
-                MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll");
-                string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Zlo.dll");
-                string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
+                Dispatcher.Invoke(() => {
+                    MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll","Update Notification", MessageBoxButton.OK);
+                    string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
+                    string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
 
-                using (WebClient wc = new WebClient())
-                {                    
-                    wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                    wc.DownloadFileAsync(new Uri(DownloadAdress) , Newdll);
-                }
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
+                        wc.DownloadFileAsync(new Uri(DownloadAdress) , Newdll);
+                    }
+                });
             }
         }
 
@@ -136,12 +138,12 @@ Exit
 
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
-            Console.WriteLine($"Exception Occured,Message : ({CustomMessage})\n{Error.ToString()}");
+            MessageBox.Show($"{Error.ToString()}", CustomMessage);            
         }
 
         private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
         {
             App.GameStateViewer.Show();
-        }
+        }    
     }
 }

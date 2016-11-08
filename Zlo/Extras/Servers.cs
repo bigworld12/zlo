@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using static Zlo.Extentions.Helpers;
 namespace Zlo.Extras
 {
@@ -11,7 +13,7 @@ namespace Zlo.Extras
     #region Server Bases
     public interface IServerBase
     {
-        uint ServerID { get; set; }
+        uint ServerID { get; }
         uint EXIP { get; set; }
         ushort EXPORT { get; set; }
         uint INIP { get; set; }
@@ -40,12 +42,25 @@ namespace Zlo.Extras
     {
         public ServerBase(uint id)
         {
-            Players = new PlayerListBase();
-            ServerID = id;
+            m_ServerID = id;
         }
 
         #region Props
-        public uint ServerID { get; set; }
+        private uint m_ServerID;
+
+        public uint ServerID
+        {
+            get { return m_ServerID; }
+        }
+
+        private bool m_IsPWProtected;
+        public bool IsPasswordProtected
+        {
+            get
+            {
+                return m_IsPWProtected;
+            }
+        }
 
         /// <summary>
         /// Actual server ip
@@ -112,15 +127,44 @@ namespace Zlo.Extras
 
         public PlayerListBase Players
         {
-            get {
+            get
+            {
                 if (m_Players == null)
                 {
                     m_Players = new PlayerListBase();
+                    BindingOperations.EnableCollectionSynchronization(m_Players , new object());
                 }
-                return m_Players; } 
-            set { m_Players = value; }           
+                return m_Players;
+            }
         }
-      
+
+        private Dictionary<string , string> m_ATTRS_Settings;
+        public Dictionary<string , string> ATTRS_Settings
+        {
+            get
+            {
+                if (m_ATTRS_Settings == null)
+                {
+                    m_ATTRS_Settings = new Dictionary<string , string>();
+                }
+                return m_ATTRS_Settings;
+            }
+        }
+
+
+        private MapRotation m_ATTRS_MapRotation;
+        public MapRotation ATTRS_MapRotation
+        {
+            get
+            {
+                if (m_ATTRS_MapRotation == null)
+                {
+                    m_ATTRS_MapRotation = new MapRotation();
+                }
+                return m_ATTRS_MapRotation;
+            }
+        }
+
 
         #endregion
         public void Parse(byte[] serverbuffer)
@@ -143,6 +187,7 @@ namespace Zlo.Extras
                     ATTRS.Add(key , value);
                 }
 
+
                 GNAM = br.ReadZString();
                 GSET = br.ReadZUInt32();
                 GSTA = br.ReadByte();
@@ -161,8 +206,81 @@ namespace Zlo.Extras
                 VOIP = br.ReadByte();
                 VSTR = br.ReadZString();
             }
+            FixAttrs();
+
         }
 
+        char[] numbs = new char[]
+            { '0' , '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' };
+        private void FixAttrs()
+        {
+            ATTRS_Settings.Clear();
+            List<string> KeysToRemove = new List<string>();
+            for (int i = 0; i < ATTRS.Count; i++)
+            {
+                string key = ATTRS.Keys.ElementAt(i);
+                if (KeysToRemove.Contains(key))
+                {
+                    continue;
+                }
+                string value = ATTRS[key];
+                if (key.IndexOfAny(numbs) > -1)
+                {
+                    //it contains a number
+                    //remove the number and call it CleanKey
+                    string cleankey = new string(key.Where(x => !numbs.Contains(x)).ToArray());
+
+                    var allkeys = ATTRS.Keys.Where(x => new string(x.Where(z => !numbs.Contains(z)).ToArray()) == cleankey).OrderBy(q => q).ToList();
+                    var allvalues = new List<string>();
+                    foreach (var item in allkeys)
+                    {
+                        allvalues.Add(ATTRS[item]);
+                    }
+                    string finalvalues = string.Join(string.Empty , allvalues);
+                    ATTRS.Add(cleankey , finalvalues);
+                    KeysToRemove.AddRange(allkeys);
+                }
+            }
+
+            foreach (var item in KeysToRemove)
+            {
+                ATTRS.Remove(item);
+            }
+            if (ATTRS.ContainsKey("settings"))
+            {
+                var pairset = ATTRS["settings"].Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
+                foreach (var item in pairset)
+                {
+                    var splitpair = item.Split('=');
+                    ATTRS_Settings.Add(splitpair[0] , splitpair[1]);
+                }
+                ATTRS.Remove("settings");
+            }
+
+            if (ATTRS_Settings.ContainsKey("vmsp"))
+            {
+                if (ATTRS.ContainsKey("servertype"))
+                {
+                    if (ATTRS["servertype"] == "PRIVATE")
+                    {
+                        m_IsPWProtected = bool.Parse(ATTRS_Settings["vmsp"]);
+                    }
+                    else
+                    {
+                        m_IsPWProtected = false;
+                    }                               
+                }
+                else
+                {
+                    m_IsPWProtected = bool.Parse(ATTRS_Settings["vmsp"]);
+                }
+                ATTRS_Settings.Remove("vmsp");
+            }
+            else
+            {
+                m_IsPWProtected = false;
+            }
+        }
         public void Parse(BinaryReader br)
         {
             if (br == null)
@@ -202,14 +320,10 @@ namespace Zlo.Extras
             VOIP = br.ReadByte();
             VSTR = br.ReadZString();
 
+            FixAttrs();
         }
         public void ParsePlayers(byte[] playersbuffer)
         {
-
-            if (Players == null)
-            {
-                Players = new PlayerListBase();
-            }
             if (playersbuffer.Length < 2)
             {
                 return;
@@ -243,6 +357,37 @@ namespace Zlo.Extras
 
                 PCAP = br.ReadByte();
                 TCAP = br.ReadZUInt32();
+            }
+
+            if (ATTRS.ContainsKey("maps") && ATTRS.ContainsKey("mapsinfo"))
+            {
+                ATTRS_MapRotation.Parse(ATTRS["mapsinfo"] , ATTRS["maps"] , ZloGame.BF_3);
+                ATTRS.Remove("maps");
+                ATTRS.Remove("mapsinfo");
+            }
+            if (ATTRS.ContainsKey("level"))
+            {
+                if (Dictionaries.BF3_Maps.ContainsKey(ATTRS["level"]))
+                {
+                    ATTRS_MapRotation.CurrentActualMap.MapName = Dictionaries.BF3_Maps[ATTRS["level"]];
+                }
+                else
+                {
+                    ATTRS_MapRotation.CurrentActualMap.MapName = ATTRS["level"];
+                }
+                ATTRS.Remove("level");
+            }
+            if (ATTRS.ContainsKey("mode"))
+            {
+                if (Dictionaries.BF3_GameModes.ContainsKey(ATTRS["mode"]))
+                {
+                    ATTRS_MapRotation.CurrentActualMap.GameModeName = Dictionaries.BF3_Maps[ATTRS["mode"]];
+                }
+                else
+                {
+                    ATTRS_MapRotation.CurrentActualMap.GameModeName = ATTRS["mode"];
+                }
+                ATTRS.Remove("mode");
             }
         }
     }
@@ -342,12 +487,46 @@ namespace Zlo.Extras
 
                     SCID = br.ReadZString();
                 }
+                /*
+                  Map       raw.ATTRS?["level"]
+                  GameMode  raw.ATTRS?["levellocation"]*/
+                if (ATTRS.ContainsKey("maps") && ATTRS.ContainsKey("mapsinfo"))
+                {
+                    ATTRS_MapRotation.Parse(ATTRS["mapsinfo"] , ATTRS["maps"] , ZloGame.BF_4);
+                    ATTRS.Remove("maps");
+                    ATTRS.Remove("mapsinfo");
+                }
+
+                if (ATTRS.ContainsKey("level"))
+                {
+                    if (Dictionaries.BF4_Maps.ContainsKey(ATTRS["level"]))
+                    {
+                        ATTRS_MapRotation.CurrentActualMap.MapName = Dictionaries.BF4_Maps[ATTRS["level"]];
+                    }
+                    else
+                    {
+                        ATTRS_MapRotation.CurrentActualMap.MapName = ATTRS["level"];
+                    }
+                    ATTRS.Remove("level");
+                }
+
+                if (ATTRS.ContainsKey("levellocation"))
+                {
+                    if (Dictionaries.BF4_GameModes.ContainsKey(ATTRS["levellocation"]))
+                    {
+                        ATTRS_MapRotation.CurrentActualMap.GameModeName = Dictionaries.BF4_GameModes[ATTRS["levellocation"]];
+                    }
+                    else
+                    {
+                        ATTRS_MapRotation.CurrentActualMap.GameModeName = ATTRS["levellocation"];
+                    }
+                    ATTRS.Remove("levellocation");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
-
         }
     }
     public class BFHServerBase : BF4ServerBase
@@ -356,6 +535,7 @@ namespace Zlo.Extras
         {
         }
     }
+
     #endregion
 
     #region Player Bases
@@ -366,8 +546,10 @@ namespace Zlo.Extras
         string Name { get; set; }
     }
 
-    public class PlayerListBase : List<PlayerBase>
+    public class PlayerListBase : List<PlayerBase>, INotifyCollectionChanged
     {
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
         public PlayerBase GetPlayer(uint id)
         {
             return Find(x => x.ID == id);
@@ -388,6 +570,7 @@ namespace Zlo.Extras
                     Add(p);
                 }
             }
+            CollectionChanged?.Invoke(this , new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
     public class PlayerBase : IPlayerBase
@@ -395,6 +578,316 @@ namespace Zlo.Extras
         public byte Slot { get; set; }
         public uint ID { get; set; }
         public string Name { get; set; }
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+    #endregion
+
+    #region ServersList
+    public class BF3ServersList : List<BF3ServerBase>
+    {
+        public BF3ServersList(ZloClient client)
+        {
+            _client = client;
+        }
+
+        public event BF3ServerEventHandler ServerAdded;
+        public event BF3ServerEventHandler ServerUpdated;
+        public event BF3ServerEventHandler ServerRemoved;
+
+        private ZloClient _client;
+
+        public new void Add(BF3ServerBase server)
+        {
+            if (Contains(server) || this.Any(x => x.ServerID == server.ServerID))
+            {
+                return;
+            }
+            else
+            {
+                SafeAdd(server);
+            }
+        }
+        public new void Remove(BF3ServerBase server)
+        {
+            if (server != null)
+            {
+                base.Remove(server);
+                ServerRemoved?.Invoke(server.ServerID , server);
+            }
+        }
+
+        public void Remove(uint ServerID)
+        {
+            var serv = Find(ServerID);
+            if (serv != null)
+            {
+                //remove it
+                base.Remove(serv);
+                ServerRemoved?.Invoke(ServerID , serv);
+            }
+        }
+        public void SafeAdd(BF3ServerBase server)
+        {
+            base.Add(server);
+            ServerAdded?.Invoke(server.ServerID , server);
+        }
+
+        public void UpdateServerInfo(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BF3ServerBase(ServerID);
+                serv.Parse(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.Parse(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public void UpdateServerPlayers(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BF3ServerBase(ServerID);
+                serv.ParsePlayers(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.ParsePlayers(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public BF3ServerBase Find(uint ServerID)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                var elem = this[i];
+                if (elem.ServerID == ServerID)
+                {
+                    return elem;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return null;
+        }
+    }
+
+    public class BF4ServersList : List<BF4ServerBase>
+    {
+        public BF4ServersList(ZloClient client)
+        {
+            _client = client;
+        }
+
+        public event BF4ServerEventHandler ServerAdded;
+        public event BF4ServerEventHandler ServerUpdated;
+        public event BF4ServerEventHandler ServerRemoved;
+
+        private ZloClient _client;
+
+        public new void Add(BF4ServerBase server)
+        {
+            if (Contains(server) || this.Any(x => x.ServerID == server.ServerID))
+            {
+                return;
+            }
+            else
+            {
+                SafeAdd(server);
+            }
+        }
+        public new void Remove(BF4ServerBase server)
+        {
+            if (server != null)
+            {
+                base.Remove(server);
+                ServerRemoved?.Invoke(server.ServerID , server);
+            }
+        }
+
+        public void Remove(uint ServerID)
+        {
+            var serv = Find(ServerID);
+            if (serv != null)
+            {
+                //remove it
+                base.Remove(serv);
+                ServerRemoved?.Invoke(ServerID , serv);
+            }
+        }
+        public void SafeAdd(BF4ServerBase server)
+        {
+            base.Add(server);
+            ServerAdded?.Invoke(server.ServerID , server);
+        }
+
+        public void UpdateServerInfo(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BF4ServerBase(ServerID);
+                serv.Parse(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.Parse(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public void UpdateServerPlayers(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BF4ServerBase(ServerID);
+                serv.ParsePlayers(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.ParsePlayers(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public BF4ServerBase Find(uint ServerID)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                var elem = this[i];
+                if (elem.ServerID == ServerID)
+                {
+                    return elem;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return null;
+        }
+    }
+
+
+    public class BFHServersList : List<BFHServerBase>
+    {
+        public BFHServersList(ZloClient client)
+        {
+            _client = client;
+        }
+
+        public event BFHServerEventHandler ServerAdded;
+        public event BFHServerEventHandler ServerUpdated;
+        public event BFHServerEventHandler ServerRemoved;
+
+        private ZloClient _client;
+
+        public new void Add(BFHServerBase server)
+        {
+            if (Contains(server) || this.Any(x => x.ServerID == server.ServerID))
+            {
+                return;
+            }
+            else
+            {
+                SafeAdd(server);
+            }
+        }
+        public new void Remove(BFHServerBase server)
+        {
+            if (server != null)
+            {
+                base.Remove(server);
+                ServerRemoved?.Invoke(server.ServerID , server);
+            }
+        }
+
+        public void Remove(uint ServerID)
+        {
+            var serv = Find(ServerID);
+            if (serv != null)
+            {
+                //remove it
+                base.Remove(serv);
+                ServerRemoved?.Invoke(ServerID , serv);
+            }
+        }
+        public void SafeAdd(BFHServerBase server)
+        {
+            base.Add(server);
+            ServerAdded?.Invoke(server.ServerID , server);
+        }
+
+        public void UpdateServerInfo(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BFHServerBase(ServerID);
+                serv.Parse(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.Parse(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public void UpdateServerPlayers(uint ServerID , byte[] info)
+        {
+            var serv = Find(ServerID);
+            if (serv == null)
+            {
+                //server doesn't exist,create a new one
+                serv = new BFHServerBase(ServerID);
+                serv.ParsePlayers(info);
+                Add(serv);
+            }
+            else
+            {
+                //server exists
+                serv.ParsePlayers(info);
+                ServerUpdated?.Invoke(ServerID , serv);
+            }
+        }
+        public BFHServerBase Find(uint ServerID)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                var elem = this[i];
+                if (elem.ServerID == ServerID)
+                {
+                    return elem;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return null;
+        }
     }
     #endregion
 }

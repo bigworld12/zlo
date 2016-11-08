@@ -24,7 +24,7 @@
             <TabControl>
                 <TabItem Header="Server List">
                     <Grid>
-                        <local:BF4ServerListView />
+                        <local:BF4ServerListView/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Stats">
@@ -65,8 +65,15 @@
                                   SelectionMode="Single"
                                   SelectionUnit="FullRow"
                                   IsSynchronizedWithCurrentItem="True" 
-                                  IsTextSearchEnabled="True" AutoGenerateColumns="True" 
-                                  IsReadOnly="True"/>
+                                  IsTextSearchEnabled="True" AutoGenerateColumns="False" 
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Flag Name" Binding="{Binding Path=FlagName}"/>
+                                <DataGridTextColumn Header="Item Name" Binding="{Binding Path=ItemName}"/>
+                                <DataGridCheckBoxColumn Header="Item Acquired" Binding="{Binding Path=ItemExists}"/>
+                                <DataGridTextColumn Header="Item Description" Binding="{Binding Path=ItemDescription}"/>                                
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </Grid>
                 </TabItem>
             </TabControl>

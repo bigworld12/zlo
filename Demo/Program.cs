@@ -123,15 +123,6 @@ namespace Demo
             Client.ItemsReceived += Client_ItemsReceived;
             Client.GameStateReceived += Client_GameStateReceived;
 
-            Client.BF3ServerAdded += Client_BF3ServerAdded;
-            Client.BF4ServerAdded += Client_BF4ServerAdded;
-            Client.BFHServerAdded += Client_BFHServerAdded;
-
-            Client.BF3ServerUpdated += Client_BF3ServerUpdated;
-            Client.BF4ServerUpdated += Client_BF4ServerUpdated;
-            Client.BFHServerUpdated += Client_BFHServerUpdated;
-
-            Client.ServerRemoved += Client_ServerRemoved;
             //Client.SendRequest(ZloRequest.User_Info);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_3);
             //Client.SendRequest(ZloRequest.Stats , ZloGame.BF_4);

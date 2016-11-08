@@ -11,6 +11,8 @@
     <AssemblyName>Zlo</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -41,15 +48,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extras\Delegates.cs" />
+    <Compile Include="Extras\Dictionaries.cs" />
     <Compile Include="Extras\Enums.cs" />
     <Compile Include="Extras\Item.cs" />
+    <Compile Include="Extras\Map.cs" />
     <Compile Include="Extras\Request.cs" />
     <Compile Include="Extras\Servers.cs" />
     <Compile Include="Extras\Stat.cs" />
+    <Compile Include="GamesData\GameData.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="ZloClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ZloTCPClient.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dlls\Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

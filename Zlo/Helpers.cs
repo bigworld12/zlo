@@ -88,7 +88,6 @@ namespace Zlo.Extentions
             {
                 Console.WriteLine(ex.ToString());
                 return s.ToString();
-
             }
         }
         public static string ReadCountedString(this BinaryReader br , int count)

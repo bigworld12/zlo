@@ -13,17 +13,20 @@ using System.Timers;
 using Zlo.Extras;
 using System.IO.Pipes;
 using System.ComponentModel;
-
+using System.Reflection;
 
 namespace Zlo
 {
     public class ZloClient : INotifyPropertyChanged
     {
-        private Version _localVer = new Version(2 , 0 , 0 , 0);
+        private Version _localVer = new Version(3 , 0 , 0 , 0);
 
 
         public ZloClient()
         {
+       
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+           
             try
             {
                 QueueThread = new Thread(ProcessQueueLoop);
@@ -32,10 +35,6 @@ namespace Zlo
 
                 Disconnected -= ZloClient_Disconnected;
                 Disconnected += ZloClient_Disconnected;
-
-                BF3Servers = new List<BF3ServerBase>();
-                BF4Servers = new List<BF4ServerBase>();
-                BFHServers = new List<BFHServerBase>();
 
                 m_client = new ZloTCPClient(this);
                 PingTimer = new System.Timers.Timer(20 * 1000);
@@ -69,6 +68,8 @@ namespace Zlo
             }
         }
 
+     
+
         private void ZloClient_Disconnected(DisconnectionReasons Reason)
         {
             PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
@@ -76,8 +77,7 @@ namespace Zlo
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
         {
-            PlayerID = UserID;
-            UserInfoReceived -= ZloClient_UserInfoReceived;
+            PlayerID = UserID;          
         }
 
         #region Properties
@@ -126,36 +126,8 @@ namespace Zlo
         private List<Request> RequestQueue = new List<Request>();
         #endregion
 
-        #region Delegates
-
-        public delegate void StatsReceivedEventHandler(ZloGame Game , List<Stat> List);
-        public delegate void ItemsReceivedEventHandler(ZloGame Game , List<Item> List);
-        public delegate void UserInfoReceivedEventHandler(uint UserID , string UserName);
-        public delegate void ErrorOccuredEventHandler(Exception Error , string CustomMessage);
-        public delegate void DisconnectedEventHandler(DisconnectionReasons Reason);
-        public delegate void GameStateReceivedEventHandler(ZloGame game , string type , string message);
-
-
-        public delegate void BF3ServerEventHandler(uint id , BF3ServerBase server , bool IsPlayerChangeOnly);
-        public delegate void BF4ServerEventHandler(uint id , BF4ServerBase server , bool IsPlayerChangeOnly);
-        public delegate void BFHServerEventHandler(uint id , BFHServerBase server , bool IsPlayerChangeOnly);
-
-        public delegate void ServerRemovedEventHandler(ZloGame game , uint id , IServerBase server);
-
-        public delegate void APIVersionReceivedEventHandler(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress);
-        #endregion
 
         #region API events
-        public event BF3ServerEventHandler BF3ServerAdded;
-        public event BF4ServerEventHandler BF4ServerAdded;
-        public event BFHServerEventHandler BFHServerAdded;
-
-        public event BF3ServerEventHandler BF3ServerUpdated;
-        public event BF4ServerEventHandler BF4ServerUpdated;
-        public event BFHServerEventHandler BFHServerUpdated;
-
-        public event ServerRemovedEventHandler ServerRemoved;
-
         /// <summary>
         /// Gets triggered after receiving user stats and passes the game and a list of stats
         /// </summary>    
@@ -192,48 +164,49 @@ namespace Zlo
         #region API Methods
         public bool Connect()
         {
-            try
-            {
-                //check for the version here
-                //download address https://bigworld12.tk/ZloFiles/Zlo.dll
-                //check address https://bigworld12.tk/ZloFiles/version.txt
-
-                string down = @"https://bigworld12.tk/ZloFiles/Zlo.dll";
-                string check = @"https://bigworld12.tk/ZloFiles/version.txt";
-                using (WebClient wc = new WebClient())
+            Task.Run(() => {
+                try
                 {
-                    string ver = wc.DownloadString(check);
-                    Version newver;
-                    if (!Version.TryParse(ver , out newver))
+                    //check for the version here
+                    //download address https://bigworld12.tk/ZloFiles/Zlo.dll
+                    //check address https://bigworld12.tk/ZloFiles/version.txt
+
+                    string down = @"http://bigworld12.tk/ZloFiles/Zlo.dll";
+                    string check = @"http://bigworld12.tk/ZloFiles/version.txt";
+
+                    using (WebClient wc = new WebClient())
                     {
-                        newver = _localVer;
-                    }
-                    bool isne = newver > _localVer;
-                    if (isne)
-                    {
-                        APIVersionReceived?.Invoke(_localVer , newver , true , down);
-                    }
-                    else
-                    {
-                        APIVersionReceived?.Invoke(_localVer , newver , false , string.Empty);
+                        string ver = wc.DownloadString(check);
+                        Version newver;
+                        if (!Version.TryParse(ver , out newver))
+                        {
+                            newver = _localVer;
+                        }
+                        bool isne = newver > _localVer;
+                        if (isne)
+                        {
+                            APIVersionReceived?.Invoke(_localVer , newver , true , down);
+                        }
+                        else
+                        {
+                            APIVersionReceived?.Invoke(_localVer , newver , false , string.Empty);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ErrorOccured?.Invoke(ex , "Error when Checking updates");
-            }
+                catch (Exception ex)
+                {
+                    ErrorOccured?.Invoke(ex , "Error when Checking updates");
+                }
+            });
+         
 
             try
             {
                 IsOn = true;
 
                 BF3_Pipe_Listener.Start();
-
                 BF4_Pipe_Listener.Start();
-
                 BFH_Pipe_Listener.Start();
-
 
                 ListenerClient.Connect();
                 QueueThread.Start();
@@ -334,7 +307,39 @@ namespace Zlo
                 Process.Start(rungame);
             }
         }
-
+        public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode , uint serverid,string password)
+        {
+            string rungame = string.Empty;
+            switch (playmode)
+            {
+                case OnlinePlayModes.BF3_Multi_Player:
+                    rungame = GetGameJoinID(ZloGame.BF_3 , PlayerID , serverid , 1 , password);
+                    break;            
+                case OnlinePlayModes.BF4_Multi_Player:
+                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 1 , password);
+                    break;
+                case OnlinePlayModes.BF4_Spectator:
+                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid ,3, password);
+                    break;
+                case OnlinePlayModes.BF4_Commander:
+                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 2 , password);
+                    break;
+                default:
+                    return;
+            }
+            if (string.IsNullOrWhiteSpace(rungame))
+            {
+                return;
+            }
+            else
+            {
+                Process.Start(rungame);
+            }
+        }
+        /// <summary>
+        /// this method is automatically called by the api each sucessfull connect,
+        /// so you don't need to call it , just listen to the UserInfoReceived event
+        /// </summary>
         public void GetUserInfo()
         {
             SendRequest(ZloRequest.User_Info);
@@ -400,9 +405,46 @@ namespace Zlo
         #endregion
 
         #region API Properties
-        public List<BF3ServerBase> BF3Servers { get; set; }
-        public List<BF4ServerBase> BF4Servers { get; set; }
-        public List<BFHServerBase> BFHServers { get; set; }
+        private BF3ServersList m_BF3Servers;
+        public BF3ServersList BF3Servers
+        {
+            get
+            {
+                if (m_BF3Servers == null)
+                {
+                    m_BF3Servers = new BF3ServersList(this);
+                }
+                return m_BF3Servers;
+            }
+        }
+
+        private BF4ServersList m_BF4Servers;
+        public BF4ServersList BF4Servers
+        {
+            get
+            {
+                if (m_BF4Servers == null)
+                {
+                    m_BF4Servers = new BF4ServersList(this);
+                }
+                return m_BF4Servers;
+            }
+        }
+
+        private BFHServersList m_BFHServers;
+        public BFHServersList BFHServers
+        {
+            get
+            {
+                if (m_BFHServers == null)
+                {
+                    m_BFHServers = new BFHServersList(this);
+                }
+                return m_BFHServers;
+            }
+        }
+
+
 
 
         public bool IsConnectedToZCLient
@@ -484,8 +526,6 @@ namespace Zlo
                                 {
                                     try
                                     {
-                                        #region Server list packet
-
                                         /*(byte) 0 - server, 1 - players, 2 - server removed
                                          *(byte) game
                                          *(uint32) server id
@@ -498,161 +538,53 @@ namespace Zlo
                                         {
                                             return;
                                         }
+                                        var actualbuffer = bytes_list.Skip(6).ToArray();
                                         switch (game)
                                         {
                                             case ZloGame.BF_3:
-                                                if (BF3Servers.Any(x => x.ServerID == server_id))
+                                                switch (server_event_id)
                                                 {
-                                                    //get the server
-                                                    var server = BF3Servers.FirstOrDefault(x => x.ServerID == server_id);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BF3ServerUpdated?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BF3ServerUpdated?.Invoke(server_id , server , true);
-                                                    }
-                                                    else
-                                                    {
-                                                        // 2
-                                                        //remove the server
-                                                        BF3Servers.Remove(server);
-                                                        ServerRemoved?.Invoke(game , server_id , server);
-                                                    }
-                                                    //inform the user
-                                                }
-                                                else
-                                                {
-                                                    if (server_event_id != 2)
-                                                    {
-                                                        //create a new one
-                                                        var server = new BF3ServerBase(server_id);
-                                                        BF3Servers.Add(server);
-                                                        if (server_event_id == 0)
-                                                        {
-                                                            server.Parse(bytes_list.Skip(6).ToArray());
-                                                            BF3ServerAdded?.Invoke(server_id , server , false);
-                                                        }
-                                                        else if (server_event_id == 1)
-                                                        {
-                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                            BF3ServerAdded?.Invoke(server_id , server , true);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //remove the already removed server
-                                                        ServerRemoved?.Invoke(game , server_id , null);
-                                                    }
+                                                    case 0:
+                                                        BF3Servers.UpdateServerInfo(server_id , actualbuffer);
+                                                        break;
+                                                    case 1:
+                                                        BF3Servers.UpdateServerPlayers(server_id , actualbuffer);
+                                                        break;
+                                                    case 2:
+                                                        BF3Servers.Remove(server_id);
+                                                        break;
                                                 }
                                                 break;
                                             case ZloGame.BF_4:
                                                 //players : 01, bf4 : 01,server id : 00 00 00 01 ,buffer : 00 
-                                                if (BF4Servers.Any(x => x.ServerID == server_id))
+                                                switch (server_event_id)
                                                 {
-                                                    //get the server
-                                                    var server = BF4Servers.FirstOrDefault(x => x.ServerID == server_id);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BF4ServerUpdated?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BF4ServerUpdated?.Invoke(server_id , server , true);
-                                                    }
-                                                    else
-                                                    {
-                                                        // 2
-                                                        //remove the server
-                                                        BF4Servers.Remove(server);
-                                                        ServerRemoved?.Invoke(game , server_id , server);
-                                                    }
-                                                    //inform the user
-                                                }
-                                                else
-                                                {
-                                                    if (server_event_id != 2)
-                                                    {
-                                                        //create a new one
-                                                        var server = new BF4ServerBase(server_id);
-                                                        BF4Servers.Add(server);
-                                                        if (server_event_id == 0)
-                                                        {
-                                                            server.Parse(bytes_list.Skip(6).ToArray());
-                                                            BF4ServerAdded?.Invoke(server_id , server , false);
-                                                        }
-                                                        else if (server_event_id == 1)
-                                                        {
-                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                            BF4ServerAdded?.Invoke(server_id , server , true);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //remove the already removed server
-                                                        ServerRemoved?.Invoke(game , server_id , null);
-                                                    }
+                                                    case 0:
+                                                        BF4Servers.UpdateServerInfo(server_id , actualbuffer);
+                                                        break;
+                                                    case 1:
+                                                        BF4Servers.UpdateServerPlayers(server_id , actualbuffer);
+                                                        break;
+                                                    case 2:
+                                                        BF4Servers.Remove(server_id);
+                                                        break;
                                                 }
                                                 break;
                                             case ZloGame.BF_HardLine:
-                                                if (BFHServers.Any(x => x.ServerID == server_id))
+                                                switch (server_event_id)
                                                 {
-                                                    //get the server
-                                                    var server = BFHServers.Find(x => x.ServerID == server_id);
-                                                    if (server_event_id == 0)
-                                                    {
-                                                        server.Parse(bytes_list.Skip(6).ToArray());
-                                                        BFHServerUpdated?.Invoke(server_id , server , false);
-                                                    }
-                                                    else if (server_event_id == 1)
-                                                    {
-                                                        server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                        BFHServerUpdated?.Invoke(server_id , server , true);
-                                                    }
-                                                    else
-                                                    {
-                                                        // 2
-                                                        //remove the server
-                                                        BFHServers.Remove(server);
-                                                        ServerRemoved?.Invoke(game , server_id , server);
-                                                    }
-                                                    //inform the user
+                                                    case 0:
+                                                        BFHServers.UpdateServerInfo(server_id , actualbuffer);
+                                                        break;
+                                                    case 1:
+                                                        BFHServers.UpdateServerPlayers(server_id , actualbuffer);
+                                                        break;
+                                                    case 2:
+                                                        BFHServers.Remove(server_id);
+                                                        break;
                                                 }
-                                                else
-                                                {
-                                                    if (server_event_id != 2)
-                                                    {
-                                                        //create a new one
-                                                        var server = new BFHServerBase(server_id);
-                                                        BFHServers.Add(server);
-                                                        if (server_event_id == 0)
-                                                        {
-                                                            server.Parse(bytes_list.Skip(6).ToArray());
-                                                            BFHServerAdded?.Invoke(server_id , server , false);
-                                                        }
-                                                        else if (server_event_id == 1)
-                                                        {
-                                                            server.ParsePlayers(bytes_list.Skip(6).ToArray());
-                                                            BFHServerAdded?.Invoke(server_id , server , true);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        //remove the already removed server
-                                                        ServerRemoved?.Invoke(game , server_id , null);
-                                                    }
-                                                }
-                                                break;
-                                            default:
                                                 break;
                                         }
-
-                                        #endregion
                                     }
                                     catch (Exception ex)
                                     {
@@ -1044,7 +976,7 @@ namespace Zlo
         /// 4 = test range
         /// 5 = co-op</param>
         /// <returns></returns>
-        private string GetGameJoinID(ZloGame game , uint PlayerID , uint ServerID , int playmode)
+        private string GetGameJoinID(ZloGame game , uint PlayerID , uint ServerID , int playmode,string pw = "")
         {
             /*
              play mode : 
@@ -1058,6 +990,7 @@ namespace Zlo
             string title = string.Empty;
             switch (game)
             {
+                //%20password%3D%5C%22{pw}%5C%22%20
                 case ZloGame.BF_3:
                     {
                         title = "Battlefield3";
@@ -1068,9 +1001,15 @@ namespace Zlo
                                 //single
                                 return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                             case 1:
-                                //multi
-                                return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
-
+                                if (pw != "")
+                                {
+                                    return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
+                                }
+                                else
+                                {
+                                    //multi
+                                    return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
+                                }
                             case 5:
                                 //co-op
                                 //currently returns single player
@@ -1091,13 +1030,35 @@ namespace Zlo
                             return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22";
                         case 1:
                             //multi
-                            return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            if (pw != "")
+                            {
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }
+                            else
+                            {
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }                            
                         case 2:
                             //commander
-                            return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            if (pw != "")
+                            {
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }
+                            else
+                            {
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }                            
                         case 3:
                             //spectator
-                            return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            if (pw != "")
+                            {
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }
+                            else
+                            {
+                                
+                                return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
+                            }
                         case 4:
                             //test range
                             return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_LaunchPlayground%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
@@ -1119,6 +1080,58 @@ namespace Zlo
 
             }
         }
+
+        /// <summary>
+        /// use it when loading dlls only
+        /// </summary>
+        /// <param name="executingAssembly"></param>
+        /// <param name="resourceName"></param>
+        /// <returns></returns>
+        private static byte[] LoadResourceBytes(Assembly executingAssembly , string resourceName)
+        {
+            using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
+            {
+                var assemblyData = new byte[stream.Length];
+                stream.Read(assemblyData , 0 , assemblyData.Length);
+                return assemblyData;
+            }
+        }
+        private Assembly CurrentDomain_AssemblyResolve(object sender , ResolveEventArgs args)
+        {
+            try
+            {
+                var name = args.Name;
+                AssemblyName asmName = new AssemblyName(name);
+                if (name.Contains("Retargetable=Yes")) return Assembly.Load(asmName);
+                Assembly executingAssembly = Assembly.GetExecutingAssembly();
+                string[] resourceNames = executingAssembly.GetManifestResourceNames();
+                string resourceToFind = asmName.Name + ".dll";
+                string resourceName = resourceNames.SingleOrDefault(n => n.Contains(resourceToFind));
+
+                if (string.IsNullOrWhiteSpace(resourceName)) { return null; }
+
+                string symbolsToFind = asmName.Name + ".pdb";
+                string symbolsName = resourceNames.SingleOrDefault(n => n.Contains(symbolsToFind));
+
+                byte[] assemblyData = LoadResourceBytes(executingAssembly , resourceName);
+
+                if (string.IsNullOrWhiteSpace(symbolsName))
+                {
+                    return Assembly.Load(assemblyData);
+                }
+                else
+                {
+                    byte[] symbolsData = LoadResourceBytes(executingAssembly , symbolsName);
+                    return Assembly.Load(assemblyData , symbolsData);
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorOccured?.Invoke(ex , "Error Occured when trying to resolve the Json reader dll");
+                return null;
+            }
+        }
+
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;

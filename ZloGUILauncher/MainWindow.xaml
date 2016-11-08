@@ -5,9 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ZloGUILauncher"
         xmlns:Views="clr-namespace:ZloGUILauncher.Views" x:Class="ZloGUILauncher.MainWindow"
-        mc:Ignorable="d"
+        xmlns:helpers="clr-namespace:ZloGUILauncher"    
+    mc:Ignorable="d"
         Title="Bigworld12 new API launcher" Height="385.981" Width="771.963">
-
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style TargetType="{x:Type ScrollViewer}">
+                <Style.Setters>
+                    <Setter Property="helpers:ScrollViewerCorrector.FixScrolling" Value="True" />
+                </Style.Setters>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -28,8 +37,19 @@
                 <TextBlock Text="Player : "/>
                 <TextBlock x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
             </StackPanel>
+           
         </Grid>
         <TabControl Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Battlefield 4"/>
+                </TabItem.Header>
+                <Grid>
+                    <!--BF4-->
+                    <Views:BF4View x:Name="IBF4View"/>
+                </Grid>
+
+            </TabItem>
             <TabItem>
                 <TabItem.Header>
                     <TextBlock Text="Battlefield 3"/>
@@ -39,16 +59,7 @@
                     <Views:BF3View/>
                 </Grid>
             </TabItem>
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Battlefield 4"/>
-                </TabItem.Header>
-                <Grid>
-                    <!--BF4-->
-                    <Views:BF4View/>
-                </Grid>
-
-            </TabItem>
+           
         </TabControl>
         <StatusBar Grid.Row="2">
             <TextBlock VerticalAlignment="Center" Text="Lastest Game State : "/>
