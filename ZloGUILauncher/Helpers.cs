@@ -23,11 +23,15 @@ namespace ZloGUILauncher
             int count = Source.Count;
             for (int i = 0; i < count; i++)
             {
-                var elem = Source[i];                
-                if (predicate(elem))
+                var elem = Source[i];
+                try
                 {
-                    return elem;
+                    if (predicate(elem))
+                    {
+                        return elem;
+                    }
                 }
+                catch { }
             }
             return default(T);
         }
@@ -104,5 +108,5 @@ namespace ZloGUILauncher
                 }
             }
         }
-    } 
+    }
 }

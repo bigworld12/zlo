@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
@@ -11,15 +12,13 @@ using Zlo.Extras;
 
 namespace ZloGUILauncher.Servers
 {
-    public class BF3_GUI_Server : INotifyPropertyChanged
+    public class BF4_GUI_Server : INotifyPropertyChanged
     {
-        public BF3ServerBase raw;
-
-
-
-        public BF3_GUI_Server(BF3ServerBase b)
+        public API_BF4ServerBase raw;
+      
+        public BF4_GUI_Server(API_BF4ServerBase b)
         {
-            raw = b;
+            raw = b;             
         }
         public uint ID
         {
@@ -38,7 +37,7 @@ namespace ZloGUILauncher.Servers
         {
             get
             {
-                return raw.PMAX;
+                return raw.PCAP[0];
             }
         }
 
@@ -69,22 +68,43 @@ namespace ZloGUILauncher.Servers
                 return raw.EXPORT;
             }
         }
-        
-        public PlayerListBase Players
+               
+        public string ServerType
         {
             get
             {
-                return raw.Players;
+                return raw.ATTRS["servertype"];
+            }
+        }
+        
+        private GUI_PlayerList m_Players;
+        public GUI_PlayerList Players
+        {
+            get
+            {
+                if (m_Players == null)
+                {
+                    m_Players = new GUI_PlayerList(raw.Players);
+                }
+                return m_Players;
             }
         }
 
-        public MapRotation Maps
+        private GUI_MapRotation m_Maps;
+        public GUI_MapRotation Maps
         {
             get
             {
-                return raw.ATTRS_MapRotation;
+                if (m_Maps == null)
+                {
+                    m_Maps = new GUI_MapRotation(raw.ATTRS_MapRotation);                    
+                }
+                return m_Maps;
             }
         }
+
+       
+
         public bool IsHasPW
         {
             get
@@ -94,7 +114,7 @@ namespace ZloGUILauncher.Servers
         }
         public bool YesNo(string toconv)
         {
-            if (toconv == "YES")
+            if (toconv== "YES")
             {
                 return true;
             }
@@ -116,7 +136,21 @@ namespace ZloGUILauncher.Servers
                     return false;
                 }
             }
-        }     
+        }
+        public bool IsHasFF
+        {
+            get
+            {
+                if (raw.ATTRS.ContainsKey("fairfight"))
+                {
+                    return YesNo(raw.ATTRS["fairfight"]);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
         public void UpdateAllProps()
         {
             OPC(nameof(ID));
@@ -124,18 +158,24 @@ namespace ZloGUILauncher.Servers
             OPC(nameof(Current_Players));
             OPC(nameof(Max_Players));
             OPC(nameof(IP));
-            OPC(nameof(Port));
-            OPC(nameof(RepPlayers));            
+            OPC(nameof(Port));                  
+            OPC(nameof(RepPlayers));
+            OPC(nameof(ServerType));
             OPC(nameof(Players));
             OPC(nameof(Maps));
             OPC(nameof(IsHasPW));
-            OPC(nameof(IsHasPB));            
-        }
+            OPC(nameof(IsHasPB));
+            OPC(nameof(IsHasFF));
 
+            Maps.Update();
+            Players.Update();
+        }
         public void OPC(string prop)
         {
             PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(prop));
         }
         public event PropertyChangedEventHandler PropertyChanged;
     }
+
+    
 }

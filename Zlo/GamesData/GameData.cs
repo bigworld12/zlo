@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Zlo
 {
-    public static class GameData
+    internal static class GameData
     {
         public static string LoadResourcedFile(string file_name)
         {            

@@ -14,10 +14,10 @@
     </UserControl.Resources>
     <Grid Background="White">
         <DataGrid x:Name="ServersDG" ItemsSource="{Binding Source={StaticResource ServersView}}" 
-                      SelectionMode="Single" SelectionUnit="FullRow"
-                      IsSynchronizedWithCurrentItem="True" 
-                      IsTextSearchEnabled="True" AutoGenerateColumns="False"                      
-                      IsReadOnly="True">
+                  SelectionMode="Single" SelectionUnit="FullRow"
+                  IsSynchronizedWithCurrentItem="True" 
+                  IsTextSearchEnabled="True" AutoGenerateColumns="False"                      
+                  IsReadOnly="True">
             <DataGrid.Resources>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="HorizontalContentAlignment"
@@ -39,8 +39,8 @@
                 <DataGridTextColumn Binding="{Binding Path=ID,UpdateSourceTrigger=PropertyChanged}" Width="Auto"  Header="ID" SortMemberPath="ID"/>
                 <DataGridTextColumn Binding="{Binding Path=Name,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Server Name" SortMemberPath="Name"/>
                 <DataGridTextColumn Binding="{Binding Path=RepPlayers,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Players" SortMemberPath="Current_Players"/>
-                <DataGridTextColumn Binding="{Binding Path=Maps.CurrentActualMap.MapName,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Map"/>
-                <DataGridTextColumn Binding="{Binding Path=Maps.CurrentActualMap.GameModeName,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Game Mode"/>                
+                <DataGridTextColumn Binding="{Binding Path=Maps.CurrentActualMap.MapName,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Map" SortMemberPath="Maps.CurrentActualMap.MapName"/>
+                <DataGridTextColumn Binding="{Binding Path=Maps.CurrentActualMap.GameModeName,UpdateSourceTrigger=PropertyChanged}" Width="*" Header="Game Mode" SortMemberPath="Maps.CurrentActualMap.GameModeName"/>                
             </DataGrid.Columns>
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate DataType="{x:Type servers:BF3_GUI_Server}">
@@ -51,43 +51,62 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
+                        <!--Players datagrid-->
                         <DataGrid
-                                PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
-                                Grid.Column="0" 
-                                Margin="2"
-                                SelectionMode="Single"
-                                IsReadOnly="True"
-                                ScrollViewer.VerticalScrollBarVisibility="Visible"                        
-                                ItemsSource="{Binding Path=Players,UpdateSourceTrigger=PropertyChanged}"                                
-                                ColumnWidth="Auto"
-                                IsSynchronizedWithCurrentItem="True"/>
-                        <DataGrid PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
-                                      SelectionMode="Single"
-                                      IsReadOnly="True" 
-                                      Grid.Column="1" 
-                                      Margin="2"                                      
-                                      AutoGenerateColumns="False" 
-                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                      ItemsSource="{Binding Path=Maps}">
+                            PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                            Grid.Column="0" 
+                            Margin="2"
+                            SelectionMode="Single"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            ScrollViewer.VerticalScrollBarVisibility="Visible"                        
+                            ItemsSource="{Binding Path=Players,UpdateSourceTrigger=PropertyChanged}"                                
+                            ColumnWidth="Auto"
+                            IsSynchronizedWithCurrentItem="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Index" Binding="{Binding Path=Key}"/>
-                                <DataGridTextColumn Header="Map" Binding="{Binding Path=Value.MapName}"/>
-                                <DataGridTextColumn Header="Game Mode" Binding="{Binding Path=Value.GameModeName}" />
+                                <DataGridTextColumn Binding="{Binding Path=Slot}" Header="Slot"/>
+                                <DataGridTextColumn Binding="{Binding Path=Name}" Header="Player Name"/>
+                                <DataGridTextColumn Binding="{Binding Path=ID}" Header="Player ID"/>
                             </DataGrid.Columns>
                             <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
+                                <Style  TargetType="DataGridRow">
                                     <Setter Property="Background" Value="White"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=Value.IsNext,UpdateSourceTrigger=PropertyChanged}" Value="True">
-                                            <Setter Property="Background" Value="Yellow"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Path=Value.IsCurrent,UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                        <DataTrigger Binding="{Binding Path=IsCurrent}" Value="True">
                                             <Setter Property="Background" Value="Red"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
                         </DataGrid>
+                        <!--Maps datagrid-->
+                        <DataGrid PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                                  SelectionMode="Single"
+                                  IsReadOnly="True" 
+                                  Grid.Column="1" 
+                                  Margin="2"                                      
+                                  AutoGenerateColumns="False" 
+                                  ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                  ItemsSource="{Binding Path=Maps,UpdateSourceTrigger=PropertyChanged}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Map" Binding="{Binding Path=MapName}"/>
+                                <DataGridTextColumn Header="Game Mode" Binding="{Binding Path=GameModeName}" />
+                            </DataGrid.Columns>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsNextInRotation,UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                            <Setter Property="Background" Value="Yellow"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=IsCurrentInRotation,UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                            <Setter Property="Background" Value="Red"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+                        <!--Basic Info-->
                         <GroupBox VerticalAlignment="Stretch"
                                       HorizontalAlignment="Stretch" 
                                       Grid.Column="2" Margin="2"  Header="Basic Info">
@@ -99,9 +118,14 @@
                                 <DockPanel>
                                     <TextBlock Text="Punkbuster : "/>
                                     <TextBlock Text="{Binding Path=IsHasPB}"/>
-                                </DockPanel>                               
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="FairFight : "/>
+                                    <TextBlock Text="{Binding Path=IsHasFF}"/>
+                                </DockPanel>
                             </StackPanel>
                         </GroupBox>
+                        <!--Buttons Info-->
                         <Grid Grid.Column="3">                            
                             <Button Margin="2" Click="JoinButton_Click" DataContext="{Binding}" Grid.Row="0" Content="Join"/>                           
                         </Grid>

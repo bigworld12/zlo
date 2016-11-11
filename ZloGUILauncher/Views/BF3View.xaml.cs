@@ -29,7 +29,7 @@ namespace ZloGUILauncher.Views
             App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);            
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Stat> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Stat> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_3)
             {

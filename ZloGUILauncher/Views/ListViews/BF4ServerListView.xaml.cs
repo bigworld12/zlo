@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,11 +30,22 @@ namespace ZloGUILauncher.Views
         {
             get { return TryFindResource("ServersView") as CollectionViewSource; }
         }
-
-        public BF4ServersList DataServersList
+        private ObservableCollection<BF4_GUI_Server> m_BF4_Servers;
+        public ObservableCollection<BF4_GUI_Server> BF4_GUI_Servers
         {
             get
             {
+                if (m_BF4_Servers == null)
+                {
+                    m_BF4_Servers = new ObservableCollection<BF4_GUI_Server>();
+                }
+                return m_BF4_Servers;
+            }
+        }
+        public API_BF4ServersListBase DataServersList
+        {
+            get
+            {                
                 return App.Client.BF4Servers;
             }
         }
@@ -45,21 +57,24 @@ namespace ZloGUILauncher.Views
             DataServersList.ServerUpdated += DataServersList_ServerUpdated;
             DataServersList.ServerRemoved += DataServersList_ServerRemoved;
             ViewSource.Source = BF4_GUI_Servers;
-        }
 
-        private void DataServersList_ServerRemoved(uint id , BF4ServerBase server)
+        }       
+        private void DataServersList_ServerRemoved(uint id , API_BF4ServerBase server)
         {
             if (server != null)
             {
                 Dispatcher.Invoke(() =>
                 {
                     //remove from current list
-                    var ser = BF4_GUI_Servers.Find(s => s.raw == server);
-                    BF4_GUI_Servers.Remove(ser);
+                    var ser = BF4_GUI_Servers.Find(s => s.ID == id);
+                    if (ser != null)
+                    {
+                        BF4_GUI_Servers.Remove(ser);
+                    }                   
                 });
             }
         }
-        private void DataServersList_ServerUpdated(uint id , BF4ServerBase server)
+        private void DataServersList_ServerUpdated(uint id , API_BF4ServerBase server)
         {
             Dispatcher.Invoke(() =>
             {
@@ -71,15 +86,12 @@ namespace ZloGUILauncher.Views
                 }
             });
         }
-        private void DataServersList_ServerAdded(uint id , BF4ServerBase server)
+        private void DataServersList_ServerAdded(uint id , API_BF4ServerBase server)
         {
             Dispatcher.Invoke(() =>
             {
-
-
                 var newserv = new BF4_GUI_Server(server);
-                BF4_GUI_Servers.Add(newserv);
-
+                BF4_GUI_Servers.Add(newserv);                
                 AnimateRow(newserv);
             });
         }
@@ -169,18 +181,7 @@ namespace ZloGUILauncher.Views
         }
 
 
-        private ObservableCollection<BF4_GUI_Server> m_BF4_Servers;
-        public ObservableCollection<BF4_GUI_Server> BF4_GUI_Servers
-        {
-            get
-            {
-                if (m_BF4_Servers == null)
-                {
-                    m_BF4_Servers = new ObservableCollection<BF4_GUI_Server>();
-                }
-                return m_BF4_Servers;
-            }
-        }      
+     
 
         private void ScrollViewer_PreviewMouseWheel(object sender , MouseWheelEventArgs e)
         {

@@ -27,17 +27,42 @@ namespace ZloGUILauncher
         public MainWindow()
         {
             InitializeComponent();
-            App.Client.ErrorOccured += Client_ErrorOccured;
-            App.Client.PropertyChanged += Client_PropertyChanged;
+            App.Client.ErrorOccured += Client_ErrorOccured;            
             App.Client.UserInfoReceived += Client_UserInfoReceived;
             App.Client.GameStateReceived += Client_GameStateReceived;
             App.Client.APIVersionReceived += Client_APIVersionReceived;
-            
+            App.Client.Disconnected += Client_Disconnected;
+            App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             if (App.Client.Connect())
             {
                 App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
                 App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
             }
+        }
+
+        private void Client_ConnectionStateChanged(bool IsConnectedToZloClient)
+        {
+            Dispatcher.Invoke(() => 
+            {
+                if (IsConnectedToZloClient)
+                {
+                    //connected
+                    IsConnectedTextBlock.Text = "Connected";
+                    IsConnectedTextBlock.Foreground = Brushes.Green;
+                }
+                else
+                {
+                    IsConnectedTextBlock.Text = "DisConnected";
+                    IsConnectedTextBlock.Foreground = Brushes.Red;
+                }
+                
+            });
+            
+        }
+
+        private void Client_Disconnected(Zlo.Extras.DisconnectionReasons Reason)
+        {
+            MessageBox.Show($"Client Disconnected for reason : {Reason}");
         }
 
         private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
@@ -112,30 +137,7 @@ Exit
                 PlayerInfoTextBlock.Text = $"{UserName} ({UserID})";
             });
         }
-
-        private void Client_PropertyChanged(object sender , System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(App.Client.IsConnectedToZCLient))
-            {
-                if (App.Client.IsConnectedToZCLient)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        IsConnectedTextBlock.Text = "Connected";
-                        IsConnectedTextBlock.Foreground = Brushes.Green;
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        IsConnectedTextBlock.Text = "DisConnected";
-                        IsConnectedTextBlock.Foreground = Brushes.Red;
-                    });
-                }
-            }
-        }
-
+        
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
             MessageBox.Show($"{Error.ToString()}", CustomMessage);            
@@ -144,6 +146,6 @@ Exit
         private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
         {
             App.GameStateViewer.Show();
-        }    
+        }         
     }
 }

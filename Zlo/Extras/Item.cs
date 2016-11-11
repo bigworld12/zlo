@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public struct Item
+    public struct API_Item
     {
-        public string FlagName { get; set; }
-        public string ItemName { get; set; }
-        public string ItemDescription { get; set; }
-        public bool ItemExists { get; set; }
+        public string FlagName { get; internal set; }
+        public string ItemName { get; internal set; }
+        public string ItemDescription { get; internal set; }
+        public bool ItemExists { get; internal set; }
 
-        public Item(string flag , bool exists)
+        internal API_Item(string flag , bool exists)
         {
             FlagName = flag;
             ItemExists = exists;
@@ -30,6 +30,5 @@ namespace Zlo.Extras
         {
             return $"{ItemName} = {ItemExists}";
         }
-
     }
 }

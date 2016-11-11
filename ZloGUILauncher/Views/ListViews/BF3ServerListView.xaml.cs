@@ -20,8 +20,20 @@ namespace ZloGUILauncher.Views
         {
             get { return TryFindResource("ServersView") as CollectionViewSource; }
         }
+        private ObservableCollection<BF3_GUI_Server> m_BF3_Servers;
+        public ObservableCollection<BF3_GUI_Server> BF3_GUI_Servers
+        {
+            get
+            {
+                if (m_BF3_Servers == null)
+                {
+                    m_BF3_Servers = new ObservableCollection<BF3_GUI_Server>();
+                }
+                return m_BF3_Servers;
+            }
+        }
 
-        public BF3ServersList DataServersList
+        public API_BF3ServersListBase DataServersList
         {
             get
             {
@@ -31,45 +43,48 @@ namespace ZloGUILauncher.Views
 
         public BF3ServerListView()
         {
-            InitializeComponent();
-
+            InitializeComponent();            
             DataServersList.ServerAdded += DataServersList_ServerAdded;
             DataServersList.ServerUpdated += DataServersList_ServerUpdated;
             DataServersList.ServerRemoved += DataServersList_ServerRemoved;
             ViewSource.Source = BF3_GUI_Servers;
         }
 
-        private void DataServersList_ServerRemoved(uint id , BF3ServerBase server)
+        private void DataServersList_ServerRemoved(uint id , API_BF3ServerBase server)
         {
             if (server != null)
             {
                 Dispatcher.Invoke(() =>
                 {
                     //remove from current list
-                    var ser = BF3_GUI_Servers.Find(s => s.raw == server);
-                    BF3_GUI_Servers.Remove(ser);
+                    var ser = BF3_GUI_Servers.Find(s => s.ID == id);
+                    if (ser != null)
+                    {
+                        BF3_GUI_Servers.Remove(ser);
+                    }                    
                 });
             }
         }
-        private void DataServersList_ServerUpdated(uint id , BF3ServerBase server)
+        private void DataServersList_ServerUpdated(uint id , API_BF3ServerBase server)
         {
             Dispatcher.Invoke(() =>
             {
                 var equi = BF3_GUI_Servers.Find(x => x.raw == server);
                 if (equi != null)
                 {
+                    //notify the gui
                     equi.UpdateAllProps();
-
                     AnimateRow(equi);
                 }
             });
         }
-        private void DataServersList_ServerAdded(uint id , BF3ServerBase server)
+        private void DataServersList_ServerAdded(uint id , API_BF3ServerBase server)
         {
             Dispatcher.Invoke(() =>
             {
                 var newserv = new BF3_GUI_Server(server);
                 BF3_GUI_Servers.Add(newserv);
+
                 AnimateRow(newserv);
             });
         }
@@ -123,18 +138,7 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private ObservableCollection<BF3_GUI_Server> m_BF3_Servers;
-        public ObservableCollection<BF3_GUI_Server> BF3_GUI_Servers
-        {
-            get
-            {
-                if (m_BF3_Servers == null)
-                {
-                    m_BF3_Servers = new ObservableCollection<BF3_GUI_Server>();
-                }
-                return m_BF3_Servers;
-            }
-        }
+     
 
         private void ScrollViewer_PreviewMouseWheel(object sender , MouseWheelEventArgs e)
         {

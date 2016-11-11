@@ -68,10 +68,10 @@
                                   IsTextSearchEnabled="True" AutoGenerateColumns="False" 
                                   IsReadOnly="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Flag Name" Binding="{Binding Path=FlagName}"/>
-                                <DataGridTextColumn Header="Item Name" Binding="{Binding Path=ItemName}"/>
-                                <DataGridCheckBoxColumn Header="Item Acquired" Binding="{Binding Path=ItemExists}"/>
-                                <DataGridTextColumn Header="Item Description" Binding="{Binding Path=ItemDescription}"/>                                
+                                <DataGridTextColumn Header="Flag Name" Binding="{Binding Path=FlagName,Mode=OneWay}"/>
+                                <DataGridTextColumn Header="Item Name" Binding="{Binding Path=ItemName,Mode=OneWay}"/>
+                                <DataGridCheckBoxColumn Header="Item Acquired" Binding="{Binding Path=ItemExists,Mode=OneWay}"/>
+                                <DataGridTextColumn Header="Item Description" Binding="{Binding Path=ItemDescription,Mode=OneWay}"/>                                
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

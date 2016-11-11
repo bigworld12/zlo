@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    class Request
+    internal class Request
     {
         public byte pid = 0;
 

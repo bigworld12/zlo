@@ -32,14 +32,14 @@ namespace ZloGUILauncher
                 MessageBox.Show(ex.ToString());                
             }            
         }
-        private static ZloClient m_Client;
-        public static ZloClient Client
+        private static API_ZloClient m_Client;
+        public static API_ZloClient Client
         {
             get
             {
                 if (m_Client == null)
                 {
-                    m_Client = new ZloClient();
+                    m_Client = new API_ZloClient();
                 }
                 return m_Client;
             }

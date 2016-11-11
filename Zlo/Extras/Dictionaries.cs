@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public static class Dictionaries
+    public static class API_Dictionaries
     {
-        public static Dictionary<string , string> BF4_Maps = new Dictionary<string , string>
+        public static Dictionary<string , string> API_BF4_Maps { get; internal set; } = new Dictionary<string , string>
         {
             #region BF4_Maps
             { "MP_Abandoned","Zavod 311" },
@@ -48,7 +48,7 @@ namespace Zlo.Extras
         };
 
 
-        public static Dictionary<string , string> BF4_GameModes = new Dictionary<string , string>
+        public static Dictionary<string , string> API_BF4_GameModes { get; internal set; } = new Dictionary<string , string>
         {
             #region  BF4_GameModes
             { "ConquestLarge0","Conquest Large" },
@@ -93,7 +93,7 @@ namespace Zlo.Extras
 
 
 
-        public static Dictionary<string , string> BF3_Maps = new Dictionary<string , string>
+        public static Dictionary<string , string> API_BF3_Maps { get; internal set; } = new Dictionary<string , string>
         {
             #region BF3_Maps	
             { "MP_001","Grand Bazaar" },
@@ -128,7 +128,7 @@ namespace Zlo.Extras
             #endregion
         };
 
-        public static Dictionary<string , string> BF3_GameModes = new Dictionary<string , string>
+        public static Dictionary<string , string> API_BF3_GameModes { get; internal set; } = new Dictionary<string , string>
         {
             #region BF3_GameModes	
             { "ConquestLarge0","Conquest Large" },
@@ -146,7 +146,25 @@ namespace Zlo.Extras
             { "TankSuperiority0","Tank Superiority" },
             { "Scavenger0","Scavenger" },
             { "CaptureTheFlag0","CTF" },
-            { "AirSuperiority0","Air Superiority" }
+            { "AirSuperiority0","Air Superiority" },
+
+
+            { "CQL0","Conquest Large" },
+            { "CQAL0","Assault64" },
+            { "CQS0","Conquest Small" },
+            { "CQAS0","Assault" },
+            { "CQAS1","Assault" },
+            { "RL0","Rush" },
+            { "SR0","Squad Rush" },
+            { "SDM0","Squad Deathmatch" },
+            { "TDM0","TDM" },
+            { "TDMC0","TDM Close Quarters" },
+            { "GM0","Gun Master" },
+            { "DOM0","Conquest Domination" },
+            { "TS0","Tank Superiority" },
+            { "SCV0","Scavenger" },
+            { "CTF0","CTF" },
+            { "AS0","Air Superiority" }
             #endregion
         };
 

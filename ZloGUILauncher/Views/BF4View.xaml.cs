@@ -32,7 +32,7 @@ namespace ZloGUILauncher.Views
 
         }
 
-        private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Item> List)
+        private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Item> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_4)
             {
@@ -41,7 +41,7 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.Stat> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Stat> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_4)
             {

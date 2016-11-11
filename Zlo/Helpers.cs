@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extentions
 {
-    public static class Helpers
+    internal static partial class Helpers
     {
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll" , CharSet = CharSet.Auto , SetLastError = true)]
@@ -115,25 +115,8 @@ namespace Zlo.Extentions
         public static float ReadZFloat(this BinaryReader br)
         {
             return BitConverter.ToSingle(br.ReadReversedBytes(4) , 0);
-        }
-
-        public static T Find<T>(this IEnumerable<T> Source , Predicate<T> predicate)
-        {
-            if (Source == null || predicate == null)
-            {
-                return default(T);
-            }
-
-            int count = Source.Count();
-            for (int i = 0; i < count; i++)
-            {
-                var elem = Source.ElementAt(i);
-                if (predicate(elem))
-                {
-                    return elem;
-                }
-            }
-            return default(T);
-        }
+        }        
     }
+
+    
 }

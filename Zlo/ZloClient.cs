@@ -17,16 +17,14 @@ using System.Reflection;
 
 namespace Zlo
 {
-    public class ZloClient : INotifyPropertyChanged
+    public class API_ZloClient
     {
-        private Version _localVer = new Version(3 , 0 , 0 , 0);
+        private Version _localVer = new Version(4 , 0 , 0 , 0);
 
 
-        public ZloClient()
+        public API_ZloClient()
         {
-       
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-           
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             try
             {
                 QueueThread = new Thread(ProcessQueueLoop);
@@ -68,17 +66,18 @@ namespace Zlo
             }
         }
 
-     
-
         private void ZloClient_Disconnected(DisconnectionReasons Reason)
         {
-            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
+            ConnectionStateChanged?.Invoke(false);
         }
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
         {
-            PlayerID = UserID;          
+            CurrentPlayerID = UserID;
+            CurrentPlayerName = UserName;
         }
+
+
 
         #region Properties
         /*
@@ -121,8 +120,8 @@ namespace Zlo
         Thread BF4_Pipe_Listener;
         Thread BFH_Pipe_Listener;
 
-        private uint PlayerID { get; set; }
-
+        public uint CurrentPlayerID { get; private set; }
+        public string CurrentPlayerName { get; private set; }
         private List<Request> RequestQueue = new List<Request>();
         #endregion
 
@@ -131,40 +130,46 @@ namespace Zlo
         /// <summary>
         /// Gets triggered after receiving user stats and passes the game and a list of stats
         /// </summary>    
-        public event StatsReceivedEventHandler StatsReceived;
+        public event API_StatsReceivedEventHandler StatsReceived;
 
         /// <summary>
         /// Gets triggered after receiving user items and passes the game and a list of items
         /// </summary>    
-        public event ItemsReceivedEventHandler ItemsReceived;
+        public event API_ItemsReceivedEventHandler ItemsReceived;
 
         /// <summary>
         /// Gets triggered after receiving user info and passes user id and name
         /// </summary>
-        public event UserInfoReceivedEventHandler UserInfoReceived;
+        public event API_UserInfoReceivedEventHandler UserInfoReceived;
 
         /// <summary>
         /// Gets triggered when an error occurs and passes the exception and a custom message from the dll
         /// </summary>
-        public event ErrorOccuredEventHandler ErrorOccured;
+        public event API_ErrorOccuredEventHandler ErrorOccured;
 
         /// <summary>
         /// occurs when the client disconnects from the server
         /// </summary>
-        public event DisconnectedEventHandler Disconnected;
+        public event API_DisconnectedEventHandler Disconnected;
 
         /// <summary>
         /// occurs when the game state changes (connecting to server/closing the server,etc..)
         /// </summary>
-        public event GameStateReceivedEventHandler GameStateReceived;
+        public event API_GameStateReceivedEventHandler GameStateReceived;
 
-        public event APIVersionReceivedEventHandler APIVersionReceived;
+        /// <summary>
+        /// occurs after receiving the current api version
+        /// </summary>
+        public event API_APIVersionReceivedEventHandler APIVersionReceived;
+
+        public event API_ConnectionStateChanged ConnectionStateChanged;
         #endregion
 
         #region API Methods
         public bool Connect()
         {
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 try
                 {
                     //check for the version here
@@ -198,7 +203,7 @@ namespace Zlo
                     ErrorOccured?.Invoke(ex , "Error when Checking updates");
                 }
             });
-         
+
 
             try
             {
@@ -210,7 +215,7 @@ namespace Zlo
 
                 ListenerClient.Connect();
                 QueueThread.Start();
-                PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
+                ConnectionStateChanged?.Invoke(true);
                 Thread.Sleep(1000);
                 GetUserInfo();
                 return true;
@@ -234,31 +239,32 @@ namespace Zlo
 
         public void JoinOnlineGame(OnlinePlayModes playmode , uint serverid = 0)
         {
+          
             string rungame = string.Empty;
             switch (playmode)
             {
                 case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3 , PlayerID , serverid , 1);
+                    rungame = GetGameJoinID(ZloGame.BF_3 , CurrentPlayerID , serverid , 1);
                     break;
                 case OnlinePlayModes.BF3_COOP:
-                    rungame = GetGameJoinID(ZloGame.BF_3 , PlayerID , serverid , 5);
+                    rungame = GetGameJoinID(ZloGame.BF_3 , CurrentPlayerID , serverid , 5);
                     break;
 
                 case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 1);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 1);
                     break;
                 case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 3);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 3);
                     break;
                 case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 2);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 2);
                     break;
                 case OnlinePlayModes.BF4_COOP:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 5);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 5);
                     break;
 
                 case OnlinePlayModes.BFH_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine , PlayerID , serverid , 1);
+                    rungame = GetGameJoinID(ZloGame.BF_HardLine , CurrentPlayerID , serverid , 1);
                     break;
                 default:
                     return;
@@ -278,19 +284,19 @@ namespace Zlo
             switch (playmode)
             {
                 case OfflinePlayModes.BF3_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3 , PlayerID , 0 , 0);
+                    rungame = GetGameJoinID(ZloGame.BF_3 , CurrentPlayerID , 0 , 0);
                     break;
 
                 case OfflinePlayModes.BF4_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , 0 , 0);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , 0 , 0);
                     break;
                 case OfflinePlayModes.BF4_Test_Range:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , 0 , 4);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , 0 , 4);
                     break;
 
 
                 case OfflinePlayModes.BFH_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine , PlayerID , 0 , 0);
+                    rungame = GetGameJoinID(ZloGame.BF_HardLine , CurrentPlayerID , 0 , 0);
                     break;
 
                 default:
@@ -307,22 +313,22 @@ namespace Zlo
                 Process.Start(rungame);
             }
         }
-        public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode , uint serverid,string password)
+        public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode , uint serverid , string password)
         {
             string rungame = string.Empty;
             switch (playmode)
             {
                 case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3 , PlayerID , serverid , 1 , password);
-                    break;            
+                    rungame = GetGameJoinID(ZloGame.BF_3 , CurrentPlayerID , serverid , 1 , password);
+                    break;
                 case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 1 , password);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 1 , password);
                     break;
                 case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid ,3, password);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 3 , password);
                     break;
                 case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloGame.BF_4 , PlayerID , serverid , 2 , password);
+                    rungame = GetGameJoinID(ZloGame.BF_4 , CurrentPlayerID , serverid , 2 , password);
                     break;
                 default:
                     return;
@@ -336,9 +342,11 @@ namespace Zlo
                 Process.Start(rungame);
             }
         }
+    
         /// <summary>
         /// this method is automatically called by the api each sucessfull connect,
-        /// so you don't need to call it , just listen to the UserInfoReceived event
+        /// so you don't need to call it , just listen to the UserInfoReceived event or use the 
+        /// CurrentPlayerName and CurrentPlayerID properties
         /// </summary>
         public void GetUserInfo()
         {
@@ -353,8 +361,50 @@ namespace Zlo
             SendRequest(ZloRequest.Items , game);
         }
 
+
+
+        private bool IsRequestedBF3Servers = false;
+        private bool IsRequestedBF4Servers = false;
+        private bool IsRequestedBFHServers = false;
         public void SubToServerList(ZloGame game)
         {
+            #region SubChecker
+            switch (game)
+            {
+                case ZloGame.BF_3:
+                    if (IsRequestedBF3Servers)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        IsRequestedBF3Servers = true;
+                    }
+                    break;
+                case ZloGame.BF_4:
+                    if (IsRequestedBF4Servers)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        IsRequestedBF4Servers = true;
+                    }
+                    break;
+                case ZloGame.BF_HardLine:
+                    if (IsRequestedBFHServers)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        IsRequestedBFHServers = true;
+                    }
+                    break;
+
+            }
+            #endregion
+            
             var req = new Request();
             req.IsRespondable = false;
 
@@ -395,9 +445,16 @@ namespace Zlo
         {
             try
             {
+                CurrentPlayerID = 0;
+                CurrentPlayerName = string.Empty;
+
+                UnSubServerList(ZloGame.BF_3);
+                UnSubServerList(ZloGame.BF_4);
+                UnSubServerList(ZloGame.BF_HardLine);
+
                 IsOn = false;
                 ListenerClient.Disconnect();
-                PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(nameof(IsConnectedToZCLient)));
+                ConnectionStateChanged?.Invoke(false);
             }
             catch (Exception ex) { ErrorOccured?.Invoke(ex , "Error occured when disconnecting zclient"); }
 
@@ -405,53 +462,58 @@ namespace Zlo
         #endregion
 
         #region API Properties
-        private BF3ServersList m_BF3Servers;
-        public BF3ServersList BF3Servers
+        private API_BF3ServersListBase m_BF3Servers;
+        /// <summary>
+        /// Acts as a listener to all events related to bf3 servers
+        /// </summary>
+        public API_BF3ServersListBase BF3Servers
         {
             get
             {
                 if (m_BF3Servers == null)
                 {
-                    m_BF3Servers = new BF3ServersList(this);
+                    m_BF3Servers = new API_BF3ServersListBase(this);
                 }
                 return m_BF3Servers;
             }
         }
 
-        private BF4ServersList m_BF4Servers;
-        public BF4ServersList BF4Servers
+        private API_BF4ServersListBase m_BF4Servers;
+        /// <summary>
+        /// Acts as a listener to all events related to bf4 servers
+        /// </summary>
+        public API_BF4ServersListBase BF4Servers
         {
             get
             {
                 if (m_BF4Servers == null)
                 {
-                    m_BF4Servers = new BF4ServersList(this);
+                    m_BF4Servers = new API_BF4ServersListBase(this);
                 }
                 return m_BF4Servers;
             }
         }
 
-        private BFHServersList m_BFHServers;
-        public BFHServersList BFHServers
+        private API_BFHServersListBase m_BFHServers;
+        /// <summary>
+        /// Acts as a listener to all events related to bf hardline servers
+        /// </summary>
+        public API_BFHServersListBase BFHServers
         {
             get
             {
                 if (m_BFHServers == null)
                 {
-                    m_BFHServers = new BFHServersList(this);
+                    m_BFHServers = new API_BFHServersListBase(this);
                 }
                 return m_BFHServers;
             }
         }
 
-
-
-
         public bool IsConnectedToZCLient
         {
             get { return ListenerClient.IsConnected; }
         }
-
         #endregion
 
         #region Other Methods
@@ -596,7 +658,7 @@ namespace Zlo
                                 {
                                     byte game = br.ReadByte();
                                     ushort count = br.ReadZUInt16();
-                                    List<Stat> FinalStats = new List<Stat>();
+                                    List<API_Stat> FinalStats = new List<API_Stat>();
 
                                     try
                                     {
@@ -605,7 +667,7 @@ namespace Zlo
                                             string statname = br.ReadZString();
                                             float statvalue = br.ReadZFloat();
 
-                                            FinalStats.Add(new Stat(statname , statvalue));
+                                            FinalStats.Add(new API_Stat(statname , statvalue));
                                         }
                                     }
                                     catch (Exception ex)
@@ -619,7 +681,7 @@ namespace Zlo
                                 {
                                     byte game = br.ReadByte();
                                     ushort count = br.ReadZUInt16();
-                                    List<Item> FinalItems = new List<Item>();
+                                    List<API_Item> FinalItems = new List<API_Item>();
                                     try
                                     {
                                         for (ushort i = 0; i < count; i++)
@@ -627,7 +689,7 @@ namespace Zlo
                                             string statname = br.ReadZString();
                                             byte statvalue = br.ReadByte();
 
-                                            FinalItems.Add(new Item(statname , statvalue == 1 ? true : false));
+                                            FinalItems.Add(new API_Item(statname , statvalue == 1 ? true : false));
                                         }
                                     }
                                     catch (Exception ex)
@@ -961,8 +1023,7 @@ namespace Zlo
                 Thread.Sleep(500);
             }
         }
-
-        //todo
+       
         /// <summary>
         /// 
         /// </summary>
@@ -976,7 +1037,7 @@ namespace Zlo
         /// 4 = test range
         /// 5 = co-op</param>
         /// <returns></returns>
-        private string GetGameJoinID(ZloGame game , uint PlayerID , uint ServerID , int playmode,string pw = "")
+        private string GetGameJoinID(ZloGame game , uint PlayerID , uint ServerID , int playmode , string pw = "")
         {
             /*
              play mode : 
@@ -1037,7 +1098,7 @@ namespace Zlo
                             else
                             {
                                 return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
-                            }                            
+                            }
                         case 2:
                             //commander
                             if (pw != "")
@@ -1047,7 +1108,7 @@ namespace Zlo
                             else
                             {
                                 return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
-                            }                            
+                            }
                         case 3:
                             //spectator
                             if (pw != "")
@@ -1056,7 +1117,7 @@ namespace Zlo
                             }
                             else
                             {
-                                
+
                                 return $@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22";
                             }
                         case 4:
@@ -1081,12 +1142,7 @@ namespace Zlo
             }
         }
 
-        /// <summary>
-        /// use it when loading dlls only
-        /// </summary>
-        /// <param name="executingAssembly"></param>
-        /// <param name="resourceName"></param>
-        /// <returns></returns>
+        
         private static byte[] LoadResourceBytes(Assembly executingAssembly , string resourceName)
         {
             using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
@@ -1131,10 +1187,8 @@ namespace Zlo
                 return null;
             }
         }
-
         #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        
     }
-
 }

@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public class Map : INotifyPropertyChanged
+    public class API_MapBase
     {
-        private MapRotation _parent;
-        public MapRotation Parent
+
+
+        private API_MapRotationBase _parent;
+        public API_MapRotationBase ParentMapRotation
         {
             get
             {
@@ -20,56 +22,77 @@ namespace Zlo.Extras
             }
         }
 
-        private string m_MapName;
-        public string MapName
-        {
-            get { return m_MapName; }
-            set {
-                m_MapName = value;
-               OPC(nameof(MapName));
-            }
-        }
 
-        private string m_GameModeName;
-        public string GameModeName
-        {
-            get { return m_GameModeName; }
-            set { m_GameModeName = value;
-                OPC(nameof(GameModeName));
-            }
-        }
 
-        public bool IsCurrent
+
+        public string MapName { get; internal set; }
+
+
+        public string GameModeName { get; internal set; }
+
+        public bool IsCurrentInRotation
         {
             get
             {
-                return this == Parent.LogicalCurrentMap;
+                return ReferenceEquals(this , ParentMapRotation.LogicalCurrentMap);
             }
         }
-        public bool IsNext
+        public bool IsNextInRotation
         {
             get
             {
-                return this == Parent.LogicalNextMap;
+                return ReferenceEquals(this , ParentMapRotation.LogicalNextMap);
+            }
+        }
+        public bool IsActualCurrentMap
+        {
+            get
+            {
+                return Equals(ParentMapRotation.CurrentActualMap);
             }
         }
 
-        public Map(MapRotation p) { _parent = p; }
-        public Map(string mname , string gmname, MapRotation p)
+        public static bool operator ==(API_MapBase first , API_MapBase second)
+        {
+            if (ReferenceEquals(first , null))
+                return ReferenceEquals(second , null);
+
+            return first.Equals(second);
+        }
+        public static bool operator !=(API_MapBase first , API_MapBase second)
+        {
+            return !(first == second);
+        }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj , null) || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this , obj))
+                return true;
+            var goodobj = obj as API_MapBase;
+            return (goodobj.GameModeName == GameModeName) && (goodobj.MapName == MapName);
+        }
+        public override int GetHashCode()
+        {
+            return MapName.GetHashCode() ^ GameModeName.GetHashCode();
+        }
+
+        internal API_MapBase() { }
+        internal API_MapBase(API_MapRotationBase p) { _parent = p; }
+        internal API_MapBase(string mname , string gmname , API_MapRotationBase p)
         {
             MapName = mname;
             GameModeName = gmname;
             _parent = p;
         }
-
-        public void OPC(string propname)
-        {
-            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(propname));
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
     }
-    public class MapRotation : Dictionary<int , Map>, INotifyPropertyChanged
+    public class API_MapRotationBase : Dictionary<int , API_MapBase>
     {
+        internal API_MapRotationBase() { }
+
         private int m_CurrentMapIndex;
         public int CurrentMapIndex
         {
@@ -83,7 +106,7 @@ namespace Zlo.Extras
         }
 
 
-        public Map LogicalCurrentMap
+        public API_MapBase LogicalCurrentMap
         {
             get
             {
@@ -97,7 +120,7 @@ namespace Zlo.Extras
                 }
             }
         }
-        public Map LogicalNextMap
+        public API_MapBase LogicalNextMap
         {
             get
             {
@@ -113,21 +136,33 @@ namespace Zlo.Extras
         }
 
 
-        private Map m_CurrentActualMap;
-        public Map CurrentActualMap
+        private API_MapBase m_CurrentActualMap;
+        public API_MapBase CurrentActualMap
         {
             get
             {
                 if (m_CurrentActualMap == null)
                 {
-                    m_CurrentActualMap = new Map(this);
+                    m_CurrentActualMap = new API_MapBase(this);
                 }
                 return m_CurrentActualMap;
             }
         }
 
-        public void Parse(string mapsinfo , string mapsraw , ZloGame game)
+        internal void Parse(string mapsinfo , string mapsraw , ZloGame game)
         {
+            API_MapBase[] oldmaps;
+            if (Values != null)
+            {
+                oldmaps = Values.ToArray();
+            }
+            else
+            {
+                oldmaps = null;
+            }
+
+            int oldcur = CurrentMapIndex;
+            int oldnext = NextMapIndex;
             Clear();
             //parse maps rotation
             string[] rawmgms = mapsraw.Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
@@ -138,13 +173,13 @@ namespace Zlo.Extras
                 var rawmgm = rawmgms[i].Split(new[] { ',' } , StringSplitOptions.RemoveEmptyEntries);
                 if (rawmgm.Length > 0)
                 {
-                    var m = new Map(this);
+                    var m = new API_MapBase(this);
                     switch (game)
                     {
                         case ZloGame.BF_3:
-                            if (Dictionaries.BF3_Maps.ContainsKey(rawmgm[0]))
+                            if (API_Dictionaries.API_BF3_Maps.ContainsKey(rawmgm[0]))
                             {
-                                m.MapName = Dictionaries.BF3_Maps[rawmgm[0]];
+                                m.MapName = API_Dictionaries.API_BF3_Maps[rawmgm[0]];
                             }
                             else
                             {
@@ -152,9 +187,9 @@ namespace Zlo.Extras
                             }
                             if (rawmgm.Length > 1)
                             {
-                                if (Dictionaries.BF3_GameModes.ContainsKey(rawmgm[1]))
+                                if (API_Dictionaries.API_BF3_GameModes.ContainsKey(rawmgm[1]))
                                 {
-                                    m.GameModeName = Dictionaries.BF3_GameModes[rawmgm[1]];
+                                    m.GameModeName = API_Dictionaries.API_BF3_GameModes[rawmgm[1]];
                                 }
                                 else
                                 {
@@ -168,9 +203,9 @@ namespace Zlo.Extras
 
                             break;
                         case ZloGame.BF_4:
-                            if (Dictionaries.BF4_Maps.ContainsKey(rawmgm[0]))
+                            if (API_Dictionaries.API_BF4_Maps.ContainsKey(rawmgm[0]))
                             {
-                                m.MapName = Dictionaries.BF4_Maps[rawmgm[0]];
+                                m.MapName = API_Dictionaries.API_BF4_Maps[rawmgm[0]];
                             }
                             else
                             {
@@ -178,9 +213,9 @@ namespace Zlo.Extras
                             }
                             if (rawmgm.Length > 1)
                             {
-                                if (Dictionaries.BF4_GameModes.ContainsKey(rawmgm[1]))
+                                if (API_Dictionaries.API_BF4_GameModes.ContainsKey(rawmgm[1]))
                                 {
-                                    m.GameModeName = Dictionaries.BF4_GameModes[rawmgm[1]];
+                                    m.GameModeName = API_Dictionaries.API_BF4_GameModes[rawmgm[1]];
                                 }
                                 else
                                 {
@@ -208,24 +243,17 @@ namespace Zlo.Extras
             var infos = mapsinfo.Split(';').Select(x => x.Split(',')).ToArray();
             m_CurrentMapIndex = int.Parse(infos[1][0]);
             m_NextMapIndex = int.Parse(infos[1][1]);
-            OPC(nameof(CurrentMapIndex));
-            OPC(nameof(NextMapIndex));
 
-            if (LogicalCurrentMap != null                )
-            {
-                LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsCurrent));
-                LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsNext));
-            }
-            if (LogicalNextMap != null)
-            {
-                LogicalNextMap.OPC(nameof(LogicalCurrentMap.IsCurrent));
-                LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsNext));
-            }
-        }        
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OPC(string propname)
-        {
-            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(propname));
+            //if (LogicalCurrentMap != null)
+            //{
+            //    LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsCurrent));
+            //    LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsNext));
+            //}
+            //if (LogicalNextMap != null)
+            //{
+            //    LogicalNextMap.OPC(nameof(LogicalCurrentMap.IsCurrent));
+            //    LogicalCurrentMap.OPC(nameof(LogicalCurrentMap.IsNext));
+            //}            
         }
     }
 }

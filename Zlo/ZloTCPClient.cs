@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using static Zlo.Extentions.Helpers;
 namespace Zlo
 {
-    public class ZloTCPClient
+    internal class ZloTCPClient
     {
         public delegate void ZloPacketReceivedEventHandler(byte pid , byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
@@ -21,9 +21,9 @@ namespace Zlo
 
         private TcpClient Client { get; set; }
 
-        private ZloClient parent { get; set; }
+        private API_ZloClient parent { get; set; }
 
-        public ZloTCPClient(ZloClient c)
+        public ZloTCPClient(API_ZloClient c)
         {
             Client = new TcpClient();
             parent = c;

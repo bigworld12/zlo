@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public struct Stat
+    public struct API_Stat
     {
-        public string FlagName { get; set; }
-        public float FlagValue { get; set; }
+        public string FlagName { get; internal set; }
+        public float FlagValue { get; internal set; }
 
-        public Stat(string n,float v)
+        internal API_Stat(string n,float v)
         {
             FlagName = n;
             FlagValue = v;

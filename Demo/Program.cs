@@ -21,7 +21,7 @@ namespace Demo
     }
     public class TestProgram
     {
-        public ZloClient Client { get; set; }
+        public API_ZloClient Client { get; set; }
         public TestProgram()
         {
             Start();
@@ -114,7 +114,7 @@ namespace Demo
 
         public void Start()
         {
-            Client = new ZloClient();
+            Client = new API_ZloClient();
             Client.ErrorOccured += Client_ErrorOccured;
             Client.Disconnected += Client_Disconnected;
 
@@ -130,40 +130,40 @@ namespace Demo
 
         }
 
-        private void Client_ServerRemoved(ZloGame game , uint id , IServerBase server)
-        {
+        //private void Client_ServerRemoved(ZloGame game , uint id , IServerBase server)
+        //{
 
-        }
-
-
-        private void Client_BF4ServerAdded(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
-        {
-            Console.WriteLine($"Added a new bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
-        }
-        private void Client_BF4ServerUpdated(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
-        {
-            Console.WriteLine($"Updated an existing bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
-        }
+        //}
 
 
+        //private void Client_BF4ServerAdded(uint id , API_BF4ServerBase server )
+        //{
+        //    Console.WriteLine($"Added a new bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
+        //}
+        //private void Client_BF4ServerUpdated(uint id , BF4ServerBase server , bool IsPlayerChangeOnly)
+        //{
+        //    Console.WriteLine($"Updated an existing bf4 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
+        //}
 
-        private void Client_BF3ServerUpdated(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
-        {
-            Console.WriteLine($"Updated an existing bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
-        }
-        private void Client_BF3ServerAdded(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
-        {
-            Console.WriteLine($"Added a new bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
-        }
 
 
-        private void Client_BFHServerAdded(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
-        {
-        }
-        private void Client_BFHServerUpdated(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
-        {
+        //private void Client_BF3ServerUpdated(uint id , API_BF3ServerBase server , bool IsPlayerChangeOnly)
+        //{
+        //    Console.WriteLine($"Updated an existing bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
+        //}
+        //private void Client_BF3ServerAdded(uint id , BF3ServerBase server , bool IsPlayerChangeOnly)
+        //{
+        //    Console.WriteLine($"Added a new bf3 server,id : {id},server name : {server.GNAM},IsPlayerChangeOnly : {IsPlayerChangeOnly}");
+        //}
 
-        }
+
+        //private void Client_BFHServerAdded(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
+        //{
+        //}
+        //private void Client_BFHServerUpdated(uint id , BFHServerBase server , bool IsPlayerChangeOnly)
+        //{
+
+        //}
 
 
         private void Client_GameStateReceived(ZloGame game , string type , string message)
@@ -176,14 +176,14 @@ namespace Demo
             Console.WriteLine($"Client Disconnected for reason : {Reason.ToString()}");
         }
 
-        private void Client_ItemsReceived(ZloGame Game , List<Item> List)
+        private void Client_ItemsReceived(ZloGame Game , List<API_Item> List)
         {
             Console.WriteLine($"Received Items,Game : {Game.ToString()},Count : {List.Count}");
         }
 
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
-            ZloClient.WriteLog($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
+            API_ZloClient.WriteLog($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
 //            Console.WriteLine($"Error Occured event :\n{CustomMessage}\n{Error.ToString()}");
         }
 
@@ -192,7 +192,7 @@ namespace Demo
             Console.WriteLine($"Received User Info,ID : {UserID},Name : {UserName}");
         }
 
-        private void Client_StatsReceived(ZloGame Game , List<Stat> List)
+        private void Client_StatsReceived(ZloGame Game , List<API_Stat> List)
         {
             Console.WriteLine($"Received Stats,Game : {Game.ToString()},Count : {List.Count}");
         }
