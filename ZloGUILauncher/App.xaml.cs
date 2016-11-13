@@ -56,11 +56,6 @@ namespace ZloGUILauncher
                 }
                 return m_gamestateviewer;
             }
-        }
-
-        private void Application_Exit(object sender , ExitEventArgs e)
-        {
-            
-        }
+        }       
     }
 }
