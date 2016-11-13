@@ -37,7 +37,7 @@
                 <TextBlock Text="Player : "/>
                 <TextBlock x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
             </StackPanel>
-           
+            <Button Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
         </Grid>
         <TabControl Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
             <TabItem>

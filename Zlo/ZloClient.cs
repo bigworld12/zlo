@@ -14,12 +14,13 @@ using Zlo.Extras;
 using System.IO.Pipes;
 using System.ComponentModel;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace Zlo
 {
     public class API_ZloClient
     {
-        private Version _localVer = new Version(4 , 0 , 0 , 0);
+        private Version _localVer = new Version(5 , 0 , 0 , 0);
 
 
         public API_ZloClient()
@@ -162,6 +163,9 @@ namespace Zlo
         /// </summary>
         public event API_APIVersionReceivedEventHandler APIVersionReceived;
 
+        /// <summary>
+        /// occurs when the api connects/disconnects from ZClient
+        /// </summary>
         public event API_ConnectionStateChanged ConnectionStateChanged;
         #endregion
 
@@ -172,25 +176,22 @@ namespace Zlo
             {
                 try
                 {
-                    //check for the version here
-                    //download address https://bigworld12.tk/ZloFiles/Zlo.dll
-                    //check address https://bigworld12.tk/ZloFiles/version.txt
-
-                    string down = @"http://bigworld12.tk/ZloFiles/Zlo.dll";
-                    string check = @"http://bigworld12.tk/ZloFiles/version.txt";
+                    //check for the version here                                        
+                    string check = @"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21912&authkey=ANvWvBuvX90-elk";
 
                     using (WebClient wc = new WebClient())
                     {
-                        string ver = wc.DownloadString(check);
+                        JObject ver = JObject.Parse(wc.DownloadString(check));
+
                         Version newver;
-                        if (!Version.TryParse(ver , out newver))
+                        if (!Version.TryParse(ver["version"].ToObject<string>() , out newver))
                         {
                             newver = _localVer;
                         }
                         bool isne = newver > _localVer;
                         if (isne)
                         {
-                            APIVersionReceived?.Invoke(_localVer , newver , true , down);
+                            APIVersionReceived?.Invoke(_localVer , newver , true , ver["file"].ToObject<string>());
                         }
                         else
                         {
@@ -239,7 +240,7 @@ namespace Zlo
 
         public void JoinOnlineGame(OnlinePlayModes playmode , uint serverid = 0)
         {
-          
+
             string rungame = string.Empty;
             switch (playmode)
             {
@@ -342,7 +343,7 @@ namespace Zlo
                 Process.Start(rungame);
             }
         }
-    
+
         /// <summary>
         /// this method is automatically called by the api each sucessfull connect,
         /// so you don't need to call it , just listen to the UserInfoReceived event or use the 
@@ -404,7 +405,7 @@ namespace Zlo
 
             }
             #endregion
-            
+
             var req = new Request();
             req.IsRespondable = false;
 
@@ -440,7 +441,7 @@ namespace Zlo
             RequestQueue.Add(req);
         }
 
-        public bool IsOn = false;
+        private bool IsOn = false;
         public void Close()
         {
             try
@@ -517,9 +518,12 @@ namespace Zlo
         #endregion
 
         #region Other Methods
-        public void RaiseError(Exception ex , string message)
+        internal void RaiseError(Exception ex , string message)
         {
-            ErrorOccured?.Invoke(ex , message);
+            if (IsOn)
+            {
+                ErrorOccured?.Invoke(ex , message);
+            }            
         }
 
         public static void WriteLog(string log)
@@ -969,7 +973,7 @@ namespace Zlo
         bool IsProcessing = false;
 
         Thread QueueThread;
-        public void ProcessQueueLoop()
+        internal void ProcessQueueLoop()
         {
             while (true)
             {
@@ -1023,7 +1027,7 @@ namespace Zlo
                 Thread.Sleep(500);
             }
         }
-       
+
         /// <summary>
         /// 
         /// </summary>
@@ -1142,7 +1146,7 @@ namespace Zlo
             }
         }
 
-        
+
         private static byte[] LoadResourceBytes(Assembly executingAssembly , string resourceName)
         {
             using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
@@ -1189,6 +1193,6 @@ namespace Zlo
         }
         #endregion
 
-        
+
     }
 }

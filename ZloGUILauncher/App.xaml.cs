@@ -21,7 +21,7 @@ namespace ZloGUILauncher
             try
             {
                 var args = Environment.GetCommandLineArgs();
-                if (args.Length > 1 && args[1].Trim('"') == "done")
+                if (args.Length > 1 && args.Last().Trim('"') == "done")
                 {
                     var bat_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "UpdateBat.bat");
                     File.Delete(bat_path);
@@ -56,6 +56,11 @@ namespace ZloGUILauncher
                 }
                 return m_gamestateviewer;
             }
+        }
+
+        private void Application_Exit(object sender , ExitEventArgs e)
+        {
+            
         }
     }
 }

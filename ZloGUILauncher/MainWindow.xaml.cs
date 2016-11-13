@@ -146,6 +146,15 @@ Exit
         private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
         {
             App.GameStateViewer.Show();
-        }         
+        }
+
+        private void RestartLauncherButton_Click(object sender , RoutedEventArgs e)
+        {
+            Dispatcher.Invoke(() => {
+                App.Client.Close();
+                Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+            });
+        }
     }
 }
