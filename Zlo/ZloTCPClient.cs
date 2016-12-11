@@ -32,14 +32,14 @@ namespace Zlo
         }
         public void Connect()
         {
-            IsOn = true;    
+            IsOn = true;
             Client.Connect("127.0.0.1" , 48486);
             ListenerThread.Start();
         }
         public void Disconnect()
         {
             IsOn = false;
-            Client.Close();            
+            Client.Close();
         }
 
         public bool IsOn = false;
@@ -48,10 +48,10 @@ namespace Zlo
 
         private NetworkStream ns;
 
-        List<byte> CurrentBuffer;
+        List<byte> CurrentBuffer = new List<byte>();
         int pid = -1;
         uint packetlen;
-        bool iswaitingforlen = false;
+        bool iswaitingforlen = true;
         private void ReadLoop()
         {
             while (true)
@@ -59,14 +59,14 @@ namespace Zlo
                 if (!IsOn)
                 {
                     return;
-                } 
+                }
                 //try to connect
                 try
                 {
                     if (!Client.Connected)
                     {
                         Client.Connect("127.0.0.1" , 48486);
-                    }                    
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -80,11 +80,11 @@ namespace Zlo
                     {
                         byte[] _buffer = new byte[1024];
                         while (Client.Connected)
-                        {                            
-                            //try to read
+                        {
+                            //try to read, gives true when there are bytes to read
+                            //should move the parsing loop outside
                             if (ns.CanRead)
                             {
-
                                 //read the available data
                                 int numberOfBytesRead;
                                 try
@@ -92,143 +92,20 @@ namespace Zlo
                                     while ((numberOfBytesRead = ns.Read(_buffer , 0 , _buffer.Length)) > 0)
                                     {
 
-                                        //only dealth with the data if numberOfBytesRead was greater than 0
-                                        var read_buffer = new List<byte>(_buffer);
-
-                                        //some bytes were read
-                                        if (pid == -1)
-                                        {
-                                            //receive the header
-                                            pid = read_buffer[0];
-                                            read_buffer.RemoveAt(0);
-
-                                            CurrentBuffer = new List<byte>();
-                                            CurrentBuffer.AddRange(read_buffer.GetRange(0 , numberOfBytesRead - 1));
-                                            if (CurrentBuffer.Count >= 4)
-                                            {
-                                                using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
-                                                {
-                                                    packetlen = br.ReadZUInt32();
-                                                    CurrentBuffer.RemoveRange(0 , 4);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                packetlen = 0;
-                                                iswaitingforlen = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            //receive the actual packet                                    
-                                            CurrentBuffer.AddRange(read_buffer.GetRange(0 , numberOfBytesRead));
-                                            if (iswaitingforlen)
-                                            {
-                                                if (CurrentBuffer.Count >= 4)
-                                                {
-                                                    using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                    using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
-                                                    {
-                                                        packetlen = br.ReadZUInt32();
-                                                        CurrentBuffer.RemoveRange(0 , 4);
-                                                        iswaitingforlen = false;
-                                                    }
-
-                                                    if (CurrentBuffer.Count > packetlen)
-                                                    {
-                                                        while (CurrentBuffer.Count > packetlen)
-                                                        {
-
-                                                            //combined packets got sent
-                                                            byte[] wanted_packet = CurrentBuffer.GetRange(0 , (int)packetlen).ToArray();
-                                                            SendPacketToAPI((byte)pid , wanted_packet);
-                                                            CurrentBuffer.RemoveRange(0 , (int)packetlen);
-
-                                                            //CurrentBuffer now holds the new packet
-                                                            pid = CurrentBuffer[0];
-                                                            CurrentBuffer.RemoveAt(0);
-                                                            //reprocess initial packet
-                                                            if (CurrentBuffer.Count >= 4)
-                                                            {
-                                                                //it includes len
-                                                                using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                                using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
-                                                                {
-                                                                    packetlen = br.ReadZUInt32();
-                                                                    CurrentBuffer.RemoveRange(0 , 4);
-                                                                    iswaitingforlen = false;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                packetlen = 0;
-                                                                iswaitingforlen = true;
-                                                            }
-                                                        }
-                                                    }
-                                                    else if (CurrentBuffer.Count == packetlen)
-                                                    {
-                                                        SendPacketToAPI((byte)pid , CurrentBuffer.ToArray());
-                                                        pid = -1;
-                                                    }
-
-
-                                                }
-                                                else
-                                                {
-                                                    packetlen = 0;
-                                                    iswaitingforlen = true;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //count bytes until len is over
-                                                if (CurrentBuffer.Count > packetlen)
-                                                {
-                                                    while (CurrentBuffer.Count > packetlen)
-                                                    {
-                                                        //combined packets got sent
-                                                        byte[] wanted_packet = CurrentBuffer.GetRange(0 , (int)packetlen).ToArray();
-                                                        SendPacketToAPI((byte)pid , wanted_packet);
-                                                        CurrentBuffer.RemoveRange(0 , (int)packetlen);
-
-                                                        //CurrentBuffer now holds the new packet
-                                                        pid = CurrentBuffer[0];
-                                                        CurrentBuffer.RemoveAt(0);
-                                                        //reprocess initial packet
-                                                        if (CurrentBuffer.Count >= 4)
-                                                        {
-                                                            //it includes len
-                                                            using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                                                            using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
-                                                            {
-                                                                packetlen = br.ReadZUInt32();
-                                                                CurrentBuffer.RemoveRange(0 , 4);
-                                                                iswaitingforlen = false;
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            packetlen = 0;
-                                                            iswaitingforlen = true;
-                                                        }
-                                                    }
-                                                }
-                                                else if (CurrentBuffer.Count == packetlen)
-                                                {
-                                                    SendPacketToAPI((byte)pid , CurrentBuffer.ToArray());
-                                                    pid = -1;
-                                                }
-                                            }
-                                        }
+                                        //only deal with the data if numberOfBytesRead was greater than 0
+                                        var read_buffer = GetRange(_buffer , 0 , numberOfBytesRead);
+                                        CurrentBuffer.AddRange(read_buffer);
+                                        ParsingStep_PID();
                                     }
                                 }
                                 catch (Exception ex)
                                 {
                                     parent.RaiseError(ex , "Failed to read the data from the network stream");
                                 }
-                                
+                            }
+                            else
+                            {
+
                             }
                             //wait 200 ms until it is able to read
                             Thread.Sleep(200);
@@ -240,7 +117,80 @@ namespace Zlo
             }
         }
 
+        private void ParsingStep_PID()
+        {
+            if (CurrentBuffer.Count == 0)
+            {
+                return;
+            }
+            if (pid == -1)
+            {
+                pid = CurrentBuffer[0];
+                CurrentBuffer.RemoveAt(0);
+            }
+            ParsingStep_Len();
+        }
 
+        private void ParsingStep_Len()
+        {
+            if (!iswaitingforlen)
+            {
+                ParsingStep_Data();
+                return;
+            }
+            if (CurrentBuffer.Count >= 4)
+            {
+                using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
+                using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
+                {
+                    packetlen = br.ReadZUInt32();
+                    CurrentBuffer.RemoveRange(0 , 4);
+                    iswaitingforlen = false;
+                }
+                //do actual packet reading step
+                ParsingStep_Data();
+            }
+            else
+            {
+                packetlen = 0;
+                iswaitingforlen = true;
+            }
+        }
+
+        private void ParsingStep_Data()
+        {
+            //read [packetlen] bytes, if they don't exist fully yet, just return
+            if (CurrentBuffer.Count >= packetlen)
+            {
+                SendPacketToAPI((byte)pid , GetRange(CurrentBuffer , 0 , packetlen));
+                CurrentBuffer.RemoveRange(0 , (int)packetlen);
+                //go to the first step without adding any buffer
+                pid = -1;
+                iswaitingforlen = true;
+                ParsingStep_PID();
+            }
+        }
+
+        private byte[] GetRange(byte[] toget , int startindex , int count)
+        {
+            var ret = new byte[count];
+            int finalindx = startindex + count;
+            for (int i = startindex; i < finalindx; i++)
+            {
+                ret[i - startindex] = toget[i];
+            }
+            return ret;
+        }
+        private byte[] GetRange(List<byte> toget , uint startindex , uint count)
+        {
+            var final = new List<byte>();
+            uint finalindx = startindex + count;
+            for (uint i = startindex; i < finalindx; i++)
+            {
+                final.Add(toget[(int)i]);
+            }
+            return final.ToArray();
+        }
 
 
         private void SendPacketToAPI(byte spid , byte[] buffer)
@@ -256,7 +206,10 @@ namespace Zlo
                     Client.Client.Send(info);
                     return true;
                 }
-                return false;
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {

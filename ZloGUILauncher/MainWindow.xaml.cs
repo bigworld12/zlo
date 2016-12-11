@@ -35,8 +35,13 @@ namespace ZloGUILauncher
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             if (App.Client.Connect())
             {
-                App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
+                //App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
                 App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
+
+                App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
+                App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
+
+                App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
             }
         }
 
@@ -79,6 +84,12 @@ namespace ZloGUILauncher
                         wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
                         wc.DownloadFileAsync(new Uri(DownloadAdress) , Newdll);
                     }
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() => {
+                    Title = $"Bigworld12 new API launcher (Version {Current.ToString()})";
                 });
             }
         }
@@ -155,6 +166,34 @@ Exit
                 Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
             });
+        }
+
+        private void MainTabControl_SelectionChanged(object sender , SelectionChangedEventArgs e)
+        {
+            var tc = sender as TabControl;
+            if (tc != null)
+            {
+                if (tc.SelectedIndex < 0)
+                {
+                    return;
+                }
+                switch (tc.SelectedIndex)
+                {
+                    case 0:
+                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
+                        break;
+                    case 1:
+                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void OfficialDiscordButton_Click(object sender , RoutedEventArgs e)
+        {
+            Process.Start("https://discord.me/zlocommunity");
         }
     }
 }

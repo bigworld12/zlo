@@ -23,25 +23,42 @@ namespace ZloGUILauncher
             }
         }
 
+        private GUI_Map m_CurrentActualMap;
         public GUI_Map CurrentActualMap
         {
             get
             {
-                return this.Find(x => x.raw == Raw.CurrentActualMap);
+                if (m_CurrentActualMap == null)
+                {
+                    m_CurrentActualMap = new GUI_Map(Raw.CurrentActualMap);
+                }
+                return m_CurrentActualMap;
             }            
         }
+
+        private GUI_Map m_LogicalCurrentMap;
         public GUI_Map LogicalCurrentMap
         {
             get
             {
-                return this.Find(x => x.raw == Raw.LogicalCurrentMap);
+                if (m_LogicalCurrentMap == null)
+                {
+                    m_LogicalCurrentMap = new GUI_Map(Raw.LogicalCurrentMap);
+                }
+                return m_LogicalCurrentMap;
             }
         }
+
+        private GUI_Map m_LogicalNextMap;
         public GUI_Map LogicalNextMap
         {
             get
             {
-                return this.Find(x => x.raw == Raw.LogicalNextMap);
+                if (m_LogicalNextMap == null)
+                {
+                    m_LogicalNextMap = new GUI_Map(Raw.LogicalNextMap);
+                }
+                return m_LogicalNextMap;
             }
         }
 
@@ -75,6 +92,13 @@ namespace ZloGUILauncher
                     var n = new GUI_Map(Raw[i]);
                     Add(n);
                 }
+
+                CurrentActualMap.raw = Raw.CurrentActualMap;
+                LogicalCurrentMap.raw = Raw.LogicalCurrentMap;
+                LogicalNextMap.raw = Raw.LogicalNextMap;
+
+
+
                 OPC(nameof(CurrentActualMap));
                 OPC(nameof(LogicalCurrentMap));
                 OPC(nameof(LogicalNextMap));

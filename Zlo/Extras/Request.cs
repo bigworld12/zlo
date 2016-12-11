@@ -19,12 +19,13 @@ namespace Zlo.Extras
         public delegate void ReceivedResponceEventHandler(Request Sender);
         public event ReceivedResponceEventHandler ReceivedResponce;
 
+        public TimeSpan WaitBeforePeriod = TimeSpan.Zero;
+
         public void GiveResponce(byte[] resp)
         {
             Responce = resp;
             IsDone = true;
             ReceivedResponce?.Invoke(this);
         }
-
     }
 }

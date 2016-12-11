@@ -20,26 +20,24 @@ namespace Zlo
 {
     public class API_ZloClient
     {
-        private Version _localVer = new Version(5 , 0 , 0 , 0);
+        private Version _localVer = new Version(6 , 0 , 0 , 0);
 
 
         public API_ZloClient()
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            //System.Windows.Forms.MessageBox.Show("This version of the API has been discontinued, press ok to get redirected to the new official discord channel that has the latest API.\n\nDue to complications with the old discord admins thinking they are better than everybody, this new discord channel will be my new source of updates, not the forum nor any other source.\n\nThanks.\n\t  ~bigworld12");
+            //Process.Start("https://discord.me/zlocommunity");
+            //Environment.Exit(0);            
             try
             {
-                QueueThread = new Thread(ProcessQueueLoop);
-                QueueThread.IsBackground = true;
-
-
                 Disconnected -= ZloClient_Disconnected;
                 Disconnected += ZloClient_Disconnected;
 
                 m_client = new ZloTCPClient(this);
                 PingTimer = new System.Timers.Timer(20 * 1000);
 
-
-                //CreateFile(@"\\\\.\\pipe\\warsaw_snowroller", FileAccess.ReadWrite,0,IntPtr.Zero, FileMode.Open, FileAttributes.Wr)
 
                 BF3_Pipe = new NamedPipeClientStream("." , "venice_snowroller");
                 BF4_Pipe = new NamedPipeClientStream("." , "warsaw_snowroller");
@@ -59,7 +57,6 @@ namespace Zlo
                 //uint UserID , string UserName
                 UserInfoReceived -= ZloClient_UserInfoReceived;
                 UserInfoReceived += ZloClient_UserInfoReceived;
-
             }
             catch (Exception ex)
             {
@@ -177,7 +174,7 @@ namespace Zlo
                 try
                 {
                     //check for the version here                                        
-                    string check = @"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21912&authkey=ANvWvBuvX90-elk";
+                    string check = @"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21916&authkey=AG6BDDR2epUlUNo";
 
                     using (WebClient wc = new WebClient())
                     {
@@ -215,7 +212,6 @@ namespace Zlo
                 BFH_Pipe_Listener.Start();
 
                 ListenerClient.Connect();
-                QueueThread.Start();
                 ConnectionStateChanged?.Invoke(true);
                 Thread.Sleep(1000);
                 GetUserInfo();
@@ -362,51 +358,25 @@ namespace Zlo
             SendRequest(ZloRequest.Items , game);
         }
 
+        ZloGame ActiveServerListener = ZloGame.None;
 
 
-        private bool IsRequestedBF3Servers = false;
-        private bool IsRequestedBF4Servers = false;
-        private bool IsRequestedBFHServers = false;
         public void SubToServerList(ZloGame game)
         {
             #region SubChecker
-            switch (game)
+            if (ActiveServerListener == game)
             {
-                case ZloGame.BF_3:
-                    if (IsRequestedBF3Servers)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        IsRequestedBF3Servers = true;
-                    }
-                    break;
-                case ZloGame.BF_4:
-                    if (IsRequestedBF4Servers)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        IsRequestedBF4Servers = true;
-                    }
-                    break;
-                case ZloGame.BF_HardLine:
-                    if (IsRequestedBFHServers)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        IsRequestedBFHServers = true;
-                    }
-                    break;
-
+                return;
+            }
+            else if (ActiveServerListener != ZloGame.None)
+            {
+                //unsub first
+                UnSubServerList();
             }
             #endregion
 
             var req = new Request();
+            req.WaitBeforePeriod = TimeSpan.FromSeconds(4);
             req.IsRespondable = false;
 
             req.pid = 3;
@@ -420,10 +390,14 @@ namespace Zlo
             ar.Add((byte)game);
 
             req.data = ar.ToArray();
-            RequestQueue.Add(req);
+            AddToQueue(req);
         }
-        public void UnSubServerList(ZloGame game)
+        public void UnSubServerList()
         {
+            if (ActiveServerListener == ZloGame.None)
+            {
+                return;
+            }
             var req = new Request();
             req.IsRespondable = false;
 
@@ -435,10 +409,13 @@ namespace Zlo
             Array.Reverse(size);
             ar.AddRange(size);
             ar.Add(1);
-            ar.Add((byte)game);
+            ar.Add((byte)ActiveServerListener);
 
             req.data = ar.ToArray();
-            RequestQueue.Add(req);
+
+            ActiveServerListener = ZloGame.None;
+
+            AddToQueue(req);
         }
 
         private bool IsOn = false;
@@ -449,9 +426,8 @@ namespace Zlo
                 CurrentPlayerID = 0;
                 CurrentPlayerName = string.Empty;
 
-                UnSubServerList(ZloGame.BF_3);
-                UnSubServerList(ZloGame.BF_4);
-                UnSubServerList(ZloGame.BF_HardLine);
+                UnSubServerList();
+
 
                 IsOn = false;
                 ListenerClient.Disconnect();
@@ -523,7 +499,7 @@ namespace Zlo
             if (IsOn)
             {
                 ErrorOccured?.Invoke(ex , message);
-            }            
+            }
         }
 
         public static void WriteLog(string log)
@@ -932,7 +908,10 @@ namespace Zlo
 
                 case ZloRequest.Player_Info:
                 case ZloRequest.Stats:
+                    req.WaitBeforePeriod = TimeSpan.FromSeconds(1);
+                    break;
                 case ZloRequest.Items:
+                    req.WaitBeforePeriod = TimeSpan.FromSeconds(1);
                     req.IsRespondable = true;
                     size = 1;
                     break;
@@ -954,79 +933,82 @@ namespace Zlo
 
             req.data = final.ToArray();
             req.pid = (byte)request;
-            if (req.IsRespondable)
-            {
-                req.ReceivedResponce -= Req_ReceivedResponce;
-                req.ReceivedResponce += Req_ReceivedResponce;
-            }
-            RequestQueue.Add(req);
-        }
 
+
+
+            AddToQueue(req);
+        }
+        internal void AddToQueue(Request req)
+        {
+            //if it's the only one in the queue, trigger it
+            //else just wait for the rest to finish
+            req.ReceivedResponce -= Req_ReceivedResponce;
+            req.ReceivedResponce += Req_ReceivedResponce;
+            RequestQueue.Add(req);
+            if (RequestQueue.Count == 1)
+            {
+                TriggerQueue();
+            }
+        }
         private void Req_ReceivedResponce(Request Sender)
         {
-            IsProcessing = false;
+            //current request just got finished and received
+            //remove it from the queue list to trigger the next one
             Sender.ReceivedResponce -= Req_ReceivedResponce;
+            RequestQueue.Remove(Sender);
+            TriggerQueue();
+        }
+        internal void TriggerQueue()
+        {
+            //occurs when the next request is ready to be executed
+            //proceed the current request               
+            if (RequestQueue.Count > 0)
+            {
+                CurrentRequest = RequestQueue[0];
+                if (CurrentRequest.WaitBeforePeriod != TimeSpan.Zero)
+                {
+                    var t = new System.Timers.Timer();
+                    t.AutoReset = false;
+                    t.Interval = CurrentRequest.WaitBeforePeriod.TotalMilliseconds;
+                    t.Elapsed += ExecuteCMDTimer;
+                    t.Start();
+                    return;
+                }
+                else
+                {
+                    if (!ListenerClient.WritePacket(CurrentRequest.data))
+                    {
+                        CurrentRequest.GiveResponce(null);
+                    }
+                    if (!CurrentRequest.IsRespondable)
+                    {
+                        CurrentRequest.GiveResponce(null);
+                    }
+                }               
+            }
+        }
+        private void ExecuteCMDTimer(object sender , ElapsedEventArgs e)
+        {
+            if (CurrentRequest == null)
+            {
+                return;
+            }
+            var timer = sender as System.Timers.Timer;
+            timer.Stop();
+            timer.Elapsed -= ExecuteCMDTimer;
+
+            if (!ListenerClient.WritePacket(CurrentRequest.data))
+            {
+                CurrentRequest.GiveResponce(null);
+            }
+            if (!CurrentRequest.IsRespondable)
+            {
+                CurrentRequest.GiveResponce(null);
+            }
         }
 
         Request CurrentRequest = null;
 
-        bool IsProcessing = false;
-
-        Thread QueueThread;
-        internal void ProcessQueueLoop()
-        {
-            while (true)
-            {
-                if (!IsOn)
-                {
-                    return;
-                }
-                while (!IsProcessing && RequestQueue.Count > 0 && IsConnectedToZCLient)
-                {
-                    IsProcessing = true;
-                    for (int i = 0; i < RequestQueue.Count; i++)
-                    {
-                        var req = RequestQueue[i];
-                        if (req.IsDone)
-                        {
-                            RequestQueue.Remove(req);
-                            i -= 1;
-                            continue;
-                        }
-                        else
-                        {
-                            CurrentRequest = req;
-                            if (!ListenerClient.WritePacket(req.data))
-                            {
-                                req.GiveResponce(null);
-                            }
-                            if (!CurrentRequest.IsRespondable)
-                            {
-                                req.GiveResponce(null);
-                            }
-                            break;
-                        }
-                    }
-                    Thread.Sleep(50);
-                    if (!CurrentRequest.IsRespondable)
-                    {
-                        IsProcessing = false;
-                    }
-                    else
-                    {
-                        if (!CurrentRequest.IsDone)
-                        {
-                            IsProcessing = true;
-                        }
-                        else
-                        {
-                            IsProcessing = false;
-                        }
-                    }
-                }
-                Thread.Sleep(500);
-            }
-        }
 
         /// <summary>
         /// 
@@ -1192,7 +1174,5 @@ namespace Zlo
             }
         }
         #endregion
-
-
     }
 }

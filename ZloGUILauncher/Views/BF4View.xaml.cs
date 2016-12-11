@@ -25,11 +25,6 @@ namespace ZloGUILauncher.Views
             InitializeComponent();
             App.Client.StatsReceived += Client_StatsReceived;
             App.Client.ItemsReceived += Client_ItemsReceived;
-
-
-            App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
-            App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
-
         }
 
         private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Item> List)

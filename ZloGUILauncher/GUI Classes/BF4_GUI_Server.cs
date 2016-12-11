@@ -98,7 +98,7 @@ namespace ZloGUILauncher.Servers
                 if (m_Maps == null)
                 {
                     m_Maps = new GUI_MapRotation(raw.ATTRS_MapRotation);                    
-                }
+                }                
                 return m_Maps;
             }
         }

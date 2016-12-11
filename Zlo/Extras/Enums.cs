@@ -18,7 +18,8 @@ namespace Zlo.Extras
     {
         BF_3 = 0,
         BF_4 = 1,
-        BF_HardLine = 2
+        BF_HardLine = 2,
+        None = 255
     }
     public enum DisconnectionReasons : byte
     {

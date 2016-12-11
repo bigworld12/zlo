@@ -118,11 +118,7 @@
                                 <DockPanel>
                                     <TextBlock Text="Punkbuster : "/>
                                     <TextBlock Text="{Binding Path=IsHasPB}"/>
-                                </DockPanel>
-                                <DockPanel>
-                                    <TextBlock Text="FairFight : "/>
-                                    <TextBlock Text="{Binding Path=IsHasFF}"/>
-                                </DockPanel>
+                                </DockPanel>                               
                             </StackPanel>
                         </GroupBox>
                         <!--Buttons Info-->
