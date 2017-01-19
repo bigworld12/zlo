@@ -15,17 +15,30 @@ using System.IO.Pipes;
 using System.ComponentModel;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
+using System.Windows;
 
 namespace Zlo
 {
-    public class API_ZloClient
+    public partial class API_ZloClient
     {
-        private Version _localVer = new Version(6 , 0 , 0 , 0);
+        private Version _localVer = new Version(6 , 1 , 0 , 0);
+
+
 
 
         public API_ZloClient()
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        {            
+            //try
+            //{
+            //    var assem = Assembly.GetAssembly(typeof(API_ZloClient));                
+            //    Assembly.Load(LoadResourceBytes(assem , assem.GetManifestResourceNames().First(x => x.Contains("Newtonsoft.Json"))));
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show(e.ToString());                        
+            //}
+            
 
             //System.Windows.Forms.MessageBox.Show("This version of the API has been discontinued, press ok to get redirected to the new official discord channel that has the latest API.\n\nDue to complications with the old discord admins thinking they are better than everybody, this new discord channel will be my new source of updates, not the forum nor any other source.\n\nThanks.\n\t  ~bigworld12");
             //Process.Start("https://discord.me/zlocommunity");
@@ -34,6 +47,14 @@ namespace Zlo
             {
                 Disconnected -= ZloClient_Disconnected;
                 Disconnected += ZloClient_Disconnected;
+
+                LoadSettings();
+
+                GameStateReceived -= ZloClient_GameStateReceived;
+                GameStateReceived += ZloClient_GameStateReceived;
+
+                StatsReceived -= API_ZloClient_StatsReceived;
+                StatsReceived += API_ZloClient_StatsReceived;
 
                 m_client = new ZloTCPClient(this);
                 PingTimer = new System.Timers.Timer(20 * 1000);
@@ -64,6 +85,53 @@ namespace Zlo
             }
         }
 
+      
+
+        private void ZloClient_GameStateReceived(ZloGame game , string type , string message)
+        {
+            //[BF_4] [StateChanged] State_Game State_ClaimReservation 14
+            //= in-game
+            //[BF_4] [StateChanged] State_GameLeaving State_ClaimReservation 0
+            //= left game
+
+            //[BF_3] [StateChanged] State_Game State_NA 14
+            //= in-game
+            //
+            //no left game
+            string trimmed = message.Trim(' ');
+            var dllz = GetDllsList(game);
+            if (dllz == null || game == ZloGame.None)
+            {
+                return;
+            }
+            switch (game)
+            {
+                case ZloGame.BF_3:
+                    if (trimmed == $"State_Game State_NA {CurrentPlayerID}")
+                    {
+                        foreach (var item in dllz)
+                        {
+                            RequestDLLInject(game , item);
+                        }
+                    }
+                    break;
+
+                case ZloGame.BF_4:
+                case ZloGame.BF_HardLine:
+                    if (trimmed == $"State_Game State_ClaimReservation {CurrentPlayerID}")
+                    {
+                        foreach (var item in dllz)
+                        {
+                            RequestDLLInject(game , item);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
         private void ZloClient_Disconnected(DisconnectionReasons Reason)
         {
             ConnectionStateChanged?.Invoke(false);
@@ -71,6 +139,11 @@ namespace Zlo
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
         {
+            //if (UserName == "GreeenPNZ")
+            //{
+            //    MessageBox.Show("Sorry fags aren't allowed here");
+            //    Environment.Exit(1337);
+            //}
             CurrentPlayerID = UserID;
             CurrentPlayerName = UserName;
         }
@@ -83,6 +156,14 @@ namespace Zlo
        packet - 4byte size, 1byte type, payload[size]
        */
 
+
+
+        private Dictionary<ZloGame , List<string>> DllsToInject = new Dictionary<ZloGame , List<string>>
+        {
+            { ZloGame.BF_3 , new List<string>() },
+            { ZloGame.BF_4 , new List<string>() },
+            { ZloGame.BF_HardLine , new List<string>() }
+        };
 
         private ZloTCPClient m_client;
         private ZloTCPClient ListenerClient
@@ -123,6 +204,119 @@ namespace Zlo
         private List<Request> RequestQueue = new List<Request>();
         #endregion
 
+        #region Settings
+        internal string saveFileName = @".\Zlo_settings.json";
+        internal const string defaultJSON =
+            @"{
+""dlls"" : {
+""bf3"" : [],
+""bf4"" : [],
+""bfh"" : []
+    }
+}";
+        internal JObject SavedObjects = null;
+
+        public void SaveSettings()
+        {
+            try
+            {
+                if (SavedObjects == null)
+                {
+                    SavedObjects = new JObject();
+                }
+                var bf3_list = GetDllsList(ZloGame.BF_3);
+                var bf4_list = GetDllsList(ZloGame.BF_4);
+                var bfh_list = GetDllsList(ZloGame.BF_HardLine);
+
+                if (bf3_list != null)
+                {                    
+                    SavedObjects["dlls"]["bf3"] = JArray.FromObject(bf3_list);
+                }
+
+                if (bf4_list != null)
+                {
+                    SavedObjects["dlls"]["bf4"] = JArray.FromObject(bf4_list);
+                }
+
+                if (bfh_list != null)
+                {
+                    SavedObjects["dlls"]["bfh"] = JArray.FromObject(bfh_list);
+                }
+
+                File.WriteAllText(saveFileName , SavedObjects.ToString());
+            }
+            catch (Exception ex)
+            {
+                RaiseError(ex , "Error Occured when Saving settings from Path : " + Path.GetFullPath(saveFileName));
+            }
+        }
+        internal void LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(saveFileName))
+                {
+                    SavedObjects = JObject.Parse(File.ReadAllText(saveFileName));
+                    if (SavedObjects["dlls"] == null)
+                    {
+                        GetDefaultSets();
+                    }
+                    else
+                    {
+                        var bf3_list = GetDllsList(ZloGame.BF_3);
+                        var bf4_list = GetDllsList(ZloGame.BF_4);
+                        var bfh_list = GetDllsList(ZloGame.BF_HardLine);
+
+                        bf3_list.Clear();
+                        bf4_list.Clear();
+                        bfh_list.Clear();
+
+                        if (SavedObjects["dlls"]["bf3"] != null)
+                        {
+                            foreach (string item in (JArray)SavedObjects["dlls"]["bf3"])
+                            {
+                                bf3_list.Add(item);
+                            }
+                        }
+
+                        if (SavedObjects["dlls"]["bf4"] != null)
+                        {
+                            foreach (string item in (JArray)SavedObjects["dlls"]["bf4"])
+                            {
+                                bf4_list.Add(item);
+                            }
+                        }
+
+                        if (SavedObjects["dlls"]["bfh"] != null)
+                        {
+                            foreach (string item in (JArray)SavedObjects["dlls"]["bfh"])
+                            {
+                                bfh_list.Add(item);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                        
+                    if (SavedObjects == null || SavedObjects["dlls"] == null)
+                    {
+                        GetDefaultSets();
+                    }
+                    SaveSettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                GetDefaultSets();
+                RaiseError(ex , "Error Occured when Reading saved settings from Path : " + Path.GetFullPath(saveFileName));
+            }
+        }
+        internal void GetDefaultSets()
+        {
+            SavedObjects = JObject.Parse(defaultJSON);
+        }
+        #endregion
 
         #region API events
         /// <summary>
@@ -232,6 +426,43 @@ namespace Zlo
                 ErrorOccured?.Invoke(ex , "Error when connecting");
                 return false;
             }
+        }
+
+        public List<string> GetDllsList(ZloGame game)
+        {
+            if (game == ZloGame.None)
+            {
+                return null;
+            }
+            return DllsToInject[game];
+        }
+        internal void RequestDLLInject(ZloGame game , string dllPath)
+        {
+            /*             
+pid 7
+size
+uint8 game
+string full path to dll
+             */
+            var req = new Request();
+            req.WaitBeforePeriod = TimeSpan.Zero;
+            req.IsRespondable = false;
+
+            req.pid = 7;
+            byte[] toadd = Encoding.UTF8.GetBytes(dllPath);
+
+            byte[] size = BitConverter.GetBytes(toadd.Length + 2);
+            Array.Reverse(size);
+
+            List<byte> ar = new List<byte>();
+            ar.Add(7);
+            ar.AddRange(size);
+            ar.Add((byte)game);
+            ar.AddRange(toadd);
+            ar.Add(0);
+
+            req.data = ar.ToArray();
+            AddToQueue(req);
         }
 
         public void JoinOnlineGame(OnlinePlayModes playmode , uint serverid = 0)
@@ -376,7 +607,7 @@ namespace Zlo
             #endregion
 
             var req = new Request();
-            req.WaitBeforePeriod = TimeSpan.FromSeconds(4);
+            req.WaitBeforePeriod = TimeSpan.FromSeconds(2);
             req.IsRespondable = false;
 
             req.pid = 3;
@@ -491,6 +722,25 @@ namespace Zlo
         {
             get { return ListenerClient.IsConnected; }
         }
+
+
+        private JObject m_BF3_Stats;
+        /// <summary>
+        /// The instance gets changed everytime StatsReceived event gets raised
+        /// </summary>
+        public JObject BF3_Stats
+        {
+            get
+            {
+                if (m_BF3_Stats == null)
+                {
+                    m_BF3_Stats = (JObject)GameData.BF3_stats_def.DeepClone();                    
+                }
+                return m_BF3_Stats;
+            }
+        }
+
+
         #endregion
 
         #region Other Methods
@@ -506,7 +756,7 @@ namespace Zlo
         {
             try
             {
-                File.AppendAllText(@".\Demo-Log.txt" , log);
+                File.AppendAllText(@".\Demo-Log.txt" , log + Environment.NewLine);
             }
             catch
             {
@@ -534,7 +784,7 @@ namespace Zlo
                          0 - ping, just send it every 20secs
                          1 - userinfo, request - empty payload, responce - 4byte id, string
                          2 - playerinfo - dogtag, clantag, not done
-                         3 - serverlist, not done
+                         3 - serverlist
                          4 - stats, req - 1byte game, resp - 1byte game, 2byte size, (string, float)[size]
                          5 - items - uint8 game, uint16 count, (string, uint8)[count]
                          */
@@ -574,11 +824,19 @@ namespace Zlo
                                          *next is buffer
                                          */
                                         byte server_event_id = br.ReadByte();
+
                                         ZloGame game = (ZloGame)br.ReadByte();
                                         uint server_id = br.ReadZUInt32();
                                         if (server_id == 0)
                                         {
                                             return;
+                                        }
+                                        if (server_event_id == 1 && game == ZloGame.BF_4)
+                                        {
+                                            Console.WriteLine($"====================================");
+                                            Console.WriteLine($"Players Packet sent :\nServer ID = {server_id}\nPacketInfo : <After 6 bytes from header>");
+                                            hexlike(bytes.Skip(6).ToArray());
+                                            Console.WriteLine($"====================================");
                                         }
                                         var actualbuffer = bytes_list.Skip(6).ToArray();
                                         switch (game)
@@ -692,8 +950,9 @@ namespace Zlo
             }
         }
 
-        public static void hexlike(byte[] buf , int size)
+        public static void hexlike(byte[] buf)
         {
+            int size = buf.Length;
             StringBuilder sb = new StringBuilder();
             sb.Append('\n');
             sb.AppendLine($"STORAGE_SIZE: {size}");
@@ -908,8 +1167,6 @@ namespace Zlo
 
                 case ZloRequest.Player_Info:
                 case ZloRequest.Stats:
-                    req.WaitBeforePeriod = TimeSpan.FromSeconds(1);
-                    break;
                 case ZloRequest.Items:
                     req.WaitBeforePeriod = TimeSpan.FromSeconds(1);
                     req.IsRespondable = true;
@@ -934,6 +1191,8 @@ namespace Zlo
             req.data = final.ToArray();
             req.pid = (byte)request;
 
+            if (request == ZloRequest.Stats)
+                Console.WriteLine();
 
 
             AddToQueue(req);
@@ -945,6 +1204,7 @@ namespace Zlo
             req.ReceivedResponce -= Req_ReceivedResponce;
             req.ReceivedResponce += Req_ReceivedResponce;
             RequestQueue.Add(req);
+
             if (RequestQueue.Count == 1)
             {
                 TriggerQueue();
@@ -975,7 +1235,7 @@ namespace Zlo
                     return;
                 }
                 else
-                {
+                {                    
                     if (!ListenerClient.WritePacket(CurrentRequest.data))
                     {
                         CurrentRequest.GiveResponce(null);
@@ -984,7 +1244,7 @@ namespace Zlo
                     {
                         CurrentRequest.GiveResponce(null);
                     }
-                }               
+                }
             }
         }
         private void ExecuteCMDTimer(object sender , ElapsedEventArgs e)

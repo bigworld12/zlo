@@ -25,8 +25,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>6.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>9</ApplicationRevision>
+    <ApplicationVersion>6.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -83,6 +83,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DllInjector.xaml.cs">
+      <DependentUpon>DllInjector.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GUI Classes\GUI_Lists.cs" />
     <Compile Include="GUI Classes\GUI_Map.cs" />
     <Compile Include="GUI Classes\GUI_Player.cs" />
@@ -91,6 +94,9 @@
     <Compile Include="GUI Classes\BF4_GUI_Server.cs" />
     <Compile Include="Views\BF3View.xaml.cs">
       <DependentUpon>BF3View.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DllInjectionController.xaml.cs">
+      <DependentUpon>DllInjectionController.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GameStateViewer.xaml.cs">
       <DependentUpon>GameStateViewer.xaml</DependentUpon>
@@ -107,6 +113,10 @@
     <Compile Include="Views\ListViews\BF3ServerListView.xaml.cs">
       <DependentUpon>BF3ServerListView.xaml</DependentUpon>
     </Compile>
+    <Page Include="DllInjector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -120,6 +130,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\BF3View.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DllInjectionController.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

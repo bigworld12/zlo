@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Zlo.Extras
         {
             FlagName = flag;
             ItemExists = exists;
-            var translated = GameData.BF4_GetTranslatedItem(flag);
+            var translated = (JObject)GameData.BF4_items[flag];            
             ItemName = translated["rname"].ToObject<string>();
             ItemDescription = translated["rdesc"].ToObject<string>();            
         }

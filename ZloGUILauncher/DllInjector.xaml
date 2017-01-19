@@ -1,0 +1,26 @@
+﻿<Window x:Class="ZloGUILauncher.DllInjector"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ZloGUILauncher"
+        xmlns:views="clr-namespace:ZloGUILauncher.Views"
+        mc:Ignorable="d"
+        Title="Select dlls to Inject" Height="328.75" Width="631.25">
+    <Grid>
+        <TabControl>
+            <TabItem Header="BF4">
+                <views:DllInjectionController SelectedGame="BF_4" x:Name="BF4Controller"/>
+            </TabItem>
+            <TabItem Header="BF3">
+                <views:DllInjectionController SelectedGame="BF_3" x:Name="BF3Controller"/>
+            </TabItem>
+            
+            <!--<TabItem Header="BFHardLine">
+
+            </TabItem>-->
+        </TabControl>
+
+    </Grid>
+
+</Window>

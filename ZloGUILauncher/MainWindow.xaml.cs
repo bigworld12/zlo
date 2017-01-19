@@ -27,7 +27,7 @@ namespace ZloGUILauncher
         public MainWindow()
         {
             InitializeComponent();
-            App.Client.ErrorOccured += Client_ErrorOccured;            
+            App.Client.ErrorOccured += Client_ErrorOccured;
             App.Client.UserInfoReceived += Client_UserInfoReceived;
             App.Client.GameStateReceived += Client_GameStateReceived;
             App.Client.APIVersionReceived += Client_APIVersionReceived;
@@ -47,7 +47,7 @@ namespace ZloGUILauncher
 
         private void Client_ConnectionStateChanged(bool IsConnectedToZloClient)
         {
-            Dispatcher.Invoke(() => 
+            Dispatcher.Invoke(() =>
             {
                 if (IsConnectedToZloClient)
                 {
@@ -60,9 +60,9 @@ namespace ZloGUILauncher
                     IsConnectedTextBlock.Text = "DisConnected";
                     IsConnectedTextBlock.Foreground = Brushes.Red;
                 }
-                
+
             });
-            
+
         }
 
         private void Client_Disconnected(Zlo.Extras.DisconnectionReasons Reason)
@@ -74,8 +74,9 @@ namespace ZloGUILauncher
         {
             if (IsNeedUpdate)
             {
-                Dispatcher.Invoke(() => {
-                    MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll","Update Notification", MessageBoxButton.OK);
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll" , "Update Notification" , MessageBoxButton.OK);
                     string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
                     string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
 
@@ -88,7 +89,8 @@ namespace ZloGUILauncher
             }
             else
             {
-                Dispatcher.Invoke(() => {
+                Dispatcher.Invoke(() =>
+                {
                     Title = $"Bigworld12 new API launcher (Version {Current.ToString()})";
                 });
             }
@@ -119,16 +121,16 @@ tasklist /FI ""IMAGENAME eq %EXE%"" 2>NUL | find /I /N ""%EXE%"">NUL
 if ""%ERRORLEVEL%""==""0"" goto LOOP
 echo Process %EXE% closed
 move /y ""{Newdll}"" ""{Sourcedll}"" 
-start """" ""{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName)}"" ""done""
+start """" ""{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , AppDomain.CurrentDomain.FriendlyName)}"" ""done""
 Exit
 ";
                 var bat_path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "UpdateBat.bat");
                 //create the bat file
                 File.WriteAllText(bat_path , BatchText);
                 ProcessStartInfo si = new ProcessStartInfo(bat_path);
-                si.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;                
+                si.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 Process.Start(si);
-                Dispatcher.Invoke(() => { Application.Current.Shutdown(); });                
+                Dispatcher.Invoke(() => { Application.Current.Shutdown(); });
             }
         }
 
@@ -148,10 +150,10 @@ Exit
                 PlayerInfoTextBlock.Text = $"{UserName} ({UserID})";
             });
         }
-        
+
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
-            MessageBox.Show($"{Error.ToString()}", CustomMessage);            
+            MessageBox.Show($"{Error.ToString()}" , CustomMessage);
         }
 
         private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
@@ -161,7 +163,8 @@ Exit
 
         private void RestartLauncherButton_Click(object sender , RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() => {
+            Dispatcher.Invoke(() =>
+            {
                 App.Client.Close();
                 Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
@@ -194,6 +197,12 @@ Exit
         private void OfficialDiscordButton_Click(object sender , RoutedEventArgs e)
         {
             Process.Start("https://discord.me/zlocommunity");
+        }
+
+        private void ShowDllInjectorButton_Click(object sender , RoutedEventArgs e)
+        {
+            var di = new DllInjector();            
+            di.Show();
         }
     }
 }
