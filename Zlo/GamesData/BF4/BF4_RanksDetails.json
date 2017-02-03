@@ -1,0 +1,1360 @@
+{
+  "0": {
+    "Rank": 0,
+    "Image": "\\ranks\\r0.png",
+    "Rank Title": "Recruit",
+    "Unlocks": [],
+    "XP Min Relative": 0,
+    "XP Min Total": 0
+  },
+  "1": {
+    "Rank": 1,
+    "Image": "\\ranks\\r1.png",
+    "Rank Title": "Private First Class",
+    "Unlocks": [],
+    "XP Min Relative": 3000,
+    "XP Min Total": 3000
+  },
+  "2": {
+    "Rank": 2,
+    "Image": "\\ranks\\r2.png",
+    "Rank Title": "Private First Class II",
+    "Unlocks": [],
+    "XP Min Relative": 8000,
+    "XP Min Total": 11000
+  },
+  "3": {
+    "Rank": 3,
+    "Image": "\\ranks\\r3.png",
+    "Rank Title": "Private First Class III",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 11000,
+    "XP Min Total": 22000
+  },
+  "4": {
+    "Rank": 4,
+    "Image": "\\ranks\\r4.png",
+    "Rank Title": "Private First Class IV",
+    "Unlocks": [],
+    "XP Min Relative": 13000,
+    "XP Min Total": 35000
+  },
+  "5": {
+    "Rank": 5,
+    "Image": "\\ranks\\r5.png",
+    "Rank Title": "Private First Class V",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 17000,
+    "XP Min Total": 52000
+  },
+  "6": {
+    "Rank": 6,
+    "Image": "\\ranks\\r6.png",
+    "Rank Title": "Lance Corporal",
+    "Unlocks": [],
+    "XP Min Relative": 18000,
+    "XP Min Total": 70000
+  },
+  "7": {
+    "Rank": 7,
+    "Image": "\\ranks\\r7.png",
+    "Rank Title": "Lance Corporal II",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 21000,
+    "XP Min Total": 91000
+  },
+  "8": {
+    "Rank": 8,
+    "Image": "\\ranks\\r8.png",
+    "Rank Title": "Lance Corporal III",
+    "Unlocks": [],
+    "XP Min Relative": 24000,
+    "XP Min Total": 115000
+  },
+  "9": {
+    "Rank": 9,
+    "Image": "\\ranks\\r9.png",
+    "Rank Title": "Lance Corporal IV",
+    "Unlocks": [],
+    "XP Min Relative": 25000,
+    "XP Min Total": 140000
+  },
+  "10": {
+    "Rank": 10,
+    "Image": "\\ranks\\r10.png",
+    "Rank Title": "Lance Corporal V",
+    "Unlocks": [
+      "Gold Battlepack Rank 10 Dogtag Commander Mode"
+    ],
+    "XP Min Relative": 28000,
+    "XP Min Total": 168000
+  },
+  "11": {
+    "Rank": 11,
+    "Image": "\\ranks\\r11.png",
+    "Rank Title": "Corporal",
+    "Unlocks": [],
+    "XP Min Relative": 29000,
+    "XP Min Total": 197000
+  },
+  "12": {
+    "Rank": 12,
+    "Image": "\\ranks\\r12.png",
+    "Rank Title": "Corporal II",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 32000,
+    "XP Min Total": 229000
+  },
+  "13": {
+    "Rank": 13,
+    "Image": "\\ranks\\r13.png",
+    "Rank Title": "Corporal III",
+    "Unlocks": [],
+    "XP Min Relative": 33000,
+    "XP Min Total": 262000
+  },
+  "14": {
+    "Rank": 14,
+    "Image": "\\ranks\\r14.png",
+    "Rank Title": "Corporal IV",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 35000,
+    "XP Min Total": 297000
+  },
+  "15": {
+    "Rank": 15,
+    "Image": "\\ranks\\r15.png",
+    "Rank Title": "Corporal V",
+    "Unlocks": [],
+    "XP Min Relative": 37000,
+    "XP Min Total": 334000
+  },
+  "16": {
+    "Rank": 16,
+    "Image": "\\ranks\\r16.png",
+    "Rank Title": "Sergeant",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 39000,
+    "XP Min Total": 373000
+  },
+  "17": {
+    "Rank": 17,
+    "Image": "\\ranks\\r17.png",
+    "Rank Title": "Sergeant II",
+    "Unlocks": [],
+    "XP Min Relative": 40000,
+    "XP Min Total": 413000
+  },
+  "18": {
+    "Rank": 18,
+    "Image": "\\ranks\\r18.png",
+    "Rank Title": "Sergeant III",
+    "Unlocks": [
+      "Bronze Battlepack"
+    ],
+    "XP Min Relative": 42000,
+    "XP Min Total": 455000
+  },
+  "19": {
+    "Rank": 19,
+    "Image": "\\ranks\\r19.png",
+    "Rank Title": "Sergeant IV",
+    "Unlocks": [],
+    "XP Min Relative": 44000,
+    "XP Min Total": 499000
+  },
+  "20": {
+    "Rank": 20,
+    "Image": "\\ranks\\r20.png",
+    "Rank Title": "Sergeant V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 46000,
+    "XP Min Total": 545000
+  },
+  "21": {
+    "Rank": 21,
+    "Image": "\\ranks\\r21.png",
+    "Rank Title": "Staff Sergeant",
+    "Unlocks": [],
+    "XP Min Relative": 47000,
+    "XP Min Total": 592000
+  },
+  "22": {
+    "Rank": 22,
+    "Image": "\\ranks\\r22.png",
+    "Rank Title": "Staff Sergeant II",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 48000,
+    "XP Min Total": 640000
+  },
+  "23": {
+    "Rank": 23,
+    "Image": "\\ranks\\r23.png",
+    "Rank Title": "Staff Sergeant III",
+    "Unlocks": [],
+    "XP Min Relative": 51000,
+    "XP Min Total": 691000
+  },
+  "24": {
+    "Rank": 24,
+    "Image": "\\ranks\\r24.png",
+    "Rank Title": "Staff Sergeant IV",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 51000,
+    "XP Min Total": 742000
+  },
+  "25": {
+    "Rank": 25,
+    "Image": "\\ranks\\r25.png",
+    "Rank Title": "Staff Sergeant V",
+    "Unlocks": [
+      "Rank 25 Dogtag"
+    ],
+    "XP Min Relative": 54000,
+    "XP Min Total": 796000
+  },
+  "26": {
+    "Rank": 26,
+    "Image": "\\ranks\\r26.png",
+    "Rank Title": "Gunnery Sergeant",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 55000,
+    "XP Min Total": 851000
+  },
+  "27": {
+    "Rank": 27,
+    "Image": "\\ranks\\r27.png",
+    "Rank Title": "Gunnery Sergeant II",
+    "Unlocks": [],
+    "XP Min Relative": 56000,
+    "XP Min Total": 907000
+  },
+  "28": {
+    "Rank": 28,
+    "Image": "\\ranks\\r28.png",
+    "Rank Title": "Gunnery Sergeant III",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 58000,
+    "XP Min Total": 965000
+  },
+  "29": {
+    "Rank": 29,
+    "Image": "\\ranks\\r29.png",
+    "Rank Title": "Gunnery Sergeant IV",
+    "Unlocks": [],
+    "XP Min Relative": 58000,
+    "XP Min Total": 1023000
+  },
+  "30": {
+    "Rank": 30,
+    "Image": "\\ranks\\r30.png",
+    "Rank Title": "Gunnery Sergeant V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 58000,
+    "XP Min Total": 1081000
+  },
+  "31": {
+    "Rank": 31,
+    "Image": "\\ranks\\r31.png",
+    "Rank Title": "Master Sergeant",
+    "Unlocks": [],
+    "XP Min Relative": 69000,
+    "XP Min Total": 1150000
+  },
+  "32": {
+    "Rank": 32,
+    "Image": "\\ranks\\r32.png",
+    "Rank Title": "Master Sergeant II",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 65000,
+    "XP Min Total": 1215000
+  },
+  "33": {
+    "Rank": 33,
+    "Image": "\\ranks\\r33.png",
+    "Rank Title": "Master Sergeant III",
+    "Unlocks": [],
+    "XP Min Relative": 65000,
+    "XP Min Total": 1280000
+  },
+  "34": {
+    "Rank": 34,
+    "Image": "\\ranks\\r34.png",
+    "Rank Title": "Master Sergeant IV",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 65000,
+    "XP Min Total": 1345000
+  },
+  "35": {
+    "Rank": 35,
+    "Image": "\\ranks\\r35.png",
+    "Rank Title": "Master Sergeant V",
+    "Unlocks": [],
+    "XP Min Relative": 65000,
+    "XP Min Total": 1410000
+  },
+  "36": {
+    "Rank": 36,
+    "Image": "\\ranks\\r36.png",
+    "Rank Title": "First Sergeant",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 70000,
+    "XP Min Total": 1480000
+  },
+  "37": {
+    "Rank": 37,
+    "Image": "\\ranks\\r37.png",
+    "Rank Title": "First Sergeant II",
+    "Unlocks": [],
+    "XP Min Relative": 70000,
+    "XP Min Total": 1550000
+  },
+  "38": {
+    "Rank": 38,
+    "Image": "\\ranks\\r38.png",
+    "Rank Title": "First Sergeant III",
+    "Unlocks": [
+      "Silver Battlepack"
+    ],
+    "XP Min Relative": 70000,
+    "XP Min Total": 1620000
+  },
+  "39": {
+    "Rank": 39,
+    "Image": "\\ranks\\r39.png",
+    "Rank Title": "First Sergeant IV",
+    "Unlocks": [],
+    "XP Min Relative": 70000,
+    "XP Min Total": 1690000
+  },
+  "40": {
+    "Rank": 40,
+    "Image": "\\ranks\\r40.png",
+    "Rank Title": "First Sergeant V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 80000,
+    "XP Min Total": 1770000
+  },
+  "41": {
+    "Rank": 41,
+    "Image": "\\ranks\\r41.png",
+    "Rank Title": "Master Gunnery Sergeant",
+    "Unlocks": [],
+    "XP Min Relative": 80000,
+    "XP Min Total": 1850000
+  },
+  "42": {
+    "Rank": 42,
+    "Image": "\\ranks\\r42.png",
+    "Rank Title": "Master Gunnery Sergeant II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 75000,
+    "XP Min Total": 1925000
+  },
+  "43": {
+    "Rank": 43,
+    "Image": "\\ranks\\r43.png",
+    "Rank Title": "Master Gunnery Sergeant III",
+    "Unlocks": [],
+    "XP Min Relative": 75000,
+    "XP Min Total": 2000000
+  },
+  "44": {
+    "Rank": 44,
+    "Image": "\\ranks\\r44.png",
+    "Rank Title": "Master Gunnery Sergeant IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 80000,
+    "XP Min Total": 2080000
+  },
+  "45": {
+    "Rank": 45,
+    "Image": "\\ranks\\r45.png",
+    "Rank Title": "Master Gunnery Sergeant V",
+    "Unlocks": [],
+    "XP Min Relative": 80000,
+    "XP Min Total": 2160000
+  },
+  "46": {
+    "Rank": 46,
+    "Image": "\\ranks\\r46.png",
+    "Rank Title": "Sergeant Major",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 80000,
+    "XP Min Total": 2240000
+  },
+  "47": {
+    "Rank": 47,
+    "Image": "\\ranks\\r47.png",
+    "Rank Title": "Sergeant Major II",
+    "Unlocks": [],
+    "XP Min Relative": 90000,
+    "XP Min Total": 2330000
+  },
+  "48": {
+    "Rank": 48,
+    "Image": "\\ranks\\r48.png",
+    "Rank Title": "Sergeant Major III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 80000,
+    "XP Min Total": 2410000
+  },
+  "49": {
+    "Rank": 49,
+    "Image": "\\ranks\\r49.png",
+    "Rank Title": "Sergeant Major IV",
+    "Unlocks": [],
+    "XP Min Relative": 90000,
+    "XP Min Total": 2500000
+  },
+  "50": {
+    "Rank": 50,
+    "Image": "\\ranks\\r50.png",
+    "Rank Title": "Sergeant Major V",
+    "Unlocks": [
+      "Gold Battlepack Rank 50 Dogtag"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 2590000
+  },
+  "51": {
+    "Rank": 51,
+    "Image": "\\ranks\\r51.png",
+    "Rank Title": "Warrant Officer One",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 80000,
+    "XP Min Total": 2670000
+  },
+  "52": {
+    "Rank": 52,
+    "Image": "\\ranks\\r52.png",
+    "Rank Title": "Warrant Officer One II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 2760000
+  },
+  "53": {
+    "Rank": 53,
+    "Image": "\\ranks\\r53.png",
+    "Rank Title": "Warrant Officer One III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 2860000
+  },
+  "54": {
+    "Rank": 54,
+    "Image": "\\ranks\\r54.png",
+    "Rank Title": "Warrant Officer One IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 2960000
+  },
+  "55": {
+    "Rank": 55,
+    "Image": "\\ranks\\r55.png",
+    "Rank Title": "Warrant Officer One V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 3050000
+  },
+  "56": {
+    "Rank": 56,
+    "Image": "\\ranks\\r56.png",
+    "Rank Title": "Chief Warrant Officer Two",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 3140000
+  },
+  "57": {
+    "Rank": 57,
+    "Image": "\\ranks\\r57.png",
+    "Rank Title": "Chief Warrant Officer Two II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 3230000
+  },
+  "58": {
+    "Rank": 58,
+    "Image": "\\ranks\\r58.png",
+    "Rank Title": "Chief Warrant Officer Two III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 3330000
+  },
+  "59": {
+    "Rank": 59,
+    "Image": "\\ranks\\r59.png",
+    "Rank Title": "Chief Warrant Officer Two IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 3430000
+  },
+  "60": {
+    "Rank": 60,
+    "Image": "\\ranks\\r60.png",
+    "Rank Title": "Chief Warrant Officer Two V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 3520000
+  },
+  "61": {
+    "Rank": 61,
+    "Image": "\\ranks\\r61.png",
+    "Rank Title": "Chief Warrant Officer Three",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 3630000
+  },
+  "62": {
+    "Rank": 62,
+    "Image": "\\ranks\\r62.png",
+    "Rank Title": "Chief Warrant Officer Three II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 3730000
+  },
+  "63": {
+    "Rank": 63,
+    "Image": "\\ranks\\r63.png",
+    "Rank Title": "Chief Warrant Officer Three III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 100000,
+    "XP Min Total": 3830000
+  },
+  "64": {
+    "Rank": 64,
+    "Image": "\\ranks\\r64.png",
+    "Rank Title": "Chief Warrant Officer Three IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 3940000
+  },
+  "65": {
+    "Rank": 65,
+    "Image": "\\ranks\\r65.png",
+    "Rank Title": "Chief Warrant Officer Three V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4050000
+  },
+  "66": {
+    "Rank": 66,
+    "Image": "\\ranks\\r66.png",
+    "Rank Title": "Chief Warrant Officer Four",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 90000,
+    "XP Min Total": 4140000
+  },
+  "67": {
+    "Rank": 67,
+    "Image": "\\ranks\\r67.png",
+    "Rank Title": "Chief Warrant Officer Four II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4250000
+  },
+  "68": {
+    "Rank": 68,
+    "Image": "\\ranks\\r68.png",
+    "Rank Title": "Chief Warrant Officer Four III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4360000
+  },
+  "69": {
+    "Rank": 69,
+    "Image": "\\ranks\\r69.png",
+    "Rank Title": "Chief Warrant Officer Four IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 4480000
+  },
+  "70": {
+    "Rank": 70,
+    "Image": "\\ranks\\r70.png",
+    "Rank Title": "Chief Warrant Officer Four V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4590000
+  },
+  "71": {
+    "Rank": 71,
+    "Image": "\\ranks\\r71.png",
+    "Rank Title": "Chief Warrant Officer Five",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4700000
+  },
+  "72": {
+    "Rank": 72,
+    "Image": "\\ranks\\r72.png",
+    "Rank Title": "Chief Warrant Officer Five II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4810000
+  },
+  "73": {
+    "Rank": 73,
+    "Image": "\\ranks\\r73.png",
+    "Rank Title": "Chief Warrant Officer Five III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 4920000
+  },
+  "74": {
+    "Rank": 74,
+    "Image": "\\ranks\\r74.png",
+    "Rank Title": "Chief Warrant Officer Five IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 110000,
+    "XP Min Total": 5030000
+  },
+  "75": {
+    "Rank": 75,
+    "Image": "\\ranks\\r75.png",
+    "Rank Title": "Chief Warrant Officer Five V",
+    "Unlocks": [
+      "Gold Battlepack Rank 75 Dogtag"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5150000
+  },
+  "76": {
+    "Rank": 76,
+    "Image": "\\ranks\\r76.png",
+    "Rank Title": "Second Lieutenant",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5270000
+  },
+  "77": {
+    "Rank": 77,
+    "Image": "\\ranks\\r77.png",
+    "Rank Title": "Second Lieutenant II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5390000
+  },
+  "78": {
+    "Rank": 78,
+    "Image": "\\ranks\\r78.png",
+    "Rank Title": "Second Lieutenant III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5510000
+  },
+  "79": {
+    "Rank": 79,
+    "Image": "\\ranks\\r79.png",
+    "Rank Title": "Second Lieutenant IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5630000
+  },
+  "80": {
+    "Rank": 80,
+    "Image": "\\ranks\\r80.png",
+    "Rank Title": "Second Lieutenant V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 5750000
+  },
+  "81": {
+    "Rank": 81,
+    "Image": "\\ranks\\r81.png",
+    "Rank Title": "First Lieutenant",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 5880000
+  },
+  "82": {
+    "Rank": 82,
+    "Image": "\\ranks\\r82.png",
+    "Rank Title": "First Lieutenant II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 6000000
+  },
+  "83": {
+    "Rank": 83,
+    "Image": "\\ranks\\r83.png",
+    "Rank Title": "First Lieutenant III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 6120000
+  },
+  "84": {
+    "Rank": 84,
+    "Image": "\\ranks\\r84.png",
+    "Rank Title": "First Lieutenant IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 6250000
+  },
+  "85": {
+    "Rank": 85,
+    "Image": "\\ranks\\r85.png",
+    "Rank Title": "First Lieutenant V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 6380000
+  },
+  "86": {
+    "Rank": 86,
+    "Image": "\\ranks\\r86.png",
+    "Rank Title": "Captain",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 6510000
+  },
+  "87": {
+    "Rank": 87,
+    "Image": "\\ranks\\r87.png",
+    "Rank Title": "Captain II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 6640000
+  },
+  "88": {
+    "Rank": 88,
+    "Image": "\\ranks\\r88.png",
+    "Rank Title": "Captain III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 120000,
+    "XP Min Total": 6760000
+  },
+  "89": {
+    "Rank": 89,
+    "Image": "\\ranks\\r89.png",
+    "Rank Title": "Captain IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 6890000
+  },
+  "90": {
+    "Rank": 90,
+    "Image": "\\ranks\\r90.png",
+    "Rank Title": "Captain V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 7020000
+  },
+  "91": {
+    "Rank": 91,
+    "Image": "\\ranks\\r91.png",
+    "Rank Title": "Major",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 7160000
+  },
+  "92": {
+    "Rank": 92,
+    "Image": "\\ranks\\r92.png",
+    "Rank Title": "Major II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 7290000
+  },
+  "93": {
+    "Rank": 93,
+    "Image": "\\ranks\\r93.png",
+    "Rank Title": "Major III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 7430000
+  },
+  "94": {
+    "Rank": 94,
+    "Image": "\\ranks\\r94.png",
+    "Rank Title": "Major IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 7560000
+  },
+  "95": {
+    "Rank": 95,
+    "Image": "\\ranks\\r95.png",
+    "Rank Title": "Major V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 7700000
+  },
+  "96": {
+    "Rank": 96,
+    "Image": "\\ranks\\r96.png",
+    "Rank Title": "Lt. Colonel",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 150000,
+    "XP Min Total": 7850000
+  },
+  "97": {
+    "Rank": 97,
+    "Image": "\\ranks\\r97.png",
+    "Rank Title": "Lt. Colonel II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 7990000
+  },
+  "98": {
+    "Rank": 98,
+    "Image": "\\ranks\\r98.png",
+    "Rank Title": "Lt. Colonel III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 8130000
+  },
+  "99": {
+    "Rank": 99,
+    "Image": "\\ranks\\r99.png",
+    "Rank Title": "Lt. Colonel IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 130000,
+    "XP Min Total": 8260000
+  },
+  "100": {
+    "Rank": 100,
+    "Image": "\\ranks\\r100.png",
+    "Rank Title": "Colonel",
+    "Unlocks": [
+      "Gold Battlepack Rank 100 Dogtag C100"
+    ],
+    "XP Min Relative": 140000,
+    "XP Min Total": 8400000
+  },
+  "101": {
+    "Rank": 101,
+    "Image": "\\ranks\\r101.png",
+    "Rank Title": "Colonel II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 8600000
+  },
+  "102": {
+    "Rank": 102,
+    "Image": "\\ranks\\r102.png",
+    "Rank Title": "Colonel III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 8800000
+  },
+  "103": {
+    "Rank": 103,
+    "Image": "\\ranks\\r103.png",
+    "Rank Title": "Colonel IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 9000000
+  },
+  "104": {
+    "Rank": 104,
+    "Image": "\\ranks\\r104.png",
+    "Rank Title": "Colonel V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 9200000
+  },
+  "105": {
+    "Rank": 105,
+    "Image": "\\ranks\\r105.png",
+    "Rank Title": "Colonel VI",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 9400000
+  },
+  "106": {
+    "Rank": 106,
+    "Image": "\\ranks\\r106.png",
+    "Rank Title": "Colonel VII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 9600000
+  },
+  "107": {
+    "Rank": 107,
+    "Image": "\\ranks\\r107.png",
+    "Rank Title": "Colonel VIII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 9800000
+  },
+  "108": {
+    "Rank": 108,
+    "Image": "\\ranks\\r108.png",
+    "Rank Title": "Colonel IX",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 10000000
+  },
+  "109": {
+    "Rank": 109,
+    "Image": "\\ranks\\r109.png",
+    "Rank Title": "Colonel X",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 10200000
+  },
+  "110": {
+    "Rank": 110,
+    "Image": "\\ranks\\r110.png",
+    "Rank Title": "Brigadier General",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 200000,
+    "XP Min Total": 10400000
+  },
+  "111": {
+    "Rank": 111,
+    "Image": "\\ranks\\r111.png",
+    "Rank Title": "Brigadier General II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 300000,
+    "XP Min Total": 10700000
+  },
+  "112": {
+    "Rank": 112,
+    "Image": "\\ranks\\r112.png",
+    "Rank Title": "Brigadier General III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 470000,
+    "XP Min Total": 11170000
+  },
+  "113": {
+    "Rank": 113,
+    "Image": "\\ranks\\r113.png",
+    "Rank Title": "Brigadier General IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 480000,
+    "XP Min Total": 11650000
+  },
+  "114": {
+    "Rank": 114,
+    "Image": "\\ranks\\r114.png",
+    "Rank Title": "Brigadier General V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 500000,
+    "XP Min Total": 12150000
+  },
+  "115": {
+    "Rank": 115,
+    "Image": "\\ranks\\r115.png",
+    "Rank Title": "Brigadier General VI",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 510000,
+    "XP Min Total": 12660000
+  },
+  "116": {
+    "Rank": 116,
+    "Image": "\\ranks\\r116.png",
+    "Rank Title": "Brigadier General VII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 530000,
+    "XP Min Total": 13190000
+  },
+  "117": {
+    "Rank": 117,
+    "Image": "\\ranks\\r117.png",
+    "Rank Title": "Brigadier General VIII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 550000,
+    "XP Min Total": 13740000
+  },
+  "118": {
+    "Rank": 118,
+    "Image": "\\ranks\\r118.png",
+    "Rank Title": "Brigadier General IX",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 560000,
+    "XP Min Total": 14300000
+  },
+  "119": {
+    "Rank": 119,
+    "Image": "\\ranks\\r119.png",
+    "Rank Title": "Brigadier General X",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 590000,
+    "XP Min Total": 14890000
+  },
+  "120": {
+    "Rank": 120,
+    "Image": "\\ranks\\r120.png",
+    "Rank Title": "Major General",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 600000,
+    "XP Min Total": 15490000
+  },
+  "121": {
+    "Rank": 121,
+    "Image": "\\ranks\\r121.png",
+    "Rank Title": "Major General II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 620000,
+    "XP Min Total": 16110000
+  },
+  "122": {
+    "Rank": 122,
+    "Image": "\\ranks\\r122.png",
+    "Rank Title": "Major General III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 640000,
+    "XP Min Total": 16750000
+  },
+  "123": {
+    "Rank": 123,
+    "Image": "\\ranks\\r123.png",
+    "Rank Title": "Major General IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 660000,
+    "XP Min Total": 17410000
+  },
+  "124": {
+    "Rank": 124,
+    "Image": "\\ranks\\r124.png",
+    "Rank Title": "Major General V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 680000,
+    "XP Min Total": 18090000
+  },
+  "125": {
+    "Rank": 125,
+    "Image": "\\ranks\\r125.png",
+    "Rank Title": "Major General VI",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 700000,
+    "XP Min Total": 18790000
+  },
+  "126": {
+    "Rank": 126,
+    "Image": "\\ranks\\r126.png",
+    "Rank Title": "Major General VII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 730000,
+    "XP Min Total": 19520000
+  },
+  "127": {
+    "Rank": 127,
+    "Image": "\\ranks\\r127.png",
+    "Rank Title": "Major General VIII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 740000,
+    "XP Min Total": 20260000
+  },
+  "128": {
+    "Rank": 128,
+    "Image": "\\ranks\\r128.png",
+    "Rank Title": "Major General IX",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 770000,
+    "XP Min Total": 21030000
+  },
+  "129": {
+    "Rank": 129,
+    "Image": "\\ranks\\r129.png",
+    "Rank Title": "Major General X",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 790000,
+    "XP Min Total": 21820000
+  },
+  "130": {
+    "Rank": 130,
+    "Image": "\\ranks\\r130.png",
+    "Rank Title": "Lieutenant General",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 810000,
+    "XP Min Total": 22630000
+  },
+  "131": {
+    "Rank": 131,
+    "Image": "\\ranks\\r131.png",
+    "Rank Title": "Lieutenant General II",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 840000,
+    "XP Min Total": 23470000
+  },
+  "132": {
+    "Rank": 132,
+    "Image": "\\ranks\\r132.png",
+    "Rank Title": "Lieutenant General III",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 860000,
+    "XP Min Total": 24330000
+  },
+  "133": {
+    "Rank": 133,
+    "Image": "\\ranks\\r133.png",
+    "Rank Title": "Lieutenant General IV",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 890000,
+    "XP Min Total": 25220000
+  },
+  "134": {
+    "Rank": 134,
+    "Image": "\\ranks\\r134.png",
+    "Rank Title": "Lieutenant General V",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 910000,
+    "XP Min Total": 26130000
+  },
+  "135": {
+    "Rank": 135,
+    "Image": "\\ranks\\r135.png",
+    "Rank Title": "Lieutenant General VI",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 940000,
+    "XP Min Total": 27070000
+  },
+  "136": {
+    "Rank": 136,
+    "Image": "\\ranks\\r136.png",
+    "Rank Title": "Lieutenant General VII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 960000,
+    "XP Min Total": 28030000
+  },
+  "137": {
+    "Rank": 137,
+    "Image": "\\ranks\\r137.png",
+    "Rank Title": "Lieutenant General VIII",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 990000,
+    "XP Min Total": 29020000
+  },
+  "138": {
+    "Rank": 138,
+    "Image": "\\ranks\\r138.png",
+    "Rank Title": "Lieutenant General IX",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 1020000,
+    "XP Min Total": 30040000
+  },
+  "139": {
+    "Rank": 139,
+    "Image": "\\ranks\\r139.png",
+    "Rank Title": "Lieutenant General X",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 1050000,
+    "XP Min Total": 31090000
+  },
+  "140": {
+    "Rank": 140,
+    "Image": "\\ranks\\r140.png",
+    "Rank Title": "General",
+    "Unlocks": [
+      "Gold Battlepack"
+    ],
+    "XP Min Relative": 1070000,
+    "XP Min Total": 32160000
+  }
+}

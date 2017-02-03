@@ -27,6 +27,7 @@ namespace ZloGUILauncher
         public MainWindow()
         {
             InitializeComponent();
+            App.Current.MainWindow = this;
             App.Client.ErrorOccured += Client_ErrorOccured;
             App.Client.UserInfoReceived += Client_UserInfoReceived;
             App.Client.GameStateReceived += Client_GameStateReceived;

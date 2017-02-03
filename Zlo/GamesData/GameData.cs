@@ -12,7 +12,7 @@ namespace Zlo
     internal static class GameData
     {
         public static string LoadResourcedFile(string file_name)
-        {            
+        {
             var ass = typeof(GameData).Assembly;
             var allres = ass.GetManifestResourceNames();
             string rname = allres.FirstOrDefault(x => x.ToLower().Contains(file_name.ToLower()));
@@ -52,9 +52,36 @@ namespace Zlo
                 {
                     m_BF3_stats_def = JObject.Parse(LoadResourcedFile("BF3_stats.json"));
                 }
-                return m_BF3_stats_def;
+                return (JObject)m_BF3_stats_def.DeepClone();
             }
         }
+
+        private static JObject m_BF4_stats_def;
+        public static JObject BF4_stats_def
+        {
+            get
+            {
+                if (m_BF4_stats_def == null)
+                {
+                    m_BF4_stats_def = JObject.Parse(LoadResourcedFile("BF4_Stats.json"));
+                }
+                return (JObject)m_BF4_stats_def.DeepClone();
+            }
+        }
+
+        private static JObject m_bf4_ranks;
+        public static JObject bf4_ranks
+        {
+            get
+            {
+                if (m_bf4_ranks == null)
+                {
+                    m_bf4_ranks = JObject.Parse(LoadResourcedFile("BF4_RanksDetails.json"));
+                }
+                return m_bf4_ranks;
+            }
+        }
+
 
         private static string[] ranknames { get; set; } = new string[]
               {
@@ -93,7 +120,7 @@ namespace Zlo
                 80000,
                 230000
             };
-        public static string GetRankName(int rank)
+        public static string GetBF3RankName(int rank)
         {
             if (rank <= 45)
             {
@@ -103,6 +130,10 @@ namespace Zlo
             {
                 return $"Colonel Service Star {rank - 45}";
             }
+        }
+        public static JObject GetBF4RankDetails(int rank)
+        {
+            return (JObject)bf4_ranks[rank.ToString()];
         }
         public static int GetRankMaxScore(int rank)
         {

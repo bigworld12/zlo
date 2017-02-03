@@ -1,0 +1,18 @@
+{
+  "id": 0,
+  "game": "bf4",
+  "plat": "pc",
+  "name": "",
+  "tag": "",
+  "last_update_date": "",
+  "stats": {
+    "rank": "stat.rank",
+    "rankname": "",
+    "scores": {
+      "shortxp": 0,
+      "longxp": "stat.sc_rank",
+      "maxxp": 0
+    },
+    "skill": "stat.skill"
+  }
+}

@@ -16,7 +16,7 @@ namespace ZloGUILauncher
     /// </summary>
     public partial class App : Application
     {
-        App()
+        App() : base()
         {
             try
             {                

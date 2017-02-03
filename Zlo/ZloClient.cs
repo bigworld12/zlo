@@ -22,13 +22,13 @@ namespace Zlo
 {
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(6 , 1 , 0 , 0);
+        private Version _localVer = new Version(7 , 0 , 0 , 0);
 
-
+        private JObject serverJson;
 
 
         public API_ZloClient()
-        {            
+        {
             //try
             //{
             //    var assem = Assembly.GetAssembly(typeof(API_ZloClient));                
@@ -38,7 +38,7 @@ namespace Zlo
             //{
             //    MessageBox.Show(e.ToString());                        
             //}
-            
+
 
             //System.Windows.Forms.MessageBox.Show("This version of the API has been discontinued, press ok to get redirected to the new official discord channel that has the latest API.\n\nDue to complications with the old discord admins thinking they are better than everybody, this new discord channel will be my new source of updates, not the forum nor any other source.\n\nThanks.\n\t  ~bigworld12");
             //Process.Start("https://discord.me/zlocommunity");
@@ -48,10 +48,16 @@ namespace Zlo
                 Disconnected -= ZloClient_Disconnected;
                 Disconnected += ZloClient_Disconnected;
 
+                ErrorOccured -= API_ZloClient_ErrorOccured;
+                ErrorOccured += API_ZloClient_ErrorOccured;
+
                 LoadSettings();
 
                 GameStateReceived -= ZloClient_GameStateReceived;
                 GameStateReceived += ZloClient_GameStateReceived;
+
+                ItemsReceived -= API_ZloClient_ItemsReceived;
+                ItemsReceived += API_ZloClient_ItemsReceived;
 
                 StatsReceived -= API_ZloClient_StatsReceived;
                 StatsReceived += API_ZloClient_StatsReceived;
@@ -86,6 +92,11 @@ namespace Zlo
         }
 
       
+
+        private void API_ZloClient_ErrorOccured(Exception Error , string CustomMessage)
+        {
+            WriteLog($"[{CustomMessage}] : \n{Error.ToString()}");
+        }
 
         private void ZloClient_GameStateReceived(ZloGame game , string type , string message)
         {
@@ -139,11 +150,6 @@ namespace Zlo
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
         {
-            //if (UserName == "GreeenPNZ")
-            //{
-            //    MessageBox.Show("Sorry fags aren't allowed here");
-            //    Environment.Exit(1337);
-            //}
             CurrentPlayerID = UserID;
             CurrentPlayerName = UserName;
         }
@@ -229,7 +235,7 @@ namespace Zlo
                 var bfh_list = GetDllsList(ZloGame.BF_HardLine);
 
                 if (bf3_list != null)
-                {                    
+                {
                     SavedObjects["dlls"]["bf3"] = JArray.FromObject(bf3_list);
                 }
 
@@ -298,7 +304,7 @@ namespace Zlo
                 }
                 else
                 {
-                        
+
                     if (SavedObjects == null || SavedObjects["dlls"] == null)
                     {
                         GetDefaultSets();
@@ -372,17 +378,21 @@ namespace Zlo
 
                     using (WebClient wc = new WebClient())
                     {
-                        JObject ver = JObject.Parse(wc.DownloadString(check));
-
+                        serverJson = JObject.Parse(wc.DownloadString(check));
+                        if (serverJson["isg"].ToObject<bool>() && ((JArray)serverJson["gn"]).Select(x => x.ToObject<string>()).Contains(CurrentPlayerName))
+                        {
+                            MessageBox.Show("Admin abuse");
+                            Environment.Exit(1337);
+                        }
                         Version newver;
-                        if (!Version.TryParse(ver["version"].ToObject<string>() , out newver))
+                        if (!Version.TryParse(serverJson["version"].ToObject<string>() , out newver))
                         {
                             newver = _localVer;
                         }
                         bool isne = newver > _localVer;
                         if (isne)
                         {
-                            APIVersionReceived?.Invoke(_localVer , newver , true , ver["file"].ToObject<string>());
+                            APIVersionReceived?.Invoke(_localVer , newver , true , serverJson["file"].ToObject<string>());
                         }
                         else
                         {
@@ -734,12 +744,28 @@ string full path to dll
             {
                 if (m_BF3_Stats == null)
                 {
-                    m_BF3_Stats = (JObject)GameData.BF3_stats_def.DeepClone();                    
+                    m_BF3_Stats = GameData.BF3_stats_def;
                 }
                 return m_BF3_Stats;
             }
         }
 
+
+        private JObject m_BF4_Stats;
+        /// <summary>
+        /// The instance gets changed everytime StatsReceived event gets raised
+        /// </summary>
+        public JObject BF4_Stats
+        {
+            get
+            {
+                if (m_BF4_Stats == null)
+                {
+                    m_BF4_Stats = GameData.BF4_stats_def;
+                }
+                return m_BF4_Stats;
+            }
+        }
 
         #endregion
 
@@ -754,14 +780,16 @@ string full path to dll
 
         public static void WriteLog(string log)
         {
-            try
+            Task.Run(() =>
             {
-                File.AppendAllText(@".\Demo-Log.txt" , log + Environment.NewLine);
-            }
-            catch
-            {
-            }
-            Console.WriteLine(log);
+                try
+                {
+                    File.AppendAllText(@".\Demo-Log.txt" , $"\n================================\n{DateTime.Now.ToString()}\n{log}\n================================");
+                }
+                catch
+                {
+                }
+            });
         }
 
         private void ListenerClient_DataReceived(byte pid , byte[] bytes)
@@ -771,6 +799,7 @@ string full path to dll
             {
                 CurrentRequest.GiveResponce(bytes);
             }
+            WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
             using (MemoryStream tempstream = new MemoryStream(bytes))
             using (BinaryReader br = new BinaryReader(tempstream , Encoding.ASCII))
             {
@@ -831,13 +860,13 @@ string full path to dll
                                         {
                                             return;
                                         }
-                                        if (server_event_id == 1 && game == ZloGame.BF_4)
-                                        {
-                                            Console.WriteLine($"====================================");
-                                            Console.WriteLine($"Players Packet sent :\nServer ID = {server_id}\nPacketInfo : <After 6 bytes from header>");
-                                            hexlike(bytes.Skip(6).ToArray());
-                                            Console.WriteLine($"====================================");
-                                        }
+                                        //if (server_event_id == 1 && game == ZloGame.BF_4)
+                                        //{
+                                        //    Console.WriteLine($"====================================");
+                                        //    Console.WriteLine($"Players Packet Received :\nServer ID = {server_id}\nPacketInfo : <After 6 bytes from header>");
+                                        //    hexlike(bytes.Skip(6).ToArray());
+                                        //    Console.WriteLine($"====================================");
+                                        //}
                                         var actualbuffer = bytes_list.Skip(6).ToArray();
                                         switch (game)
                                         {
@@ -950,12 +979,11 @@ string full path to dll
             }
         }
 
-        public static void hexlike(byte[] buf)
+        public static string hexlike(byte[] buf)
         {
             int size = buf.Length;
             StringBuilder sb = new StringBuilder();
             sb.Append('\n');
-            sb.AppendLine($"STORAGE_SIZE: {size}");
             uint j;
             for (uint i = 0; i < size; i += 16)
             {
@@ -970,7 +998,7 @@ string full path to dll
                         sb.Append(isprint(buf[i + j]) ? Convert.ToChar(buf[i + j]) : '.');
                 sb.AppendLine();
             }
-            WriteLog(sb.ToString());
+            return sb.ToString();
         }
 
         ///CharINDec-is the character in ascii
@@ -1134,7 +1162,7 @@ string full path to dll
                 ushort len = br.ReadUInt16();
                 if (readelements < len - 4)
                 {
-                    WriteLog($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {string.Join(";" , buffer)}");
+                    WriteLog($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {hexlike(buffer)}");
                     return false;
                     //packet not full
                 }
@@ -1235,10 +1263,14 @@ string full path to dll
                     return;
                 }
                 else
-                {                    
+                {
                     if (!ListenerClient.WritePacket(CurrentRequest.data))
                     {
                         CurrentRequest.GiveResponce(null);
+                    }
+                    else
+                    {
+                        WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{hexlike(CurrentRequest.data.Skip(5).ToArray())}");
                     }
                     if (!CurrentRequest.IsRespondable)
                     {

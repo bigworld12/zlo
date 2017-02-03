@@ -8,7 +8,14 @@
         mc:Ignorable="d"
         Title="Select dlls to Inject" Height="328.75" Width="631.25">
     <Grid>
-        <TabControl>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16">
+            Injection happens automatically when the game loads , all you need to do is specify the paths of the dlls you want to inject
+        </TextBlock>
+        <TabControl Grid.Row="1">
             <TabItem Header="BF4">
                 <views:DllInjectionController SelectedGame="BF_4" x:Name="BF4Controller"/>
             </TabItem>
