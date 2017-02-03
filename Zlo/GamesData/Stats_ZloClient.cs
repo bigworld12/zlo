@@ -61,8 +61,9 @@ namespace Zlo
                             finaldef = finaldef.Replace($@"""stat.{item.FlagName}""" , item.FlagValue.ToString());                           
                         }
                         m_BF4_Stats = JObject.Parse(finaldef);
-                        BF4_Stats_Handler(List);                        
-                        File.WriteAllText($".\\{CurrentPlayerName}_BF4_stats.json" , BF4_Stats.ToString());
+                        BF4_Stats_Handler(List);
+                        var str = BF4_Stats.ToString();
+                        File.WriteAllText($".\\{CurrentPlayerName}_BF4_stats.json" , str);
                         File.WriteAllLines($".\\{CurrentPlayerName}_BF4_stats_raw.txt" , List.Select(x => $"{x.FlagName} = {x.FlagValue}"));
                         break;
                     }
@@ -131,8 +132,8 @@ namespace Zlo
 
             var rankdets = GetBF4RankDetails(rank);
             BF4_Stats["stats"]["rankname"] = rankdets["Rank Title"];
-            BF4_Stats["scores"]["maxxp"] = GetBF4RankDetails(rank + 1)["XP Min Relative"];
-            BF4_Stats["scores"]["shortxp"] = BF4_Stats["scores"]["longxp"].ToObject<double>() - rankdets["XP Min Total"].ToObject<double>();          
+            BF4_Stats["stats"]["scores"]["maxxp"] = GetBF4RankDetails(rank + 1)["XP Min Relative"];
+            BF4_Stats["stats"]["scores"]["shortxp"] = BF4_Stats["stats"]["scores"]["longxp"].ToObject<double>() - rankdets["XP Min Total"].ToObject<double>();          
         }
         private double sumfrom0to(int index)
         {

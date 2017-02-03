@@ -67,7 +67,7 @@
     <EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
     <EmbeddedResource Include="GamesData\BF3\BF3_stats.json" />
     <EmbeddedResource Include="GamesData\BF4\BF4_RanksDetails.json" />
-    <None Include="GamesData\BF4\BF4_Stats.json" />
+    <EmbeddedResource Include="GamesData\BF4\BF4_Stats.json" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
