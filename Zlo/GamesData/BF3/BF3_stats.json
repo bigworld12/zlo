@@ -81,7 +81,7 @@
       "dogtags": "stat.c___dt_g",
       "avengerkills": "stat.c___ak_g",
       "saviorkills": "stat.c___sk_g",
-      "damagaassists": "stat.c___tad_g",
+      "damageassists": "stat.c___tad_g",
       "suppression": "stat.c___sua_g",
       "nemesisstreak": "stat.c___nk_ghva",
       "nemesiskills": "stat.c___nx_g",
