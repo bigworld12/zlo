@@ -17,7 +17,7 @@ namespace StatsDefGenerator
             //current xp = 3131691
 
             Console.WriteLine("Started");
-            GenerateFromBF4StatsAPI();
+            GenerateFromBF4StatsAPI2();
             Console.WriteLine("Done");
             Console.ReadKey();
         }
@@ -504,7 +504,20 @@ Gun Master = sc_elimination
         }
         public static void GenerateFromBF4StatsAPI2()
         {
+            string[] AllVehs = File.ReadAllLines(@"D:\All Games\Battlefield 4\__Research\Raw JSONs\All Vehicles.txt").Select(x => x.Split('=').Select(z => z.Trim()).ElementAt(0)).ToArray();
 
+            JObject Final = new JObject();
+            for (int i1 = 0; i1 < AllVehs.Length; i1 += 3)
+            {
+                JObject weapon = new JObject();
+                weapon["time"] = AllVehs[i1 + 0];
+                weapon["kills"] = AllVehs[i1 + 1];
+                weapon["destroys"] = AllVehs[i1 + 2];
+
+                var estimatedName = AllVehs[i1].Split('_')[1];
+                Final[estimatedName] = weapon;
+            }
+            File.WriteAllText(@"D:\All Games\Battlefield 4\__Research\Final\All Vehicles.json" , Final.ToString());
         }
     }
 }
