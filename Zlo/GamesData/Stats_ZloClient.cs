@@ -319,39 +319,6 @@ namespace Zlo
                 finalsum += GetRankMaxScore(i);
             }
             return finalsum;
-        }
-        //public static bool TryGetValue<T>(JToken Parent,out T value,params string[] Paths)
-        //{
-        //    try
-        //    {
-        //        if (Parent == null)
-        //        {
-        //            value = default(T);
-        //            return false;
-        //        }
-        //        if (Paths == null || Paths.Length == 0)
-        //        {                 
-        //            value = Parent.ToObject<T>();
-        //            return true;
-        //        }
-        //        foreach (var item in Paths)
-        //        {
-        //            if (Parent == null || !Parent.HasValues)
-        //            {
-        //                value = default(T);
-        //                return false;
-        //            }
-        //            Parent = Parent[item];
-        //        }
-        //        value = Parent.ToObject<T>();
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //        value = default(T);
-        //        return false;
-        //    }
-        //}
-
+        }        
     }
 }
