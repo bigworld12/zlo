@@ -97,7 +97,7 @@ namespace Zlo.Extentions
             for (int i = 1; i <= count; i++)
             {
                 s.Append(br.ReadChar());
-            }
+            }                        
             return s.ToString();
         }
         public static uint ReadZUInt32(this BinaryReader br)

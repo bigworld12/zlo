@@ -222,11 +222,11 @@ namespace Demo
         }
 
 
-        private static void Client_StatsReceived(ZloGame Game , List<API_Stat> List)
+        private static void Client_StatsReceived(ZloGame Game , Dictionary<string,float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private static void Client_ItemsReceived(ZloGame Game , List<API_Item> List)
+        private static void Client_ItemsReceived(ZloGame Game , Dictionary<string , API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }
@@ -391,11 +391,11 @@ namespace Demo
         }
 
 
-        private void Client_StatsReceived(ZloGame Game , List<API_Stat> List)
+        private void Client_StatsReceived(ZloGame Game , Dictionary<string , float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private void Client_ItemsReceived(ZloGame Game , List<API_Item> List)
+        private void Client_ItemsReceived(ZloGame Game , Dictionary<string , API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }

@@ -43,29 +43,29 @@ namespace Zlo
             }
         }
 
-        private static JObject m_BF3_stats_def;
-        public static JObject BF3_stats_def
+        private static string m_BF3_stats_def;
+        public static string BF3_stats_def
         {
             get
             {
                 if (m_BF3_stats_def == null)
                 {
-                    m_BF3_stats_def = JObject.Parse(LoadResourcedFile("BF3_stats.json"));
+                    m_BF3_stats_def = LoadResourcedFile("BF3_stats.json");
                 }
-                return (JObject)m_BF3_stats_def.DeepClone();
+                return m_BF3_stats_def;
             }
         }
 
-        private static JObject m_BF4_stats_def;
-        public static JObject BF4_stats_def
+        private static string m_BF4_stats_def;
+        public static string BF4_stats_def
         {
             get
             {
-                if (m_BF4_stats_def == null)
+                if (string.IsNullOrWhiteSpace(m_BF4_stats_def))
                 {
-                    m_BF4_stats_def = JObject.Parse(LoadResourcedFile("BF4_Stats.json"));
+                    m_BF4_stats_def = LoadResourcedFile("BF4_Stats.json");
                 }
-                return (JObject)m_BF4_stats_def.DeepClone();
+                return m_BF4_stats_def;
             }
         }
 

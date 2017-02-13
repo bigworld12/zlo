@@ -1356,5 +1356,13 @@
     ],
     "XP Min Relative": 1070000,
     "XP Min Total": 32160000
+  },
+  "141": {
+    "Rank": 141,
+    "Image": "\\ranks\\r0.png",
+    "Rank Title": "-",
+    "Unlocks": [],
+    "XP Min Relative": 0,
+    "XP Min Total": 0
   }
 }

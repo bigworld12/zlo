@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Zlo.Extras;
 
 namespace ZloGUILauncher.Views
 {
@@ -27,7 +28,7 @@ namespace ZloGUILauncher.Views
             App.Client.ItemsReceived += Client_ItemsReceived;
         }
 
-        private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Item> List)
+        private void Client_ItemsReceived(Zlo.Extras.ZloGame Game , Dictionary<string , API_Item> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_4)
             {
@@ -36,7 +37,7 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Stat> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , Dictionary<string , float> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_4)
             {

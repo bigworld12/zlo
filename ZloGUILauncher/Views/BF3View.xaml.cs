@@ -27,7 +27,7 @@ namespace ZloGUILauncher.Views
             App.Client.StatsReceived += Client_StatsReceived;
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , List<Zlo.Extras.API_Stat> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , Dictionary<string , float> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_3)
             {

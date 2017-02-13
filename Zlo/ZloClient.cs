@@ -20,29 +20,20 @@ using System.Windows;
 
 namespace Zlo
 {
+    /// <summary>
+    /// the main controller for the api, please note : [ONLY CREATE A SINGLE INSTANCE OF THIS CLASS]
+    /// </summary>
     public partial class API_ZloClient
     {
         private Version _localVer = new Version(7 , 0 , 0 , 0);
 
         private JObject serverJson;
 
-
+        /// <summary>
+        /// The API intializer (doesn't connect to zclient until you call <see cref="Connect"/>
+        /// </summary>
         public API_ZloClient()
         {
-            //try
-            //{
-            //    var assem = Assembly.GetAssembly(typeof(API_ZloClient));                
-            //    Assembly.Load(LoadResourceBytes(assem , assem.GetManifestResourceNames().First(x => x.Contains("Newtonsoft.Json"))));
-            //}
-            //catch (Exception e)
-            //{
-            //    MessageBox.Show(e.ToString());                        
-            //}
-
-
-            //System.Windows.Forms.MessageBox.Show("This version of the API has been discontinued, press ok to get redirected to the new official discord channel that has the latest API.\n\nDue to complications with the old discord admins thinking they are better than everybody, this new discord channel will be my new source of updates, not the forum nor any other source.\n\nThanks.\n\t  ~bigworld12");
-            //Process.Start("https://discord.me/zlocommunity");
-            //Environment.Exit(0);            
             try
             {
                 Disconnected -= ZloClient_Disconnected;
@@ -55,12 +46,6 @@ namespace Zlo
 
                 GameStateReceived -= ZloClient_GameStateReceived;
                 GameStateReceived += ZloClient_GameStateReceived;
-
-                ItemsReceived -= API_ZloClient_ItemsReceived;
-                ItemsReceived += API_ZloClient_ItemsReceived;
-
-                StatsReceived -= API_ZloClient_StatsReceived;
-                StatsReceived += API_ZloClient_StatsReceived;
 
                 m_client = new ZloTCPClient(this);
                 PingTimer = new System.Timers.Timer(20 * 1000);
@@ -91,7 +76,7 @@ namespace Zlo
             }
         }
 
-      
+
 
         private void API_ZloClient_ErrorOccured(Exception Error , string CustomMessage)
         {
@@ -145,7 +130,8 @@ namespace Zlo
 
         private void ZloClient_Disconnected(DisconnectionReasons Reason)
         {
-            ConnectionStateChanged?.Invoke(false);
+            Task.Run(() => { ConnectionStateChanged?.Invoke(false); });
+
         }
 
         private void ZloClient_UserInfoReceived(uint UserID , string UserName)
@@ -205,7 +191,14 @@ namespace Zlo
         Thread BF4_Pipe_Listener;
         Thread BFH_Pipe_Listener;
 
+        /// <summary>
+        /// represents the latest player id that was received
+        /// </summary>
         public uint CurrentPlayerID { get; private set; }
+
+        /// <summary>
+        /// represents the latest player name that was received
+        /// </summary>
         public string CurrentPlayerName { get; private set; }
         private List<Request> RequestQueue = new List<Request>();
         #endregion
@@ -221,41 +214,50 @@ namespace Zlo
     }
 }";
         internal JObject SavedObjects = null;
-
+        /// <summary>
+        /// This method runs in the background
+        /// </summary>
         public void SaveSettings()
         {
-            try
+            Task.Run(() =>
             {
-                if (SavedObjects == null)
+                try
                 {
-                    SavedObjects = new JObject();
-                }
-                var bf3_list = GetDllsList(ZloGame.BF_3);
-                var bf4_list = GetDllsList(ZloGame.BF_4);
-                var bfh_list = GetDllsList(ZloGame.BF_HardLine);
+                    if (SavedObjects == null)
+                    {
+                        SavedObjects = new JObject();
+                    }
+                    var bf3_list = GetDllsList(ZloGame.BF_3);
+                    var bf4_list = GetDllsList(ZloGame.BF_4);
+                    var bfh_list = GetDllsList(ZloGame.BF_HardLine);
 
-                if (bf3_list != null)
+                    if (bf3_list != null)
+                    {
+                        SavedObjects["dlls"]["bf3"] = JArray.FromObject(bf3_list);
+                    }
+
+                    if (bf4_list != null)
+                    {
+                        SavedObjects["dlls"]["bf4"] = JArray.FromObject(bf4_list);
+                    }
+
+                    if (bfh_list != null)
+                    {
+                        SavedObjects["dlls"]["bfh"] = JArray.FromObject(bfh_list);
+                    }
+
+                    File.WriteAllText(saveFileName , SavedObjects.ToString());
+                }
+                catch (Exception ex)
                 {
-                    SavedObjects["dlls"]["bf3"] = JArray.FromObject(bf3_list);
+                    RaiseError(ex , "Error Occured when Saving settings from Path : " + Path.GetFullPath(saveFileName));
                 }
+            });
 
-                if (bf4_list != null)
-                {
-                    SavedObjects["dlls"]["bf4"] = JArray.FromObject(bf4_list);
-                }
-
-                if (bfh_list != null)
-                {
-                    SavedObjects["dlls"]["bfh"] = JArray.FromObject(bfh_list);
-                }
-
-                File.WriteAllText(saveFileName , SavedObjects.ToString());
-            }
-            catch (Exception ex)
-            {
-                RaiseError(ex , "Error Occured when Saving settings from Path : " + Path.GetFullPath(saveFileName));
-            }
         }
+        /// <summary>
+        /// this method hangs the thread [doesn't run in the background]
+        /// </summary>
         internal void LoadSettings()
         {
             try
@@ -330,11 +332,20 @@ namespace Zlo
         /// </summary>    
         public event API_StatsReceivedEventHandler StatsReceived;
 
+        internal void RaiseStatsReceived(ZloGame game , Dictionary<string , float> stats)
+        {
+            StatsReceived?.Invoke(game , stats);
+        }
+
         /// <summary>
         /// Gets triggered after receiving user items and passes the game and a list of items
         /// </summary>    
         public event API_ItemsReceivedEventHandler ItemsReceived;
 
+        internal void RaiseItemsReceived(ZloGame game , Dictionary<string , API_Item> stats)
+        {
+            ItemsReceived?.Invoke(game , stats);
+        }
         /// <summary>
         /// Gets triggered after receiving user info and passes user id and name
         /// </summary>
@@ -417,7 +428,7 @@ namespace Zlo
 
                 ListenerClient.Connect();
                 ConnectionStateChanged?.Invoke(true);
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
                 GetUserInfo();
                 return true;
             }
@@ -617,7 +628,7 @@ string full path to dll
             #endregion
 
             var req = new Request();
-            req.WaitBeforePeriod = TimeSpan.FromSeconds(2);
+            req.WaitBeforePeriod = TimeSpan.FromSeconds(0.5);
             req.IsRespondable = false;
 
             req.pid = 3;
@@ -744,7 +755,7 @@ string full path to dll
             {
                 if (m_BF3_Stats == null)
                 {
-                    m_BF3_Stats = GameData.BF3_stats_def;
+                    m_BF3_Stats = JObject.Parse(GameData.BF3_stats_def);
                 }
                 return m_BF3_Stats;
             }
@@ -761,7 +772,7 @@ string full path to dll
             {
                 if (m_BF4_Stats == null)
                 {
-                    m_BF4_Stats = GameData.BF4_stats_def;
+                    m_BF4_Stats = JObject.Parse(GameData.BF4_stats_def);
                 }
                 return m_BF4_Stats;
             }
@@ -791,18 +802,18 @@ string full path to dll
                 }
             });
         }
-
         private void ListenerClient_DataReceived(byte pid , byte[] bytes)
         {
-            //hexlike(bytes , bytes.Length);
             if (CurrentRequest != null && CurrentRequest.pid == pid && CurrentRequest.IsDone == false && CurrentRequest.IsRespondable)
             {
                 CurrentRequest.GiveResponce(bytes);
             }
             WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
+
             using (MemoryStream tempstream = new MemoryStream(bytes))
             using (BinaryReader br = new BinaryReader(tempstream , Encoding.ASCII))
             {
+
                 try
                 {
                     if (bytes.Length > 0)
@@ -824,6 +835,7 @@ string full path to dll
                                 break;
                             case 1:
                                 {
+
                                     try
                                     {
                                         uint id = br.ReadZUInt32();
@@ -860,13 +872,7 @@ string full path to dll
                                         {
                                             return;
                                         }
-                                        //if (server_event_id == 1 && game == ZloGame.BF_4)
-                                        //{
-                                        //    Console.WriteLine($"====================================");
-                                        //    Console.WriteLine($"Players Packet Received :\nServer ID = {server_id}\nPacketInfo : <After 6 bytes from header>");
-                                        //    hexlike(bytes.Skip(6).ToArray());
-                                        //    Console.WriteLine($"====================================");
-                                        //}
+
                                         var actualbuffer = bytes_list.Skip(6).ToArray();
                                         switch (game)
                                         {
@@ -925,8 +931,9 @@ string full path to dll
                                 {
                                     byte game = br.ReadByte();
                                     ushort count = br.ReadZUInt16();
-                                    List<API_Stat> FinalStats = new List<API_Stat>();
 
+                                    Dictionary<string , float> FinalStats = new Dictionary<string , float>();
+                                    FinalStats[string.Empty] = 0f;
                                     try
                                     {
                                         for (ushort i = 0; i < count; i++)
@@ -934,21 +941,26 @@ string full path to dll
                                             string statname = br.ReadZString();
                                             float statvalue = br.ReadZFloat();
 
-                                            FinalStats.Add(new API_Stat(statname , statvalue));
+                                            FinalStats[statname] = statvalue;
                                         }
                                     }
                                     catch (Exception ex)
                                     {
                                         ErrorOccured?.Invoke(ex , $"Failed To Parse All Stats ,Base stream pos at : {br.BaseStream.Position},Successfully parsed '{FinalStats.Count}' stats");
                                     }
-                                    StatsReceived?.Invoke((ZloGame)game , FinalStats);
+                                    Task.Run(() =>
+                                    {
+                                        API_ZloClient_StatsReceived((ZloGame)game , FinalStats);
+                                    });
+
                                     break;
                                 }
                             case 5:
                                 {
+
                                     byte game = br.ReadByte();
                                     ushort count = br.ReadZUInt16();
-                                    List<API_Item> FinalItems = new List<API_Item>();
+                                    Dictionary<string , API_Item> FinalItems = new Dictionary<string , API_Item>();
                                     try
                                     {
                                         for (ushort i = 0; i < count; i++)
@@ -956,14 +968,17 @@ string full path to dll
                                             string statname = br.ReadZString();
                                             byte statvalue = br.ReadByte();
 
-                                            FinalItems.Add(new API_Item(statname , statvalue == 1 ? true : false));
+                                            FinalItems[statname] = new API_Item(statname , statvalue == 1 ? true : false);
                                         }
                                     }
                                     catch (Exception ex)
                                     {
                                         ErrorOccured?.Invoke(ex , $"Failed To Parse All Items ,Base stream pos at : {br.BaseStream.Position},Successfully parsed '{FinalItems.Count}' Items");
                                     }
-                                    ItemsReceived?.Invoke((ZloGame)game , FinalItems);
+                                    Task.Run(() =>
+                                    {
+                                        API_ZloClient_ItemsReceived((ZloGame)game , FinalItems);
+                                    });
                                     break;
                                 }
                             default:
@@ -979,7 +994,7 @@ string full path to dll
             }
         }
 
-        public static string hexlike(byte[] buf)
+        internal static string hexlike(byte[] buf)
         {
             int size = buf.Length;
             StringBuilder sb = new StringBuilder();
@@ -1004,7 +1019,7 @@ string full path to dll
         ///CharINDec-is the character in ascii
         ///returns true or false.
         ///is char is printable ascii then returns true and if it's not then false
-        public static bool isprint(int CharINDec)
+        internal static bool isprint(int CharINDec)
         {
             if (CharINDec >= 32 && CharINDec <= 126)
                 return true;
@@ -1179,51 +1194,54 @@ string full path to dll
 
         private void SendRequest(ZloRequest request , ZloGame? game = null)
         {
-            if (request == ZloRequest.Items && game == ZloGame.BF_3) return;
-            List<byte> final = new List<byte>();
-            final.Add((byte)request);
-            uint size = 0;
-            var req = new Request();
-
-            switch (request)
+            Task.Run(() =>
             {
-                case ZloRequest.Ping:
-                case ZloRequest.User_Info:
-                    req.IsRespondable = true;
-                    size = 0;
-                    break;
+                if (request == ZloRequest.Items && game == ZloGame.BF_3) return;
+                List<byte> final = new List<byte>();
+                final.Add((byte)request);
+                uint size = 0;
+                var req = new Request();
 
-                case ZloRequest.Player_Info:
-                case ZloRequest.Stats:
-                case ZloRequest.Items:
-                    req.WaitBeforePeriod = TimeSpan.FromSeconds(1);
-                    req.IsRespondable = true;
-                    size = 1;
-                    break;
-                default:
-                    req.IsRespondable = false;
-                    break;
-            }
-            var finalsizebytes = BitConverter.GetBytes(size);
-            Array.Reverse(finalsizebytes);
-            final.AddRange(finalsizebytes);
-
-            if (size > 0)
-            {
-                if (game.HasValue)
+                switch (request)
                 {
-                    final.Add((byte)game.Value);
+                    case ZloRequest.Ping:
+                    case ZloRequest.User_Info:
+                        req.IsRespondable = true;
+                        size = 0;
+                        break;
+
+                    case ZloRequest.Player_Info:
+                    case ZloRequest.Stats:
+                    case ZloRequest.Items:
+                        req.WaitBeforePeriod = TimeSpan.FromSeconds(0.5);
+                        req.IsRespondable = true;
+                        size = 1;
+                        break;
+                    default:
+                        req.IsRespondable = false;
+                        break;
                 }
-            }
+                var finalsizebytes = BitConverter.GetBytes(size);
+                Array.Reverse(finalsizebytes);
+                final.AddRange(finalsizebytes);
 
-            req.data = final.ToArray();
-            req.pid = (byte)request;
+                if (size > 0)
+                {
+                    if (game.HasValue)
+                    {
+                        final.Add((byte)game.Value);
+                    }
+                }
 
-            if (request == ZloRequest.Stats)
-                Console.WriteLine();
+                req.data = final.ToArray();
+                req.pid = (byte)request;
+
+                if (request == ZloRequest.Stats)
+                    Console.WriteLine();
 
 
-            AddToQueue(req);
+                AddToQueue(req);
+            });
         }
         internal void AddToQueue(Request req)
         {
@@ -1333,7 +1351,7 @@ string full path to dll
                 case ZloGame.BF_3:
                     {
                         title = "Battlefield3";
-                        string bf3offers = "DGR01609244,DGR01609245,70619,71067";
+                        string bf3offers = "70619,71067,DGR01609244,DGR01609245";
                         switch (playmode)
                         {
                             case 0:
@@ -1341,11 +1359,11 @@ string full path to dll
                                 return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                             case 1:
                                 if (pw != "")
-                                {
+                                {                                    
                                     return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                                 }
                                 else
-                                {
+                                {                                    
                                     //multi
                                     return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                                 }
@@ -1417,52 +1435,6 @@ string full path to dll
                 default:
                     return string.Empty;
 
-            }
-        }
-
-
-        private static byte[] LoadResourceBytes(Assembly executingAssembly , string resourceName)
-        {
-            using (Stream stream = executingAssembly.GetManifestResourceStream(resourceName))
-            {
-                var assemblyData = new byte[stream.Length];
-                stream.Read(assemblyData , 0 , assemblyData.Length);
-                return assemblyData;
-            }
-        }
-        private Assembly CurrentDomain_AssemblyResolve(object sender , ResolveEventArgs args)
-        {
-            try
-            {
-                var name = args.Name;
-                AssemblyName asmName = new AssemblyName(name);
-                if (name.Contains("Retargetable=Yes")) return Assembly.Load(asmName);
-                Assembly executingAssembly = Assembly.GetExecutingAssembly();
-                string[] resourceNames = executingAssembly.GetManifestResourceNames();
-                string resourceToFind = asmName.Name + ".dll";
-                string resourceName = resourceNames.SingleOrDefault(n => n.Contains(resourceToFind));
-
-                if (string.IsNullOrWhiteSpace(resourceName)) { return null; }
-
-                string symbolsToFind = asmName.Name + ".pdb";
-                string symbolsName = resourceNames.SingleOrDefault(n => n.Contains(symbolsToFind));
-
-                byte[] assemblyData = LoadResourceBytes(executingAssembly , resourceName);
-
-                if (string.IsNullOrWhiteSpace(symbolsName))
-                {
-                    return Assembly.Load(assemblyData);
-                }
-                else
-                {
-                    byte[] symbolsData = LoadResourceBytes(executingAssembly , symbolsName);
-                    return Assembly.Load(assemblyData , symbolsData);
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorOccured?.Invoke(ex , "Error Occured when trying to resolve the Json reader dll");
-                return null;
             }
         }
         #endregion

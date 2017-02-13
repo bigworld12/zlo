@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public delegate void API_StatsReceivedEventHandler(ZloGame Game , List<API_Stat> List);
-    public delegate void API_ItemsReceivedEventHandler(ZloGame Game , List<API_Item> List);
+    public delegate void API_StatsReceivedEventHandler(ZloGame Game , Dictionary<string , float> List);
+    public delegate void API_ItemsReceivedEventHandler(ZloGame Game , Dictionary<string , API_Item> List);
     public delegate void API_UserInfoReceivedEventHandler(uint UserID , string UserName);
     public delegate void API_ErrorOccuredEventHandler(Exception Error , string CustomMessage);
     public delegate void API_DisconnectedEventHandler(DisconnectionReasons Reason);

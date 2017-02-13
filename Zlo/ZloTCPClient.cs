@@ -196,6 +196,7 @@ namespace Zlo
         private void SendPacketToAPI(byte spid , byte[] buffer)
         {
             ZloPacketReceived?.Invoke(spid , buffer);
+           
         }
         public bool WritePacket(byte[] info)
         {

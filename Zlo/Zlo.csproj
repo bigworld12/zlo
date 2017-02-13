@@ -55,7 +55,6 @@
     <Compile Include="Extras\Map.cs" />
     <Compile Include="Extras\Request.cs" />
     <Compile Include="Extras\Servers.cs" />
-    <Compile Include="Extras\Stat.cs" />
     <Compile Include="GamesData\Stats_ZloClient.cs" />
     <Compile Include="GamesData\GameData.cs" />
     <Compile Include="Helpers.cs" />
