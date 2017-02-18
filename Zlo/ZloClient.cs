@@ -25,7 +25,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(7 , 0 , 0 , 0);
+        private Version _localVer = new Version(8 , 0 , 0 , 0);
 
         private JObject serverJson;
 
