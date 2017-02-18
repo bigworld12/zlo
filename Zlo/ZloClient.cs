@@ -628,7 +628,7 @@ string full path to dll
             #endregion
 
             var req = new Request();
-            req.WaitBeforePeriod = TimeSpan.FromSeconds(0.5);
+            req.WaitBeforePeriod = TimeSpan.Zero;
             req.IsRespondable = false;
 
             req.pid = 3;
@@ -791,16 +791,16 @@ string full path to dll
 
         public static void WriteLog(string log)
         {
-            Task.Run(() =>
-            {
-                try
-                {
-                    File.AppendAllText(@".\Demo-Log.txt" , $"\n================================\n{DateTime.Now.ToString()}\n{log}\n================================");
-                }
-                catch
-                {
-                }
-            });
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        File.AppendAllText(@".\Demo-Log.txt" , $"\n================================\n{DateTime.Now.ToString()}\n{log}\n================================");
+            //    }
+            //    catch
+            //    {
+            //    }
+            //});
         }
         private void ListenerClient_DataReceived(byte pid , byte[] bytes)
         {
@@ -1213,7 +1213,7 @@ string full path to dll
                     case ZloRequest.Player_Info:
                     case ZloRequest.Stats:
                     case ZloRequest.Items:
-                        req.WaitBeforePeriod = TimeSpan.FromSeconds(0.5);
+                        req.WaitBeforePeriod = TimeSpan.Zero;
                         req.IsRespondable = true;
                         size = 1;
                         break;

@@ -9,11 +9,17 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
+    /// <summary>
+    /// describes a map in a map rotation
+    /// </summary>
     public class API_MapBase
     {
 
 
         private API_MapRotationBase _parent;
+        /// <summary>
+        /// the owner map rotation
+        /// </summary>
         public API_MapRotationBase ParentMapRotation
         {
             get
@@ -24,12 +30,19 @@ namespace Zlo.Extras
 
 
 
-
+        /// <summary>
+        /// the map name
+        /// </summary>
         public string MapName { get; internal set; }
 
-
+        /// <summary>
+        /// the game mode name
+        /// </summary>
         public string GameModeName { get; internal set; }
 
+        /// <summary>
+        /// is it the current map or not [related to map rotation]
+        /// </summary>
         public bool IsCurrentInRotation
         {
             get
@@ -37,6 +50,10 @@ namespace Zlo.Extras
                 return ReferenceEquals(this , ParentMapRotation.LogicalCurrentMap);
             }
         }
+
+        /// <summary>
+        /// is it the next map or not [related to map rotation]
+        /// </summary>
         public bool IsNextInRotation
         {
             get
@@ -44,6 +61,10 @@ namespace Zlo.Extras
                 return ReferenceEquals(this , ParentMapRotation.LogicalNextMap);
             }
         }
+
+        /// <summary>
+        /// is it the actual current map or not
+        /// </summary>
         public bool IsActualCurrentMap
         {
             get
@@ -89,17 +110,26 @@ namespace Zlo.Extras
             _parent = p;
         }
     }
+    /// <summary>
+    /// describes a map rotation
+    /// </summary>
     public class API_MapRotationBase : Dictionary<int , API_MapBase>
     {
         internal API_MapRotationBase() { }
 
         private int m_CurrentMapIndex;
+        /// <summary>
+        /// the current map index <see cref="LogicalCurrentMap"/> to get the map related to that index
+        /// </summary>
         public int CurrentMapIndex
         {
             get { return m_CurrentMapIndex; }
         }
 
         private int m_NextMapIndex;
+        /// <summary>
+        /// the next map index <see cref="LogicalNextMap"/> to get the map related to that index
+        /// </summary>
         public int NextMapIndex
         {
             get { return m_NextMapIndex; }

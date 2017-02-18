@@ -27,7 +27,7 @@ namespace ZloGUILauncher.Servers
         }
         public string Name
         {
-            get { return raw.GNAM; }
+            get { return raw.ServerName; }
         }
 
         public int Current_Players
@@ -38,7 +38,7 @@ namespace ZloGUILauncher.Servers
         {
             get
             {
-                return raw.PMAX;
+                return raw.MaxPlayers;
             }
         }
 
@@ -55,9 +55,9 @@ namespace ZloGUILauncher.Servers
         {
             get
             {
-                if (m_IP == null || BitConverter.ToUInt32(m_IP.GetAddressBytes() , 0) == raw.EXIP)
+                if (m_IP == null || BitConverter.ToUInt32(m_IP.GetAddressBytes() , 0) == raw.ServerIP)
                 {
-                    m_IP = new IPAddress(BitConverter.GetBytes(raw.EXIP));
+                    m_IP = new IPAddress(BitConverter.GetBytes(raw.ServerIP));
                 }
                 return m_IP;
             }
@@ -66,7 +66,7 @@ namespace ZloGUILauncher.Servers
         {
             get
             {
-                return raw.EXPORT;
+                return raw.ServerPort;
             }
         }
 
@@ -92,7 +92,7 @@ namespace ZloGUILauncher.Servers
             {
                 if (m_Maps == null)
                 {
-                    m_Maps = new GUI_MapRotation(raw.ATTRS_MapRotation);
+                    m_Maps = new GUI_MapRotation(raw.MapRotation);
                 }
                 return m_Maps;
             }
@@ -120,9 +120,9 @@ namespace ZloGUILauncher.Servers
         {
             get
             {
-                if (raw.ATTRS.ContainsKey("punkbuster"))
+                if (raw.Attributes.ContainsKey("punkbuster"))
                 {
-                    return YesNo(raw.ATTRS["punkbuster"]);
+                    return YesNo(raw.Attributes["punkbuster"]);
                 }
                 else
                 {

@@ -1,0 +1,15 @@
+﻿<Window x:Class="ZloGUILauncher.Views.BF4StatsListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ZloGUILauncher.Views"
+        mc:Ignorable="d"
+        Title="BF4StatsListWindow" Height="307.343" Width="242.308" Closing="Window_Closing">
+    <DataGrid Grid.Row="1" x:Name="StatsDG"
+                                  SelectionMode="Extended"
+                                  SelectionUnit="CellOrRowHeader"
+                                  IsSynchronizedWithCurrentItem="True" 
+                                  IsTextSearchEnabled="True" AutoGenerateColumns="True" 
+                                  IsReadOnly="True"/>
+</Window>

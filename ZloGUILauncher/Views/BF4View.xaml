@@ -39,13 +39,12 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" Content="Refresh" Click="StatsRefreshButton_Click"/>
+                            <Button Grid.Column="1" Content="Raw List" Click="StatsAsListButton_Click"/>
                         </Grid>
-                        <DataGrid Grid.Row="1" x:Name="StatsDG"
-                                  SelectionMode="Single"
-                                  SelectionUnit="FullRow"
-                                  IsSynchronizedWithCurrentItem="True" 
-                                  IsTextSearchEnabled="True" AutoGenerateColumns="True" 
-                                  IsReadOnly="True"/>
+                        <Grid Grid.Row="1">
+                            <!--Stats Design go here-->
+                            <Button Margin="5" Content="Click here for the new Stats Window !!" Click="StatsAsWindowButton_Click"></Button>
+                        </Grid>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Items">

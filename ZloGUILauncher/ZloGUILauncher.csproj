@@ -30,6 +30,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -63,6 +65,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -77,12 +83,17 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WPFMediaKit, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WPFMediaKit.2.2.0\lib\WPFMediaKit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\AllConvs.cs" />
     <Compile Include="DllInjector.xaml.cs">
       <DependentUpon>DllInjector.xaml</DependentUpon>
     </Compile>
@@ -94,6 +105,9 @@
     <Compile Include="GUI Classes\BF4_GUI_Server.cs" />
     <Compile Include="Views\BF3View.xaml.cs">
       <DependentUpon>BF3View.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BF4StatsWin.xaml.cs">
+      <DependentUpon>BF4StatsWin.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DllInjectionController.xaml.cs">
       <DependentUpon>DllInjectionController.xaml</DependentUpon>
@@ -113,6 +127,9 @@
     <Compile Include="Views\ListViews\BF3ServerListView.xaml.cs">
       <DependentUpon>BF3ServerListView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ListViews\BF4StatsListWindow.xaml.cs">
+      <DependentUpon>BF4StatsListWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="DllInjector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -130,6 +147,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\BF3View.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BF4StatsWin.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,6 +178,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ListViews\BF4StatsListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -176,6 +201,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -204,7 +230,168 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Media\bf4\ranks\r0.png" />
+    <Resource Include="Media\bf4\ranks\r1.png" />
+    <Resource Include="Media\bf4\ranks\r10.png" />
+    <Resource Include="Media\bf4\ranks\r100.png" />
+    <Resource Include="Media\bf4\ranks\r101.png" />
+    <Resource Include="Media\bf4\ranks\r102.png" />
+    <Resource Include="Media\bf4\ranks\r103.png" />
+    <Resource Include="Media\bf4\ranks\r104.png" />
+    <Resource Include="Media\bf4\ranks\r105.png" />
+    <Resource Include="Media\bf4\ranks\r106.png" />
+    <Resource Include="Media\bf4\ranks\r107.png" />
+    <Resource Include="Media\bf4\ranks\r108.png" />
+    <Resource Include="Media\bf4\ranks\r109.png" />
+    <Resource Include="Media\bf4\ranks\r11.png" />
+    <Resource Include="Media\bf4\ranks\r110.png" />
+    <Resource Include="Media\bf4\ranks\r111.png" />
+    <Resource Include="Media\bf4\ranks\r112.png" />
+    <Resource Include="Media\bf4\ranks\r113.png" />
+    <Resource Include="Media\bf4\ranks\r114.png" />
+    <Resource Include="Media\bf4\ranks\r115.png" />
+    <Resource Include="Media\bf4\ranks\r116.png" />
+    <Resource Include="Media\bf4\ranks\r117.png" />
+    <Resource Include="Media\bf4\ranks\r118.png" />
+    <Resource Include="Media\bf4\ranks\r119.png" />
+    <Resource Include="Media\bf4\ranks\r12.png" />
+    <Resource Include="Media\bf4\ranks\r120.png" />
+    <Resource Include="Media\bf4\ranks\r121.png" />
+    <Resource Include="Media\bf4\ranks\r122.png" />
+    <Resource Include="Media\bf4\ranks\r123.png" />
+    <Resource Include="Media\bf4\ranks\r124.png" />
+    <Resource Include="Media\bf4\ranks\r125.png" />
+    <Resource Include="Media\bf4\ranks\r126.png" />
+    <Resource Include="Media\bf4\ranks\r127.png" />
+    <Resource Include="Media\bf4\ranks\r128.png" />
+    <Resource Include="Media\bf4\ranks\r129.png" />
+    <Resource Include="Media\bf4\ranks\r13.png" />
+    <Resource Include="Media\bf4\ranks\r130.png" />
+    <Resource Include="Media\bf4\ranks\r131.png" />
+    <Resource Include="Media\bf4\ranks\r132.png" />
+    <Resource Include="Media\bf4\ranks\r133.png" />
+    <Resource Include="Media\bf4\ranks\r134.png" />
+    <Resource Include="Media\bf4\ranks\r135.png" />
+    <Resource Include="Media\bf4\ranks\r136.png" />
+    <Resource Include="Media\bf4\ranks\r137.png" />
+    <Resource Include="Media\bf4\ranks\r138.png" />
+    <Resource Include="Media\bf4\ranks\r139.png" />
+    <Resource Include="Media\bf4\ranks\r14.png" />
+    <Resource Include="Media\bf4\ranks\r140.png" />
+    <Resource Include="Media\bf4\ranks\r15.png" />
+    <Resource Include="Media\bf4\ranks\r16.png" />
+    <Resource Include="Media\bf4\ranks\r17.png" />
+    <Resource Include="Media\bf4\ranks\r18.png" />
+    <Resource Include="Media\bf4\ranks\r19.png" />
+    <Resource Include="Media\bf4\ranks\r2.png" />
+    <Resource Include="Media\bf4\ranks\r20.png" />
+    <Resource Include="Media\bf4\ranks\r21.png" />
+    <Resource Include="Media\bf4\ranks\r22.png" />
+    <Resource Include="Media\bf4\ranks\r23.png" />
+    <Resource Include="Media\bf4\ranks\r24.png" />
+    <Resource Include="Media\bf4\ranks\r25.png" />
+    <Resource Include="Media\bf4\ranks\r26.png" />
+    <Resource Include="Media\bf4\ranks\r27.png" />
+    <Resource Include="Media\bf4\ranks\r28.png" />
+    <Resource Include="Media\bf4\ranks\r29.png" />
+    <Resource Include="Media\bf4\ranks\r3.png" />
+    <Resource Include="Media\bf4\ranks\r30.png" />
+    <Resource Include="Media\bf4\ranks\r31.png" />
+    <Resource Include="Media\bf4\ranks\r32.png" />
+    <Resource Include="Media\bf4\ranks\r33.png" />
+    <Resource Include="Media\bf4\ranks\r34.png" />
+    <Resource Include="Media\bf4\ranks\r35.png" />
+    <Resource Include="Media\bf4\ranks\r36.png" />
+    <Resource Include="Media\bf4\ranks\r37.png" />
+    <Resource Include="Media\bf4\ranks\r38.png" />
+    <Resource Include="Media\bf4\ranks\r39.png" />
+    <Resource Include="Media\bf4\ranks\r4.png" />
+    <Resource Include="Media\bf4\ranks\r40.png" />
+    <Resource Include="Media\bf4\ranks\r41.png" />
+    <Resource Include="Media\bf4\ranks\r42.png" />
+    <Resource Include="Media\bf4\ranks\r43.png" />
+    <Resource Include="Media\bf4\ranks\r44.png" />
+    <Resource Include="Media\bf4\ranks\r45.png" />
+    <Resource Include="Media\bf4\ranks\r46.png" />
+    <Resource Include="Media\bf4\ranks\r47.png" />
+    <Resource Include="Media\bf4\ranks\r48.png" />
+    <Resource Include="Media\bf4\ranks\r49.png" />
+    <Resource Include="Media\bf4\ranks\r5.png" />
+    <Resource Include="Media\bf4\ranks\r50.png" />
+    <Resource Include="Media\bf4\ranks\r51.png" />
+    <Resource Include="Media\bf4\ranks\r52.png" />
+    <Resource Include="Media\bf4\ranks\r53.png" />
+    <Resource Include="Media\bf4\ranks\r54.png" />
+    <Resource Include="Media\bf4\ranks\r55.png" />
+    <Resource Include="Media\bf4\ranks\r56.png" />
+    <Resource Include="Media\bf4\ranks\r57.png" />
+    <Resource Include="Media\bf4\ranks\r58.png" />
+    <Resource Include="Media\bf4\ranks\r59.png" />
+    <Resource Include="Media\bf4\ranks\r6.png" />
+    <Resource Include="Media\bf4\ranks\r60.png" />
+    <Resource Include="Media\bf4\ranks\r61.png" />
+    <Resource Include="Media\bf4\ranks\r62.png" />
+    <Resource Include="Media\bf4\ranks\r63.png" />
+    <Resource Include="Media\bf4\ranks\r64.png" />
+    <Resource Include="Media\bf4\ranks\r65.png" />
+    <Resource Include="Media\bf4\ranks\r66.png" />
+    <Resource Include="Media\bf4\ranks\r67.png" />
+    <Resource Include="Media\bf4\ranks\r68.png" />
+    <Resource Include="Media\bf4\ranks\r69.png" />
+    <Resource Include="Media\bf4\ranks\r7.png" />
+    <Resource Include="Media\bf4\ranks\r70.png" />
+    <Resource Include="Media\bf4\ranks\r71.png" />
+    <Resource Include="Media\bf4\ranks\r72.png" />
+    <Resource Include="Media\bf4\ranks\r73.png" />
+    <Resource Include="Media\bf4\ranks\r74.png" />
+    <Resource Include="Media\bf4\ranks\r75.png" />
+    <Resource Include="Media\bf4\ranks\r76.png" />
+    <Resource Include="Media\bf4\ranks\r77.png" />
+    <Resource Include="Media\bf4\ranks\r78.png" />
+    <Resource Include="Media\bf4\ranks\r79.png" />
+    <Resource Include="Media\bf4\ranks\r8.png" />
+    <Resource Include="Media\bf4\ranks\r80.png" />
+    <Resource Include="Media\bf4\ranks\r81.png" />
+    <Resource Include="Media\bf4\ranks\r82.png" />
+    <Resource Include="Media\bf4\ranks\r83.png" />
+    <Resource Include="Media\bf4\ranks\r84.png" />
+    <Resource Include="Media\bf4\ranks\r85.png" />
+    <Resource Include="Media\bf4\ranks\r86.png" />
+    <Resource Include="Media\bf4\ranks\r87.png" />
+    <Resource Include="Media\bf4\ranks\r88.png" />
+    <Resource Include="Media\bf4\ranks\r89.png" />
+    <Resource Include="Media\bf4\ranks\r9.png" />
+    <Resource Include="Media\bf4\ranks\r90.png" />
+    <Resource Include="Media\bf4\ranks\r91.png" />
+    <Resource Include="Media\bf4\ranks\r92.png" />
+    <Resource Include="Media\bf4\ranks\r93.png" />
+    <Resource Include="Media\bf4\ranks\r94.png" />
+    <Resource Include="Media\bf4\ranks\r95.png" />
+    <Resource Include="Media\bf4\ranks\r96.png" />
+    <Resource Include="Media\bf4\ranks\r97.png" />
+    <Resource Include="Media\bf4\ranks\r98.png" />
+    <Resource Include="Media\bf4\ranks\r99.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Media\bf4\City Background.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Media\bf4\Kits\kits_assault.png" />
+    <Resource Include="Media\bf4\Kits\kits_commander.png" />
+    <Resource Include="Media\bf4\Kits\kits_engineer.png" />
+    <Resource Include="Media\bf4\Kits\kits_recon.png" />
+    <Resource Include="Media\bf4\Kits\kits_support.png" />
+    <Resource Include="Media\bf4\whitestar.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\WPFMediaKit.2.2.0\build\WPFMediaKit.targets" Condition="Exists('..\packages\WPFMediaKit.2.2.0\build\WPFMediaKit.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WPFMediaKit.2.2.0\build\WPFMediaKit.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WPFMediaKit.2.2.0\build\WPFMediaKit.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

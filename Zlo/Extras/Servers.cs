@@ -10,6 +10,9 @@ using static Zlo.Extentions.Helpers;
 namespace Zlo.Extras
 {
     #region Server Bases   
+    /// <summary>
+    /// used internally to represent a server between all bf games [don't use this]
+    /// </summary>
     public abstract class ServerBase
     {
         internal ServerBase(uint id)
@@ -20,11 +23,17 @@ namespace Zlo.Extras
         #region Props
         private uint m_ServerID;
 
+        /// <summary>
+        /// server id on zloemu
+        /// </summary>
         public uint ServerID
         {
             get { return m_ServerID; }
         }
 
+        /// <summary>
+        /// wether the server is protected by a password or not
+        /// </summary>
         public bool IsPasswordProtected
         {
             get;private set;
@@ -33,12 +42,12 @@ namespace Zlo.Extras
         /// <summary>
         /// Actual server ip
         /// </summary>
-        public uint EXIP { get; internal set; }
+        public uint ServerIP { get; internal set; }
 
         /// <summary>
         /// Actual port
         /// </summary>
-        public ushort EXPORT { get; internal set; }
+        public ushort ServerPort { get; internal set; }
 
         public uint INIP { get; internal set; }
         public ushort INPORT { get; internal set; }
@@ -48,7 +57,7 @@ namespace Zlo.Extras
         /// <summary>
         /// Attributes
         /// </summary>
-        public Dictionary<string , string> ATTRS
+        public Dictionary<string , string> Attributes
         {
             get
             {
@@ -63,24 +72,24 @@ namespace Zlo.Extras
         /// <summary>
         /// Server name
         /// </summary>
-        public string GNAM { get; internal set; }
+        public string ServerName { get; internal set; }
 
         /// <summary>
         /// game set
         /// </summary>
-        public uint GSET { get; internal set; }
+        public uint GameSet { get; internal set; }
 
         /// <summary>
         /// server state [only run if it's 131]
         /// </summary>
-        public byte GSTA { get; internal set; }
+        public byte ServerState { get; internal set; }
 
         public byte IGNO { get; internal set; }
 
         /// <summary>
         /// total player max
         /// </summary>
-        public byte PMAX { get; internal set; }
+        public byte MaxPlayers { get; internal set; }
 
         public ulong NATT { get; internal set; }
         public byte NRES { get; internal set; }
@@ -91,7 +100,7 @@ namespace Zlo.Extras
         /// <summary>
         /// slot capacity
         /// </summary>
-        public byte QCAP { get; internal set; }
+        public byte SlotCapacity { get; internal set; }
 
         public uint SEED { get; internal set; }
         public string UUID { get; internal set; }
@@ -119,7 +128,10 @@ namespace Zlo.Extras
         }
 
         private Dictionary<string , string> m_ATTRS_Settings;
-        public Dictionary<string , string> ATTRS_Settings
+        /// <summary>
+        /// server settings
+        /// </summary>
+        public Dictionary<string , string> ServerSettings
         {
             get
             {
@@ -133,7 +145,7 @@ namespace Zlo.Extras
 
 
         private API_MapRotationBase m_ATTRS_MapRotation;
-        public API_MapRotationBase ATTRS_MapRotation
+        public API_MapRotationBase MapRotation
         {
             get
             {
@@ -149,13 +161,13 @@ namespace Zlo.Extras
         #endregion
         internal void Parse(byte[] serverbuffer)
         {
-            ATTRS.Clear();
+            Attributes.Clear();
             using (var ms = new MemoryStream(serverbuffer))
             using (var br = new BinaryReader(ms , Encoding.ASCII))
             {
 
-                EXIP = br.ReadZUInt32();
-                EXPORT = br.ReadZUInt16();
+                ServerIP = br.ReadZUInt32();
+                ServerPort = br.ReadZUInt16();
                 INIP = br.ReadZUInt32();
                 INPORT = br.ReadZUInt16();
                 byte t = br.ReadByte();
@@ -164,15 +176,15 @@ namespace Zlo.Extras
                 {
                     string key = br.ReadZString();
                     string value = br.ReadZString();
-                    ATTRS.Add(key , value);
+                    Attributes.Add(key , value);
                 }
 
 
-                GNAM = br.ReadZString();
-                GSET = br.ReadZUInt32();
-                GSTA = br.ReadByte();
+                ServerName = br.ReadZString();
+                GameSet = br.ReadZUInt32();
+                ServerState = br.ReadByte();
                 IGNO = br.ReadByte();
-                PMAX = br.ReadByte();
+                MaxPlayers = br.ReadByte();
                 //was 64
                 NATT = br.ReadZUInt64();
                 //=========
@@ -180,7 +192,7 @@ namespace Zlo.Extras
                 NTOP = br.ReadByte();
                 PGID = br.ReadZString();
                 PRES = br.ReadByte();
-                QCAP = br.ReadByte();
+                SlotCapacity = br.ReadByte();
                 SEED = br.ReadZUInt32();
                 UUID = br.ReadZString();
                 VOIP = br.ReadByte();
@@ -194,55 +206,55 @@ namespace Zlo.Extras
             { '0' , '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' };
         private void FixAttrs()
         {
-            ATTRS_Settings.Clear();
+            ServerSettings.Clear();
             List<string> KeysToRemove = new List<string>();
-            for (int i = 0; i < ATTRS.Count; i++)
+            for (int i = 0; i < Attributes.Count; i++)
             {
-                string key = ATTRS.Keys.ElementAt(i);
+                string key = Attributes.Keys.ElementAt(i);
                 if (KeysToRemove.Contains(key))
                 {
                     continue;
                 }
-                string value = ATTRS[key];
+                string value = Attributes[key];
                 if (key.IndexOfAny(numbs) > -1)
                 {
                     //it contains a number
                     //remove the number and call it CleanKey
                     string cleankey = new string(key.Where(x => !numbs.Contains(x)).ToArray());
 
-                    var allkeys = ATTRS.Keys.Where(x => new string(x.Where(z => !numbs.Contains(z)).ToArray()) == cleankey).OrderBy(q => q).ToList();
+                    var allkeys = Attributes.Keys.Where(x => new string(x.Where(z => !numbs.Contains(z)).ToArray()) == cleankey).OrderBy(q => q).ToList();
                     var allvalues = new List<string>();
                     foreach (var item in allkeys)
                     {
-                        allvalues.Add(ATTRS[item]);
+                        allvalues.Add(Attributes[item]);
                     }
                     string finalvalues = string.Join(string.Empty , allvalues);
-                    ATTRS.Add(cleankey , finalvalues);
+                    Attributes.Add(cleankey , finalvalues);
                     KeysToRemove.AddRange(allkeys);
                 }
             }
 
             foreach (var item in KeysToRemove)
             {
-                ATTRS.Remove(item);
+                Attributes.Remove(item);
             }
-            if (ATTRS.ContainsKey("settings"))
+            if (Attributes.ContainsKey("settings"))
             {
-                var pairset = ATTRS["settings"].Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
+                var pairset = Attributes["settings"].Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
                 foreach (var item in pairset)
                 {
                     var splitpair = item.Split('=');
-                    ATTRS_Settings.Add(splitpair[0] , splitpair[1]);
+                    ServerSettings.Add(splitpair[0] , splitpair[1]);
                 }
-                ATTRS.Remove("settings");
+                Attributes.Remove("settings");
             }
-            if (ATTRS_Settings.ContainsKey("vmsp"))
+            if (ServerSettings.ContainsKey("vmsp"))
             {
-                if (ATTRS.ContainsKey("servertype"))
+                if (Attributes.ContainsKey("servertype"))
                 {
-                    if (ATTRS["servertype"] == "PRIVATE")
+                    if (Attributes["servertype"] == "PRIVATE")
                     {
-                        IsPasswordProtected = bool.Parse(ATTRS_Settings["vmsp"]);
+                        IsPasswordProtected = bool.Parse(ServerSettings["vmsp"]);
                     }
                     else
                     {
@@ -251,9 +263,9 @@ namespace Zlo.Extras
                 }
                 else
                 {
-                    IsPasswordProtected = bool.Parse(ATTRS_Settings["vmsp"]);
+                    IsPasswordProtected = bool.Parse(ServerSettings["vmsp"]);
                 }
-                ATTRS_Settings.Remove("vmsp");
+                ServerSettings.Remove("vmsp");
             }
             else
             {
@@ -266,10 +278,10 @@ namespace Zlo.Extras
             {
                 return;
             }
-            ATTRS.Clear();
+            Attributes.Clear();
 
-            EXIP = br.ReadZUInt32();
-            EXPORT = br.ReadZUInt16();
+            ServerIP = br.ReadZUInt32();
+            ServerPort = br.ReadZUInt16();
             INIP = br.ReadZUInt32();
             INPORT = br.ReadZUInt16();
             byte t = br.ReadByte();
@@ -278,14 +290,14 @@ namespace Zlo.Extras
             {
                 string key = br.ReadZString();
                 string value = br.ReadZString();
-                ATTRS.Add(key , value);
+                Attributes.Add(key , value);
             }
 
-            GNAM = br.ReadZString();
-            GSET = br.ReadZUInt32();
-            GSTA = br.ReadByte();
+            ServerName = br.ReadZString();
+            GameSet = br.ReadZUInt32();
+            ServerState = br.ReadByte();
             IGNO = br.ReadByte();
-            PMAX = br.ReadByte();
+            MaxPlayers = br.ReadByte();
             //was 64
             NATT = br.ReadZUInt64();
             //=========
@@ -293,7 +305,7 @@ namespace Zlo.Extras
             NTOP = br.ReadByte();
             PGID = br.ReadZString();
             PRES = br.ReadByte();
-            QCAP = br.ReadByte();
+            SlotCapacity = br.ReadByte();
             SEED = br.ReadZUInt32();
             UUID = br.ReadZString();
             VOIP = br.ReadByte();
@@ -312,7 +324,7 @@ namespace Zlo.Extras
 
         public override string ToString()
         {
-            return !string.IsNullOrWhiteSpace(GNAM) ? GNAM : string.Empty;
+            return !string.IsNullOrWhiteSpace(ServerName) ? ServerName : string.Empty;
         }
     }
 
@@ -325,12 +337,12 @@ namespace Zlo.Extras
         /// <summary>
         /// player cap
         /// </summary>
-        public byte PCAP { get; internal set; }
+        public byte PlayerCapacity { get; internal set; }
 
         /// <summary>
         /// total cap
         /// </summary>
-        public uint TCAP { get; internal set; }
+        public uint TotalCapacity { get; internal set; }
 
         internal new void Parse(byte[] serverbuffer)
         {
@@ -339,39 +351,39 @@ namespace Zlo.Extras
             {
                 Parse(br);
 
-                PCAP = br.ReadByte();
-                TCAP = br.ReadZUInt32();
+                PlayerCapacity = br.ReadByte();
+                TotalCapacity = br.ReadZUInt32();
             }
 
-            if (ATTRS.ContainsKey("maps") && ATTRS.ContainsKey("mapsinfo"))
+            if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
             {
-                ATTRS_MapRotation.Parse(ATTRS["mapsinfo"] , ATTRS["maps"] , ZloGame.BF_3);
-                ATTRS.Remove("maps");
-                ATTRS.Remove("mapsinfo");
+                MapRotation.Parse(Attributes["mapsinfo"] , Attributes["maps"] , ZloGame.BF_3);
+                Attributes.Remove("maps");
+                Attributes.Remove("mapsinfo");
             }
-            if (ATTRS.ContainsKey("level"))
+            if (Attributes.ContainsKey("level"))
             {
-                if (API_Dictionaries.API_BF3_Maps.ContainsKey(ATTRS["level"]))
+                if (API_Dictionaries.API_BF3_Maps.ContainsKey(Attributes["level"]))
                 {
-                    ATTRS_MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF3_Maps[ATTRS["level"]];
+                    MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF3_Maps[Attributes["level"]];
                 }
                 else
                 {
-                    ATTRS_MapRotation.CurrentActualMap.MapName = ATTRS["level"];
+                    MapRotation.CurrentActualMap.MapName = Attributes["level"];
                 }
-                ATTRS.Remove("level");
+                Attributes.Remove("level");
             }
-            if (ATTRS.ContainsKey("mode"))
+            if (Attributes.ContainsKey("mode"))
             {
-                if (API_Dictionaries.API_BF3_GameModes.ContainsKey(ATTRS["mode"]))
+                if (API_Dictionaries.API_BF3_GameModes.ContainsKey(Attributes["mode"]))
                 {
-                    ATTRS_MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF3_GameModes[ATTRS["mode"]];
+                    MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF3_GameModes[Attributes["mode"]];
                 }
                 else
                 {
-                    ATTRS_MapRotation.CurrentActualMap.GameModeName = ATTRS["mode"];
+                    MapRotation.CurrentActualMap.GameModeName = Attributes["mode"];
                 }
-                ATTRS.Remove("mode");
+                Attributes.Remove("mode");
             }
         }
     }
@@ -395,12 +407,12 @@ namespace Zlo.Extras
         public uint MACI { get; internal set; }
 
         /// <summary>
-        /// first : public slots;
-        /// second : private slots;
-        /// third : public spect;
-        /// fourth : private spect;
+        /// [0] : public slots;
+        /// [1] : private slots;
+        /// [2] : public spect;
+        /// [3] : private spect;
         /// </summary>
-        public byte[] PCAP { get; internal set; } = new byte[4];
+        public byte[] PlayerCapacities { get; internal set; } = new byte[4];
         public uint GMRG { get; internal set; }
         public tRNFO RNFO { get; internal set; }
         public string SCID { get; internal set; }
@@ -420,10 +432,10 @@ namespace Zlo.Extras
                     //uint8 t, t1; string ts;
                     MACI = br.ReadZUInt32();
 
-                    PCAP[0] = br.ReadByte();
-                    PCAP[1] = br.ReadByte();
-                    PCAP[2] = br.ReadByte();
-                    PCAP[3] = br.ReadByte();
+                    PlayerCapacities[0] = br.ReadByte();
+                    PlayerCapacities[1] = br.ReadByte();
+                    PlayerCapacities[2] = br.ReadByte();
+                    PlayerCapacities[3] = br.ReadByte();
 
                     GMRG = br.ReadByte();
 
@@ -474,37 +486,37 @@ namespace Zlo.Extras
                 /*
                   Map       raw.ATTRS?["level"]
                   GameMode  raw.ATTRS?["levellocation"]*/
-                if (ATTRS.ContainsKey("maps") && ATTRS.ContainsKey("mapsinfo"))
+                if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
                 {
-                    ATTRS_MapRotation.Parse(ATTRS["mapsinfo"] , ATTRS["maps"] , ZloGame.BF_4);
-                    ATTRS.Remove("maps");
-                    ATTRS.Remove("mapsinfo");
+                    MapRotation.Parse(Attributes["mapsinfo"] , Attributes["maps"] , ZloGame.BF_4);
+                    Attributes.Remove("maps");
+                    Attributes.Remove("mapsinfo");
                 }
 
-                if (ATTRS.ContainsKey("level"))
+                if (Attributes.ContainsKey("level"))
                 {
-                    if (API_Dictionaries.API_BF4_Maps.ContainsKey(ATTRS["level"]))
+                    if (API_Dictionaries.API_BF4_Maps.ContainsKey(Attributes["level"]))
                     {
-                        ATTRS_MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF4_Maps[ATTRS["level"]];
+                        MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF4_Maps[Attributes["level"]];
                     }
                     else
                     {
-                        ATTRS_MapRotation.CurrentActualMap.MapName = ATTRS["level"];
+                        MapRotation.CurrentActualMap.MapName = Attributes["level"];
                     }
-                    ATTRS.Remove("level");
+                    Attributes.Remove("level");
                 }
 
-                if (ATTRS.ContainsKey("levellocation"))
+                if (Attributes.ContainsKey("levellocation"))
                 {
-                    if (API_Dictionaries.API_BF4_GameModes.ContainsKey(ATTRS["levellocation"]))
+                    if (API_Dictionaries.API_BF4_GameModes.ContainsKey(Attributes["levellocation"]))
                     {
-                        ATTRS_MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF4_GameModes[ATTRS["levellocation"]];
+                        MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF4_GameModes[Attributes["levellocation"]];
                     }
                     else
                     {
-                        ATTRS_MapRotation.CurrentActualMap.GameModeName = ATTRS["levellocation"];
+                        MapRotation.CurrentActualMap.GameModeName = Attributes["levellocation"];
                     }
-                    ATTRS.Remove("levellocation");
+                    Attributes.Remove("levellocation");
                 }
             }
             catch (Exception ex)
@@ -524,6 +536,11 @@ namespace Zlo.Extras
     #region Player Bases
     public class API_PlayerListBase : List<API_PlayerBase>
     {
+        /// <summary>
+        /// gets a player by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public API_PlayerBase GetPlayer(uint id)
         {
             return Find(x => x.ID == id);
@@ -549,9 +566,25 @@ namespace Zlo.Extras
     }
     public struct API_PlayerBase
     {
+        /// <summary>
+        /// the in-game slot (don't know how to use yet)
+        /// </summary>
         public byte Slot { get; internal set; }
+
+        /// <summary>
+        /// Player id on zloemu
+        /// </summary>
         public uint ID { get; internal set; }
+  
+        /// <summary>
+        /// Player name
+        /// </summary>
         public string Name { get; internal set; }
+     
+        /// <summary>
+        /// returns the player name
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return Name;
@@ -560,6 +593,9 @@ namespace Zlo.Extras
     #endregion
 
     #region ServersList
+    /// <summary>
+    /// represents the base server list for any bf3 server list that will be created
+    /// </summary>
     public class API_BF3ServersListBase : List<API_BF3ServerBase>
     {
         internal API_BF3ServersListBase(API_ZloClient client)
@@ -660,7 +696,10 @@ namespace Zlo.Extras
             return null;
         }
     }
-
+ 
+    /// <summary>
+    /// represents the base server list for any bf4 server list that will be created
+    /// </summary>
     public class API_BF4ServersListBase : List<API_BF4ServerBase>
     {
         internal API_BF4ServersListBase(API_ZloClient client)
@@ -761,7 +800,10 @@ namespace Zlo.Extras
             return null;
         }
     }
-
+   
+    /// <summary>
+    /// represents the base server list for any bfh server list that will be created
+    /// </summary>
     public class API_BFHServersListBase : List<API_BFHServerBase>
     {
         internal API_BFHServersListBase(API_ZloClient client)

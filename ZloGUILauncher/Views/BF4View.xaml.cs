@@ -39,11 +39,39 @@ namespace ZloGUILauncher.Views
 
         private void Client_StatsReceived(Zlo.Extras.ZloGame Game , Dictionary<string , float> List)
         {
-            if (Game == Zlo.Extras.ZloGame.BF_4)
+            if (Game == ZloGame.BF_4)
             {
-                Dispatcher.Invoke(() => { StatsDG.ItemsSource = List; });
+                Dispatcher.Invoke(() => { StatsListWin.StatsDG.ItemsSource = List; });
             }
         }
+
+        private static BF4StatsListWindow m_StatsListWin;
+        public static BF4StatsListWindow StatsListWin
+        {
+            get
+            {
+                if (m_StatsListWin == null)
+                {
+                    m_StatsListWin = new BF4StatsListWindow();
+                }
+                return m_StatsListWin;
+            }
+        }
+
+        private static BF4StatsWin m_StatsWin;
+        public static BF4StatsWin StatsWin
+        {
+            get
+            {
+                if (m_StatsWin == null)
+                {
+                    m_StatsWin = new BF4StatsWin();                                   
+                }
+                return m_StatsWin;
+            }
+        }
+
+      
 
         private void StatsRefreshButton_Click(object sender , RoutedEventArgs e)
         {
@@ -63,6 +91,17 @@ namespace ZloGUILauncher.Views
         private void JoinTestRangeButton_Click(object sender , RoutedEventArgs e)
         {
             App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Test_Range);
+        }
+
+        private void StatsAsListButton_Click(object sender , RoutedEventArgs e)
+        {
+            StatsListWin.Show();
+        }
+
+        private void StatsAsWindowButton_Click(object sender , RoutedEventArgs e)
+        {
+            StatsWin.Show();
+            //StatsWin.BGPlayer.Source = new Uri("Media/bf4/City Background.mp4",uriKind: UriKind.Relative);
         }
     }
 }

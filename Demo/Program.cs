@@ -137,7 +137,7 @@ namespace Demo
             public void UpdateMyServer()
             {
                 ServerID = RawServer.ServerID;
-                ServerName = RawServer.GNAM;
+                ServerName = RawServer.ServerName;
             }
         }
 
@@ -166,7 +166,7 @@ namespace Demo
         #region Event Methods
         private static void BF4Servers_ServerUpdated(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.GNAM},Players = {server.Players.Count}");
+            Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
 
             var MyServer = MyBF4ServerList.Find(x => x.ServerID == id);
             if (MyServer != null)
@@ -176,7 +176,7 @@ namespace Demo
         }
         private static void BF4Servers_ServerRemoved(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.GNAM)},Players = {server.Players.Count}");
+            Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)},Players = {server.Players.Count}");
           
             if (MyBF4ServerList.Any(x => x.ServerID == id))
             {
@@ -189,7 +189,7 @@ namespace Demo
         }
         private static void BF4Servers_ServerAdded(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.GNAM},Players = {server.Players.Count}");
+            Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
 
             var MyServer = new MyBF4Server(server);
             if (!MyBF4ServerList.Any(x => x.ServerID == id))
@@ -202,15 +202,15 @@ namespace Demo
 
         private static void BF3Servers_ServerUpdated(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.GNAM},Players = {server.Players.Count}");
+            Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
         }
         private static void BF3Servers_ServerRemoved(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.GNAM)},Players = {server.Players.Count}");
+            Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)},Players = {server.Players.Count}");
         }
         private static void BF3Servers_ServerAdded(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.GNAM},Players = {server.Players.Count}");
+            Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
         }
 
 
@@ -357,30 +357,30 @@ namespace Demo
 
         private void BF4Servers_ServerUpdated(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.GNAM}");
+            Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.ServerName}");
         }
         private void BF4Servers_ServerRemoved(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.GNAM)}");
+            Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)}");
         }
         private void BF4Servers_ServerAdded(uint id , API_BF4ServerBase server)
         {
-            Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.GNAM}");
+            Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.ServerName}");
         }
 
 
 
         private void BF3Servers_ServerUpdated(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.GNAM}");
+            Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.ServerName}");
         }
         private void BF3Servers_ServerRemoved(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.GNAM)}");
+            Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)}");
         }
         private void BF3Servers_ServerAdded(uint id , API_BF3ServerBase server)
         {
-            Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.GNAM}");
+            Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.ServerName}");
         }
 
 

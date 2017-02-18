@@ -151,12 +151,21 @@ namespace Zlo
             foreach (JProperty kitprop in ((JObject)BF4_Stats["stats"]["kits"]).Properties())
             {
                 var kit = ((JObject)kitprop.Value);
-                int starsC = kit["stars"]["count"].ToObject<int>();
-                int starsCScore = kit["stars"]["curr"].ToObject<int>();
-                int Max = kit["stars"]["Max"].ToObject<int>();
-                int ShortCurr = starsCScore - starsC * Max;
-                kit["stars"]["shortCurr"] = ShortCurr;
-                kit["stars"]["progress"] = ShortCurr / Max * 100;
+
+                double kitsc = kit["score"].ToObject<double>();
+                double max = kit["stars"]["Max"].ToObject<double>();
+
+                double starscraw = kitsc / max;
+
+                kit["stars"]["count"] = (int)starscraw;
+
+                double shortcur = kitsc - ((int)starscraw * max);
+
+
+
+                //int ShortCurr = starsCScore - starsC * Max;
+                kit["stars"]["shortCurr"] = shortcur;
+                kit["stars"]["progress"] = shortcur / max * 100;
             }
 
             //weapons
