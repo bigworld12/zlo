@@ -32,7 +32,7 @@ namespace Zlo.Extras
         }
 
         /// <summary>
-        /// wether the server is protected by a password or not
+        /// whether  the server is protected by a password or not
         /// </summary>
         public bool IsPasswordProtected
         {
