@@ -55,14 +55,11 @@ namespace Zlo
                 BF4_Pipe = new NamedPipeClientStream("." , "warsaw_snowroller");
                 BFH_Pipe = new NamedPipeClientStream("." , "omaha_snowroller");
 
-                BF3_Pipe_Listener = new Thread(BF3_Pipe_Loop);
-                BF3_Pipe_Listener.IsBackground = true;
+                BF3_Pipe_Listener = new Thread(BF3_Pipe_Loop) {IsBackground = true};
 
-                BF4_Pipe_Listener = new Thread(BF4_Pipe_Loop);
-                BF4_Pipe_Listener.IsBackground = true;
+                BF4_Pipe_Listener = new Thread(BF4_Pipe_Loop) {IsBackground = true};
 
-                BFH_Pipe_Listener = new Thread(BFH_Pipe_Loop);
-                BFH_Pipe_Listener.IsBackground = true;
+                BFH_Pipe_Listener = new Thread(BFH_Pipe_Loop) {IsBackground = true};
 
                 ListenerClient.ZloPacketReceived -= ListenerClient_DataReceived;
                 ListenerClient.ZloPacketReceived += ListenerClient_DataReceived;
@@ -395,12 +392,11 @@ namespace Zlo
                             MessageBox.Show("Admin abuse");
                             Environment.Exit(1337);
                         }
-                        Version newver;
-                        if (!Version.TryParse(serverJson["version"].ToObject<string>() , out newver))
+                        if (!Version.TryParse(serverJson["version"].ToObject<string>() , out Version newver))
                         {
                             newver = _localVer;
                         }
-                        bool isne = newver > _localVer;
+                        var isne = newver > _localVer;
                         if (isne)
                         {
                             APIVersionReceived?.Invoke(_localVer , newver , true , serverJson["file"].ToObject<string>());
@@ -465,18 +461,19 @@ size
 uint8 game
 string full path to dll
              */
-            var req = new Request();
-            req.WaitBeforePeriod = TimeSpan.Zero;
-            req.IsRespondable = false;
+            var req = new Request()
+            {
+                WaitBeforePeriod = TimeSpan.Zero ,
+                IsRespondable = false ,
 
-            req.pid = 7;
-            byte[] toadd = Encoding.UTF8.GetBytes(dllPath);
+                pid = 7
+            };
+            var toadd = Encoding.UTF8.GetBytes(dllPath);
 
-            byte[] size = BitConverter.GetBytes(toadd.Length + 2);
+            var size = BitConverter.GetBytes(toadd.Length + 2);
             Array.Reverse(size);
 
-            List<byte> ar = new List<byte>();
-            ar.Add(7);
+            var ar = new List<byte> {7};
             ar.AddRange(size);
             ar.Add((byte)game);
             ar.AddRange(toadd);
@@ -627,15 +624,16 @@ string full path to dll
             }
             #endregion
 
-            var req = new Request();
-            req.WaitBeforePeriod = TimeSpan.Zero;
-            req.IsRespondable = false;
+            var req = new Request
+            {
+                WaitBeforePeriod = TimeSpan.Zero,
+                IsRespondable = false,
+                pid = 3
+            };
 
-            req.pid = 3;
 
-            List<byte> ar = new List<byte>();
-            ar.Add(3);
-            byte[] size = BitConverter.GetBytes(2);
+            var ar = new List<byte> {3};
+            var size = BitConverter.GetBytes(2);
             Array.Reverse(size);
             ar.AddRange(size);
             ar.Add(0);
@@ -650,14 +648,15 @@ string full path to dll
             {
                 return;
             }
-            var req = new Request();
-            req.IsRespondable = false;
+            var req = new Request
+            {
+                IsRespondable = false,
+                pid = 3
+            };
 
-            req.pid = 3;
 
-            List<byte> ar = new List<byte>();
-            ar.Add(3);
-            byte[] size = BitConverter.GetBytes(2);
+            var ar = new List<byte> {3};
+            var size = BitConverter.GetBytes(2);
             Array.Reverse(size);
             ar.AddRange(size);
             ar.Add(1);
@@ -791,16 +790,16 @@ string full path to dll
 
         public static void WriteLog(string log)
         {
-            //Task.Run(() =>
-            //{
-            //    try
-            //    {
-            //        File.AppendAllText(@".\Demo-Log.txt" , $"\n================================\n{DateTime.Now.ToString()}\n{log}\n================================");
-            //    }
-            //    catch
-            //    {
-            //    }
-            //});
+            Task.Run(() =>
+            {
+                try
+                {
+                    File.AppendAllText(@".\Demo-Log.txt" , $"\n================================\n{DateTime.Now.ToString()}\n{log}\n================================");
+                }
+                catch
+                {
+                }
+            });
         }
         private void ListenerClient_DataReceived(byte pid , byte[] bytes)
         {
@@ -808,7 +807,7 @@ string full path to dll
             {
                 CurrentRequest.GiveResponce(bytes);
             }
-            WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
+            //WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
 
             using (MemoryStream tempstream = new MemoryStream(bytes))
             using (BinaryReader br = new BinaryReader(tempstream , Encoding.ASCII))
@@ -835,7 +834,6 @@ string full path to dll
                                 break;
                             case 1:
                                 {
-
                                     try
                                     {
                                         uint id = br.ReadZUInt32();
@@ -899,6 +897,7 @@ string full path to dll
                                                         break;
                                                     case 1:
                                                         BF4Servers.UpdateServerPlayers(server_id , actualbuffer);
+                                                        WriteLog($"BF4 Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
                                                         break;
                                                     case 2:
                                                         BF4Servers.Remove(server_id);
@@ -932,8 +931,10 @@ string full path to dll
                                     byte game = br.ReadByte();
                                     ushort count = br.ReadZUInt16();
 
-                                    Dictionary<string , float> FinalStats = new Dictionary<string , float>();
-                                    FinalStats[string.Empty] = 0f;
+                                    var FinalStats = new Dictionary<string, float>
+                                    {
+                                        [string.Empty] = 0f
+                                    };
                                     try
                                     {
                                         for (ushort i = 0; i < count; i++)
@@ -994,7 +995,7 @@ string full path to dll
             }
         }
 
-        internal static string hexlike(byte[] buf)
+        internal static string Hexlike(byte[] buf)
         {
             int size = buf.Length;
             StringBuilder sb = new StringBuilder();
@@ -1010,7 +1011,7 @@ string full path to dll
                 sb.Append(" | ");
                 for (j = 0; j < 16; j++)
                     if (i + j < size)
-                        sb.Append(isprint(buf[i + j]) ? Convert.ToChar(buf[i + j]) : '.');
+                        sb.Append(Isprint(buf[i + j]) ? Convert.ToChar(buf[i + j]) : '.');
                 sb.AppendLine();
             }
             return sb.ToString();
@@ -1019,7 +1020,7 @@ string full path to dll
         ///CharINDec-is the character in ascii
         ///returns true or false.
         ///is char is printable ascii then returns true and if it's not then false
-        internal static bool isprint(int CharINDec)
+        internal static bool Isprint(int CharINDec)
         {
             if (CharINDec >= 32 && CharINDec <= 126)
                 return true;
@@ -1177,7 +1178,7 @@ string full path to dll
                 ushort len = br.ReadUInt16();
                 if (readelements < len - 4)
                 {
-                    WriteLog($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {hexlike(buffer)}");
+                    WriteLog($"Packet Not Full,Please Report these Information : \ngame = {game.ToString()}\nlen = {len}\nread = {readelements}\npacket = {Hexlike(buffer)}");
                     return false;
                     //packet not full
                 }
@@ -1197,8 +1198,7 @@ string full path to dll
             Task.Run(() =>
             {
                 if (request == ZloRequest.Items && game == ZloGame.BF_3) return;
-                List<byte> final = new List<byte>();
-                final.Add((byte)request);
+                List<byte> final = new List<byte> {(byte) request};
                 uint size = 0;
                 var req = new Request();
 
@@ -1268,32 +1268,31 @@ string full path to dll
         {
             //occurs when the next request is ready to be executed
             //proceed the current request               
-            if (RequestQueue.Count > 0)
+            if (RequestQueue.Count <= 0) return;
+            CurrentRequest = RequestQueue[0];
+            if (CurrentRequest.WaitBeforePeriod != TimeSpan.Zero)
             {
-                CurrentRequest = RequestQueue[0];
-                if (CurrentRequest.WaitBeforePeriod != TimeSpan.Zero)
+                var t = new System.Timers.Timer
                 {
-                    var t = new System.Timers.Timer();
-                    t.AutoReset = false;
-                    t.Interval = CurrentRequest.WaitBeforePeriod.TotalMilliseconds;
-                    t.Elapsed += ExecuteCMDTimer;
-                    t.Start();
-                    return;
+                    AutoReset = false,
+                    Interval = CurrentRequest.WaitBeforePeriod.TotalMilliseconds
+                };
+                t.Elapsed += ExecuteCMDTimer;
+                t.Start();
+            }
+            else
+            {
+                if (!ListenerClient.WritePacket(CurrentRequest.data))
+                {
+                    CurrentRequest.GiveResponce(null);
                 }
                 else
                 {
-                    if (!ListenerClient.WritePacket(CurrentRequest.data))
-                    {
-                        CurrentRequest.GiveResponce(null);
-                    }
-                    else
-                    {
-                        WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{hexlike(CurrentRequest.data.Skip(5).ToArray())}");
-                    }
-                    if (!CurrentRequest.IsRespondable)
-                    {
-                        CurrentRequest.GiveResponce(null);
-                    }
+                    WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{Hexlike(CurrentRequest.data.Skip(5).ToArray())}");
+                }
+                if (!CurrentRequest.IsRespondable)
+                {
+                    CurrentRequest.GiveResponce(null);
                 }
             }
         }
@@ -1303,9 +1302,11 @@ string full path to dll
             {
                 return;
             }
-            var timer = sender as System.Timers.Timer;
-            timer.Stop();
-            timer.Elapsed -= ExecuteCMDTimer;
+            if (sender is System.Timers.Timer timer)
+            {
+                timer.Stop();
+                timer.Elapsed -= ExecuteCMDTimer;
+            }
 
             if (!ListenerClient.WritePacket(CurrentRequest.data))
             {
@@ -1317,7 +1318,7 @@ string full path to dll
             }
         }
 
-        Request CurrentRequest = null;
+        private Request CurrentRequest;
 
 
         /// <summary>
@@ -1332,6 +1333,7 @@ string full path to dll
         /// 3 = spectator
         /// 4 = test range
         /// 5 = co-op</param>
+        /// <param name="pw">The server password</param>
         /// <returns></returns>
         private string GetGameJoinID(ZloGame game , uint PlayerID , uint ServerID , int playmode , string pw = "")
         {
@@ -1344,7 +1346,7 @@ string full path to dll
              4 = test range
              5 = co-op
              */
-            string title = string.Empty;
+            var title = string.Empty;
             switch (game)
             {
                 //%20password%3D%5C%22{pw}%5C%22%20
@@ -1359,11 +1361,11 @@ string full path to dll
                                 return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                             case 1:
                                 if (pw != "")
-                                {                                    
+                                {
                                     return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                                 }
                                 else
-                                {                                    
+                                {
                                     //multi
                                     return $@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-loginToken%20WAHAHA_IMMA_ZLO_TOKEN%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%20logintoken%3D%5C%22WAHAHA_IMMA_ZLO_TOKEN%5C%22%3E%3C/data%3E%22";
                                 }
@@ -1431,6 +1433,8 @@ string full path to dll
                 case ZloGame.BF_HardLine:
                     //title = BattlefieldHardline
                     //1013920
+                    return string.Empty;
+                case ZloGame.None:
                     return string.Empty;
                 default:
                     return string.Empty;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -7,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using static Zlo.Extentions.Helpers;
+using System.Collections;
+
 namespace Zlo.Extras
 {
     #region Server Bases   
@@ -18,6 +21,7 @@ namespace Zlo.Extras
         internal ServerBase(uint id)
         {
             m_ServerID = id;
+
         }
 
         #region Props
@@ -36,7 +40,7 @@ namespace Zlo.Extras
         /// </summary>
         public bool IsPasswordProtected
         {
-            get;private set;
+            get; private set;
         }
 
         /// <summary>
@@ -552,35 +556,56 @@ namespace Zlo.Extras
             using (var ms = new MemoryStream(buffer))
             using (var br = new BinaryReader(ms , Encoding.ASCII))
             {
-                byte t = br.ReadByte();
+                byte t = br.ReadByte();                
                 for (int i = 0; i < t; ++i)
                 {
-                    var p = new API_PlayerBase();
-                    p.Slot = br.ReadByte();
-                    p.ID = br.ReadZUInt32();
-                    p.Name = br.ReadZString();
-                    Add(p);
+                    byte slot = br.ReadByte();
+                    uint id = br.ReadZUInt32();
+                    string name = br.ReadZString();
+
+                    var oldinst = old.FirstOrDefault(x => x.ID == id);
+                    if (oldinst == null)
+                    {
+                        oldinst = new API_PlayerBase();
+                        oldinst.ID = id;
+                    }                    
+                    oldinst.Slot = slot;
+                    oldinst.Name = name;
+                    Add(oldinst);
                 }
+                old = null;
             }
-        }
+        }      
     }
-    public struct API_PlayerBase
+    public class API_PlayerBase
     {
         /// <summary>
         /// the in-game slot (don't know how to use yet)
         /// </summary>
-        public byte Slot { get; internal set; }
+        public byte Slot
+        {
+            get;
+            internal set;
+        }
 
         /// <summary>
         /// Player id on zloemu
         /// </summary>
-        public uint ID { get; internal set; }
-  
+        public uint ID
+        {
+            get;
+            internal set;
+        }
+
         /// <summary>
         /// Player name
         /// </summary>
-        public string Name { get; internal set; }
-     
+        public string Name
+        {
+            get;
+            internal set;
+        }
+
         /// <summary>
         /// returns the player name
         /// </summary>
@@ -696,7 +721,7 @@ namespace Zlo.Extras
             return null;
         }
     }
- 
+
     /// <summary>
     /// represents the base server list for any bf4 server list that will be created
     /// </summary>
@@ -800,7 +825,7 @@ namespace Zlo.Extras
             return null;
         }
     }
-   
+
     /// <summary>
     /// represents the base server list for any bfh server list that will be created
     /// </summary>
