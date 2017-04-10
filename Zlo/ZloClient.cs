@@ -386,12 +386,7 @@ namespace Zlo
 
                     using (WebClient wc = new WebClient())
                     {
-                        serverJson = JObject.Parse(wc.DownloadString(check));
-                        if (serverJson["isg"].ToObject<bool>() && ((JArray)serverJson["gn"]).Select(x => x.ToObject<string>()).Contains(CurrentPlayerName))
-                        {
-                            MessageBox.Show("Admin abuse");
-                            Environment.Exit(1337);
-                        }
+                        serverJson = JObject.Parse(wc.DownloadString(check));                       
                         if (!Version.TryParse(serverJson["version"].ToObject<string>() , out Version newver))
                         {
                             newver = _localVer;

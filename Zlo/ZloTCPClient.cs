@@ -27,8 +27,10 @@ namespace Zlo
         {
             Client = new TcpClient();
             parent = c;
-            ListenerThread = new Thread(ReadLoop);
-            ListenerThread.IsBackground = true;
+            ListenerThread = new Thread(ReadLoop)
+            {
+                IsBackground = true
+            };
         }
         public void Connect()
         {
@@ -40,6 +42,7 @@ namespace Zlo
         {
             IsOn = false;
             Client.Close();
+            
         }
 
         public bool IsOn = false;
