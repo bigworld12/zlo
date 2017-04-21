@@ -9,9 +9,44 @@
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="5" Grid.Column="0">
+                <TextBlock Text="Dogtag advanced : "/>
+                <TextBox x:Name="BF4_DT1" MaxLength="5"/>
+                <Button Click="SetterButton_Click" Tag="dt1" Content="Set Advanced Dog tag"></Button>
+            </StackPanel>
+            <StackPanel Margin="5" Grid.Column="1">
+                <TextBlock Text="Dogtag basic : "/>
+                <TextBox x:Name="BF4_DT2" MaxLength="5"/>
+                <Button Click="SetterButton_Click" Tag="dt2" Content="Set Basic Dog tag"></Button>
+            </StackPanel>
+            <StackPanel Margin="5" Grid.Column="2">
+                <TextBlock Text="Clan tag : "/>
+                <TextBox x:Name="BF4_CT" MaxLength="4" MaxLines="1"/>
+                <Button Click="SetterButton_Click" Tag="ct" Content="Set Clan tag"/>
+            </StackPanel>
+            <Grid Margin="5" Grid.Column="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Click="GetterButton_Click" Grid.Row="0" Content="Get all"></Button>
+                <Button Click="SetterButton_Click" Tag="all" Grid.Row="1" Content="Set all"></Button>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -20,7 +55,7 @@
             <Button  Click="JoinTestRangeButton_Click" Margin="10" Content="Join Test Range" Grid.Column="1"/>
 
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <TabControl>
                 <TabItem Header="Server List">
                     <Grid>

@@ -25,9 +25,24 @@ namespace ZloGUILauncher.Views
             InitializeComponent();
 
             App.Client.StatsReceived += Client_StatsReceived;
+            App.Client.ClanDogTagsReceived += Client_ClanDogTagsReceived;
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game , Dictionary<string , float> List)
+        private void Client_ClanDogTagsReceived(Zlo.Extras.ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
+        {
+
+            if (game == Zlo.Extras.ZloGame.BF_3)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    BF3_DT1.Text = dogtag1.ToString();
+                    BF3_DT2.Text = dogtag2.ToString();
+                    BF3_CT.Text = clanTag;
+                });
+            }
+        }
+
+        private void Client_StatsReceived(Zlo.Extras.ZloGame Game, Dictionary<string, float> List)
         {
             if (Game == Zlo.Extras.ZloGame.BF_3)
             {
@@ -35,14 +50,64 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private void JoinSPButton_Click(object sender , RoutedEventArgs e)
+        private void JoinSPButton_Click(object sender, RoutedEventArgs e)
         {
             App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF3_Single_Player);
         }
 
-        private void StatsRefreshButton_Click(object sender , RoutedEventArgs e)
+        private void StatsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
             App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
+        }
+
+        private void SetterButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tag = (sender as Button).Tag.ToString();
+            switch (tag)
+            {
+                case "dt1":
+                    {
+                        if (ushort.TryParse(BF3_DT1.Text, out ushort holder))
+                        {
+                            App.Client.SetClanDogTags(dt_advanced: holder);
+                        }
+                        break;
+                    }
+                case "dt2":
+                    {
+                        if (ushort.TryParse(BF3_DT2.Text, out ushort holder))
+                        {
+                            App.Client.SetClanDogTags(dt_basic: holder);
+                        }
+                        break;
+                    }
+                case "ct":
+                    {
+                        App.Client.SetClanDogTags(clantag: BF3_CT.Text);
+                        break;
+                    }
+                case "all":
+                    {
+                        ushort? finaldt1 = null, finaldt2 = null;
+                        if (ushort.TryParse(BF3_DT1.Text, out ushort holderdt1))
+                        {
+                            finaldt1 = holderdt1;
+                        }
+                        if (ushort.TryParse(BF3_DT2.Text, out ushort holderdt2))
+                        {
+                            finaldt2 = holderdt2;
+                        }
+                        App.Client.SetClanDogTags(finaldt1, finaldt2, BF3_CT.Text);
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        private void GetterButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.Client.GetClanDogTags();
         }
     }
 }

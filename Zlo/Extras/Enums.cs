@@ -10,7 +10,8 @@ namespace Zlo.Extras
     {
         Ping = 0,
         User_Info = 1,
-        Player_Info = 2,       
+        Player_Info = 2,    
+        Server_List = 3,
         Stats = 4,
         Items = 5
     }

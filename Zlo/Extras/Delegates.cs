@@ -12,6 +12,7 @@ namespace Zlo.Extras
     public delegate void API_ErrorOccuredEventHandler(Exception Error , string CustomMessage);
     public delegate void API_DisconnectedEventHandler(DisconnectionReasons Reason);
     public delegate void API_GameStateReceivedEventHandler(ZloGame game , string type , string message);
+    public delegate void API_ClanDogTagsReceivedEventHandler(ZloGame game, ushort dogtag_advanced, ushort dogtag_basic, string clanTag);
 
     public delegate void API_ConnectionStateChanged(bool IsConnectedToZloClient);
 
