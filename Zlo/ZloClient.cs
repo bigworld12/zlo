@@ -689,7 +689,7 @@ string full path to dll
             List<byte> asci = Encoding.ASCII.GetBytes(s).ToList();
             //null termimated
             asci.Add(0);
-            Console.WriteLine($"Converted string ({s}) to byte[] {string.Join( ";", asci)}");
+            Console.WriteLine($"Converted string ({s}) to byte[] {string.Join(";", asci)}");
             return asci.ToArray();
         }
 
@@ -880,6 +880,10 @@ string full path to dll
                             {
                                 return;
                             }
+                            //action
+                            Payloads.Add(additionalPayloads[0]);
+                            //game
+                            Payloads.Add((byte)game);
                             if (additionalPayloads[0] == 0)
                             {
                                 req.IsRespondable = true;
@@ -887,10 +891,12 @@ string full path to dll
                             else
                             {
                                 req.IsRespondable = false;
+                                //params
+                                Payloads.AddRange(additionalPayloads.Skip(1));
                             }
-                            //additionalPayloads is action [get { 0 }, set {1,ushort,ushort,string}]
-                            Payloads.AddRange(additionalPayloads);
-                            Payloads.Add((byte)game);
+                            //additionalPayloads is action [get { 0 }, set {1,ushort,ushort,string}]                          
+
+
                             break;
                         }
                     case ZloRequest.Stats:
@@ -1144,7 +1150,8 @@ string full path to dll
 
         public static void WriteLog(string log)
         {
-            ToWrite.Enqueue(log);
+            if (ToWrite.Count > 0)
+                ToWrite.Enqueue(log);
             if (ToWrite.Count == 1)
             {
                 ActualWriteLog();
@@ -1155,7 +1162,7 @@ string full path to dll
         private static void ActualWriteLog()
         {
             Task.Run(() =>
-            {                
+            {
                 try
                 {
 
@@ -1169,7 +1176,7 @@ string full path to dll
                 {
                     Console.WriteLine(ex.ToString());
                 }
-            });            
+            });
         }
 
         internal static string Hexlike(byte[] buf)
