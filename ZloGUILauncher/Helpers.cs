@@ -100,9 +100,11 @@ namespace ZloGUILauncher
                     || (e.Delta <= 0 && scrollControl.VerticalOffset >= scrollControl.ExtentHeight - scrollControl.ViewportHeight)))
                 {
                     e.Handled = true;
-                    var eventArg = new MouseWheelEventArgs(e.MouseDevice , e.Timestamp , e.Delta);
-                    eventArg.RoutedEvent = UIElement.MouseWheelEvent;
-                    eventArg.Source = sender;
+                    var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                    {
+                        RoutedEvent = UIElement.MouseWheelEvent,
+                        Source = sender
+                    };
                     var parent = (UIElement)((FrameworkElement)sender).Parent;
                     parent.RaiseEvent(eventArg);
                 }
