@@ -35,12 +35,15 @@ namespace Zlo.Extras
             get { return m_ServerID; }
         }
 
+
+
         /// <summary>
         /// whether  the server is protected by a password or not
         /// </summary>
         public bool IsPasswordProtected
         {
-            get; private set;
+            get { return false; }
+            private set { /*do noting , yet*/}
         }
 
         /// <summary>
@@ -57,17 +60,17 @@ namespace Zlo.Extras
         public ushort INPORT { get; internal set; }
 
 
-        private Dictionary<string , string> m_ATTRS;
+        private Dictionary<string, string> m_ATTRS;
         /// <summary>
         /// Attributes
         /// </summary>
-        public Dictionary<string , string> Attributes
+        public Dictionary<string, string> Attributes
         {
             get
             {
                 if (m_ATTRS == null)
                 {
-                    m_ATTRS = new Dictionary<string , string>();
+                    m_ATTRS = new Dictionary<string, string>();
                 }
                 return m_ATTRS;
             }
@@ -125,23 +128,23 @@ namespace Zlo.Extras
                 if (m_Players == null)
                 {
                     m_Players = new API_PlayerListBase();
-                    BindingOperations.EnableCollectionSynchronization(m_Players , new object());
+                    BindingOperations.EnableCollectionSynchronization(m_Players, new object());
                 }
                 return m_Players;
             }
         }
 
-        private Dictionary<string , string> m_ATTRS_Settings;
+        private Dictionary<string, string> m_ATTRS_Settings;
         /// <summary>
         /// server settings
         /// </summary>
-        public Dictionary<string , string> ServerSettings
+        public Dictionary<string, string> ServerSettings
         {
             get
             {
                 if (m_ATTRS_Settings == null)
                 {
-                    m_ATTRS_Settings = new Dictionary<string , string>();
+                    m_ATTRS_Settings = new Dictionary<string, string>();
                 }
                 return m_ATTRS_Settings;
             }
@@ -167,7 +170,7 @@ namespace Zlo.Extras
         {
             Attributes.Clear();
             using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms , Encoding.ASCII))
+            using (var br = new BinaryReader(ms, Encoding.ASCII))
             {
 
                 ServerIP = br.ReadZUInt32();
@@ -180,7 +183,7 @@ namespace Zlo.Extras
                 {
                     string key = br.ReadZString();
                     string value = br.ReadZString();
-                    Attributes.Add(key , value);
+                    Attributes.Add(key, value);
                 }
 
 
@@ -232,8 +235,8 @@ namespace Zlo.Extras
                     {
                         allvalues.Add(Attributes[item]);
                     }
-                    string finalvalues = string.Join(string.Empty , allvalues);
-                    Attributes.Add(cleankey , finalvalues);
+                    string finalvalues = string.Join(string.Empty, allvalues);
+                    Attributes.Add(cleankey, finalvalues);
                     KeysToRemove.AddRange(allkeys);
                 }
             }
@@ -244,11 +247,11 @@ namespace Zlo.Extras
             }
             if (Attributes.ContainsKey("settings"))
             {
-                var pairset = Attributes["settings"].Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
+                var pairset = Attributes["settings"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var item in pairset)
                 {
                     var splitpair = item.Split('=');
-                    ServerSettings.Add(splitpair[0] , splitpair[1]);
+                    ServerSettings.Add(splitpair[0], splitpair[1]);
                 }
                 Attributes.Remove("settings");
             }
@@ -294,7 +297,7 @@ namespace Zlo.Extras
             {
                 string key = br.ReadZString();
                 string value = br.ReadZString();
-                Attributes.Add(key , value);
+                Attributes.Add(key, value);
             }
 
             ServerName = br.ReadZString();
@@ -351,7 +354,7 @@ namespace Zlo.Extras
         internal new void Parse(byte[] serverbuffer)
         {
             using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms , Encoding.ASCII))
+            using (var br = new BinaryReader(ms, Encoding.ASCII))
             {
                 Parse(br);
 
@@ -361,7 +364,7 @@ namespace Zlo.Extras
 
             if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
             {
-                MapRotation.Parse(Attributes["mapsinfo"] , Attributes["maps"] , ZloGame.BF_3);
+                MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], ZloGame.BF_3);
                 Attributes.Remove("maps");
                 Attributes.Remove("mapsinfo");
             }
@@ -399,11 +402,11 @@ namespace Zlo.Extras
 
         public class tRNFO :
             Dictionary<
-                string ,
+                string,
                 Tuple<
-                    uint ,
+                    uint,
                     Dictionary<
-                        string ,
+                        string,
                         string>>>
         {
 
@@ -425,7 +428,7 @@ namespace Zlo.Extras
             try
             {
                 using (var ms = new MemoryStream(serverbuffer))
-                using (var br = new BinaryReader(ms , Encoding.ASCII))
+                using (var br = new BinaryReader(ms, Encoding.ASCII))
                 {
                     Parse(br);
                     var z = this;
@@ -448,13 +451,13 @@ namespace Zlo.Extras
                     {
                         string first_key = br.ReadZString();
 
-                        var second_dict = new Dictionary<string , string>();
+                        var second_dict = new Dictionary<string, string>();
                         uint first = 0;
 
                         first = br.ReadZUInt32();
-                        var value_dict = new Tuple<uint , Dictionary<string , string>>
+                        var value_dict = new Tuple<uint, Dictionary<string, string>>
                             (
-                             first , //first
+                             first, //first
                             second_dict //second
                             );
 
@@ -471,7 +474,7 @@ namespace Zlo.Extras
                             }
                             else
                             {
-                                second_dict.Add(key , value);
+                                second_dict.Add(key, value);
                             }
                         }
 
@@ -481,7 +484,7 @@ namespace Zlo.Extras
                         }
                         else
                         {
-                            RNFO.Add(first_key , value_dict);
+                            RNFO.Add(first_key, value_dict);
                         }
                     }
 
@@ -492,7 +495,7 @@ namespace Zlo.Extras
                   GameMode  raw.ATTRS?["levellocation"]*/
                 if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
                 {
-                    MapRotation.Parse(Attributes["mapsinfo"] , Attributes["maps"] , ZloGame.BF_4);
+                    MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], ZloGame.BF_4);
                     Attributes.Remove("maps");
                     Attributes.Remove("mapsinfo");
                 }
@@ -554,9 +557,9 @@ namespace Zlo.Extras
             var old = ToArray();
             Clear();
             using (var ms = new MemoryStream(buffer))
-            using (var br = new BinaryReader(ms , Encoding.ASCII))
+            using (var br = new BinaryReader(ms, Encoding.ASCII))
             {
-                byte t = br.ReadByte();                
+                byte t = br.ReadByte();
                 for (int i = 0; i < t; ++i)
                 {
                     byte slot = br.ReadByte();
@@ -566,16 +569,18 @@ namespace Zlo.Extras
                     var oldinst = old.FirstOrDefault(x => x.ID == id);
                     if (oldinst == null)
                     {
-                        oldinst = new API_PlayerBase();
-                        oldinst.ID = id;
-                    }                    
+                        oldinst = new API_PlayerBase()
+                        {
+                            ID = id
+                        };
+                    }
                     oldinst.Slot = slot;
                     oldinst.Name = name;
                     Add(oldinst);
                 }
                 old = null;
             }
-        }      
+        }
     }
     public class API_PlayerBase
     {
@@ -650,7 +655,7 @@ namespace Zlo.Extras
             if (server != null)
             {
                 base.Remove(server);
-                ServerRemoved?.Invoke(server.ServerID , server);
+                ServerRemoved?.Invoke(server.ServerID, server);
             }
         }
 
@@ -661,16 +666,16 @@ namespace Zlo.Extras
             {
                 //remove it
                 base.Remove(serv);
-                ServerRemoved?.Invoke(ServerID , serv);
+                ServerRemoved?.Invoke(ServerID, serv);
             }
         }
         internal void SafeAdd(API_BF3ServerBase server)
         {
             base.Add(server);
-            ServerAdded?.Invoke(server.ServerID , server);
+            ServerAdded?.Invoke(server.ServerID, server);
         }
 
-        internal void UpdateServerInfo(uint ServerID , byte[] info)
+        internal void UpdateServerInfo(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -684,10 +689,10 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.Parse(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
-        internal void UpdateServerPlayers(uint ServerID , byte[] info)
+        internal void UpdateServerPlayers(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -701,7 +706,7 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.ParsePlayers(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
         public API_BF3ServerBase Find(uint ServerID)
@@ -754,7 +759,7 @@ namespace Zlo.Extras
             if (server != null)
             {
                 base.Remove(server);
-                ServerRemoved?.Invoke(server.ServerID , server);
+                ServerRemoved?.Invoke(server.ServerID, server);
             }
         }
 
@@ -765,16 +770,16 @@ namespace Zlo.Extras
             {
                 //remove it
                 base.Remove(serv);
-                ServerRemoved?.Invoke(ServerID , serv);
+                ServerRemoved?.Invoke(ServerID, serv);
             }
         }
         internal void SafeAdd(API_BF4ServerBase server)
         {
             base.Add(server);
-            ServerAdded?.Invoke(server.ServerID , server);
+            ServerAdded?.Invoke(server.ServerID, server);
         }
 
-        internal void UpdateServerInfo(uint ServerID , byte[] info)
+        internal void UpdateServerInfo(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -788,10 +793,10 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.Parse(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
-        internal void UpdateServerPlayers(uint ServerID , byte[] info)
+        internal void UpdateServerPlayers(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -805,7 +810,7 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.ParsePlayers(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
         public API_BF4ServerBase Find(uint ServerID)
@@ -858,7 +863,7 @@ namespace Zlo.Extras
             if (server != null)
             {
                 base.Remove(server);
-                ServerRemoved?.Invoke(server.ServerID , server);
+                ServerRemoved?.Invoke(server.ServerID, server);
             }
         }
 
@@ -869,16 +874,16 @@ namespace Zlo.Extras
             {
                 //remove it
                 base.Remove(serv);
-                ServerRemoved?.Invoke(ServerID , serv);
+                ServerRemoved?.Invoke(ServerID, serv);
             }
         }
         internal void SafeAdd(API_BFHServerBase server)
         {
             base.Add(server);
-            ServerAdded?.Invoke(server.ServerID , server);
+            ServerAdded?.Invoke(server.ServerID, server);
         }
 
-        internal void UpdateServerInfo(uint ServerID , byte[] info)
+        internal void UpdateServerInfo(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -892,10 +897,10 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.Parse(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
-        internal void UpdateServerPlayers(uint ServerID , byte[] info)
+        internal void UpdateServerPlayers(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -909,7 +914,7 @@ namespace Zlo.Extras
             {
                 //server exists
                 serv.ParsePlayers(info);
-                ServerUpdated?.Invoke(ServerID , serv);
+                ServerUpdated?.Invoke(ServerID, serv);
             }
         }
         public API_BFHServerBase Find(uint ServerID)

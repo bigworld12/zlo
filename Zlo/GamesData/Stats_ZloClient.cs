@@ -142,7 +142,7 @@ namespace Zlo
 
             var nextTodoRankObject = (JObject)(todoRankObject["next"] = new JObject());
 
-            nextTodoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace(rank.ToString() , (rank + 1).ToString());
+            nextTodoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace($"r{rank.ToString()}" , $"r{(rank + 1).ToString()}");
             nextTodoRankObject["img"] = $"r{rank + 1}";
             nextTodoRankObject["name"] = nextrankdets["Rank Title"];
             nextTodoRankObject["Unlocks"] = nextrankdets["Unlocks"];

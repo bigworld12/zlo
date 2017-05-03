@@ -26,7 +26,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(9, 1, 0, 0);
+        private Version _localVer = new Version(10, 0, 1, 0);
 
         private JObject serverJson;
 
@@ -557,6 +557,7 @@ string full path to dll
                 else
                 {
                     rungame.UseShellExecute = false;
+                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
                     Process.Start(rungame);
                 }
             }
@@ -600,6 +601,7 @@ string full path to dll
                 else
                 {
                     rungame.UseShellExecute = false;
+                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
                     Process.Start(rungame);
                 }
             }
@@ -637,6 +639,7 @@ string full path to dll
                 else
                 {
                     rungame.UseShellExecute = false;
+                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
                     Process.Start(rungame);
                 }
             }
