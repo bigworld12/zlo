@@ -550,16 +550,23 @@ string full path to dll
             }
             else
             {
-                if (rungame.FileName.StartsWith("origin2"))
+                try
                 {
-                    Process.Start(rungame.FileName);
+                    if (rungame.FileName.StartsWith("origin2"))
+                    {
+                        Process.Start(rungame.FileName);
+                    }
+                    else
+                    {
+                        rungame.UseShellExecute = false;
+                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
+                        Process.Start(rungame);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    rungame.UseShellExecute = false;
-                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                    Process.Start(rungame);
-                }
+                    RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
+                }              
             }
         }
         public void JoinOfflineGame(OfflinePlayModes playmode)
@@ -587,24 +594,30 @@ string full path to dll
                     return;
             }
 
-
-            if (rungame == null)
+            try
             {
-                return;
-            }
-            else
-            {
-                if (rungame.FileName.StartsWith("origin2"))
+                if (rungame == null)
                 {
-                    Process.Start(rungame.FileName);
+                    return;
                 }
                 else
                 {
-                    rungame.UseShellExecute = false;
-                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                    Process.Start(rungame);
+                    if (rungame.FileName.StartsWith("origin2"))
+                    {
+                        Process.Start(rungame.FileName);
+                    }
+                    else
+                    {
+                        rungame.UseShellExecute = false;
+                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
+                        Process.Start(rungame);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
+            } 
         }
         public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode, uint serverid, string password)
         {
@@ -632,15 +645,22 @@ string full path to dll
             }
             else
             {
-                if (rungame.FileName.StartsWith("origin2"))
+                try
                 {
-                    Process.Start(rungame.FileName);
+                    if (rungame.FileName.StartsWith("origin2"))
+                    {
+                        Process.Start(rungame.FileName);
+                    }
+                    else
+                    {
+                        rungame.UseShellExecute = false;
+                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
+                        Process.Start(rungame);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    rungame.UseShellExecute = false;
-                    rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                    Process.Start(rungame);
+                    RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
                 }
             }
         }

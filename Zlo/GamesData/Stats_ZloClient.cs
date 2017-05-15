@@ -107,7 +107,7 @@ namespace Zlo
             allscore = combat + SumIfNum(scores["unlock"] , scores["award"] , scores["special"]);
 
             scores["maxxp"] = GetRankMaxScore(rank);
-            scores["shortxp"] = allscore - sumfrom0to(rank);
+            scores["shortxp"] = allscore - Sumfrom0to(rank);
             scores["longxp"] = allscore;
         }
 
@@ -209,11 +209,13 @@ namespace Zlo
 
 
 
-                var extra = new JObject();
-                extra["accuracy"] = hits / shots;
-                extra["kills per min"] = (kills) / (time / 60);
-                extra["shots fired per min"] = (shots) / (time / 60);
-                extra["headshot per kill"] = headshots / kills;
+                var extra = new JObject
+                {
+                    ["accuracy"] = hits / shots,
+                    ["kills per min"] = (kills) / (time / 60),
+                    ["shots fired per min"] = (shots) / (time / 60),
+                    ["headshot per kill"] = headshots / kills
+                };
                 weapon["extra"] = extra;
             }
 
@@ -262,13 +264,14 @@ namespace Zlo
                 cat["stat"]["hits"] = TOThits;
                 cat["stat"]["hs"] = TOThs;
 
-                var extra = new JObject();
-                extra["accuracy"] = TOThits / TOTshots;
-                extra["kills per min"] = (TOTkills) / (TOTtime / 60);
-                extra["shots fired per min"] = (TOTshots) / (TOTtime / 60);
-                extra["headshot per kill"] = TOThs / TOTkills;
-                extra["score per min"] = catscore.HasValue ? (catscore.Value / (TOTtime / 60)) : 0;
-
+                var extra = new JObject
+                {
+                    ["accuracy"] = TOThits / TOTshots,
+                    ["kills per min"] = (TOTkills) / (TOTtime / 60),
+                    ["shots fired per min"] = (TOTshots) / (TOTtime / 60),
+                    ["headshot per kill"] = TOThs / TOTkills,
+                    ["score per min"] = catscore.HasValue ? (catscore.Value / (TOTtime / 60)) : 0
+                };
                 cat["extra"] = extra;
             }
 
@@ -298,8 +301,7 @@ namespace Zlo
                     var oldstr = item.Value.ToObject<string>();
                     if (oldstr.StartsWith("stat."))
                     {
-                        float val = 0;
-                        List.TryGetValue(oldstr.Substring(5) , out val);
+                        List.TryGetValue(oldstr.Substring(5), out float val);
                         parent[item.Key] = val;
                     }
                 }
@@ -320,7 +322,7 @@ namespace Zlo
                 }
             }
         }
-        private double sumfrom0to(int index)
+        private double Sumfrom0to(int index)
         {
             float finalsum = 0;
             for (int i = 0; i < index; ++i)
