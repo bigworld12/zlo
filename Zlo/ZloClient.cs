@@ -1522,7 +1522,10 @@ string full path to dll
             //current request just got finished and received
             //remove it from the queue list to trigger the next one
             Sender.ReceivedResponce -= Req_ReceivedResponce;
-            RequestQueue.Remove(Sender);
+            if (RequestQueue.Contains(Sender))
+            {
+                RequestQueue.Remove(Sender);
+            }
             TriggerQueue();
         }
         internal void TriggerQueue()
@@ -1564,12 +1567,12 @@ string full path to dll
                             AutoReset = false,
                             Interval = new TimeSpan(0, 0, 5).TotalMilliseconds
                         };
-                        ElapsedEventHandler removeRequestDelegate = null;
-                        removeRequestDelegate = (s, e) => {
+                        void removeRequestDelegate(object s, ElapsedEventArgs e)
+                        {
                             t.Elapsed -= removeRequestDelegate;
                             t.Stop();
                             CurrentRequest.GiveResponce(null);
-                        };
+                        }
 
                         t.Elapsed += removeRequestDelegate;
                         t.Start();
@@ -1612,18 +1615,17 @@ string full path to dll
                         AutoReset = false,
                         Interval = new TimeSpan(0, 0, 5).TotalMilliseconds
                     };
-                    ElapsedEventHandler removeRequestDelegate = null;
-                    removeRequestDelegate = (s, args) => {
+                    void removeRequestDelegate(object s, ElapsedEventArgs args)
+                    {
                         t.Elapsed -= removeRequestDelegate;
                         t.Stop();
                         CurrentRequest.GiveResponce(null);
-                    };
+                    }
 
                     t.Elapsed += removeRequestDelegate;
                     t.Start();
                 }
             }
-            
         }
 
         private Request CurrentRequest;
