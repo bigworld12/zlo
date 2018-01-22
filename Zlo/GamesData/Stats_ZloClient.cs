@@ -30,6 +30,7 @@ namespace Zlo
                         break;
                     }
                 case ZloGame.BF_HardLine:
+                    File.WriteAllLines($".\\{CurrentPlayerName}_BFH_items_raw.txt", List.Select(x => $"{x.Key} = {x.Value.ItemExists.ToString()}"));
                     break;
                 case ZloGame.None:
                     break;
@@ -62,6 +63,8 @@ namespace Zlo
                         break;
                     }
                 case ZloGame.BF_HardLine:
+                    BFH_Stats_Handler();
+                    File.WriteAllLines($".\\{CurrentPlayerName}_BFH_stats_raw.txt", List.Select(x => x.ToString()));
                     break;
                 case ZloGame.None:
                     break;
@@ -291,6 +294,11 @@ namespace Zlo
 
             }
         }       
+
+        private void BFH_Stats_Handler()
+        {
+
+        }
         private void AssignStats(Dictionary<string , float> List , JObject parent)
         {
             foreach (var item in parent)

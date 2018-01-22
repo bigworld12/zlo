@@ -540,7 +540,7 @@ string full path to dll
 
                 case OnlinePlayModes.BFH_Multi_Player:
                     rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1);
-                    break;
+                    break;                  
                 default:
                     return;
             }
@@ -635,6 +635,17 @@ string full path to dll
                     break;
                 case OnlinePlayModes.BF4_Commander:
                     rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 2, password);
+                    break;
+
+                    
+                case OnlinePlayModes.BFH_Multi_Player:
+                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1, password);
+                    break;
+                case OnlinePlayModes.BFH_Spectator:
+                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 3, password);
+                    break;
+                case OnlinePlayModes.BFH_Commander:
+                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 2, password);
                     break;
                 default:
                     return;
@@ -1103,6 +1114,7 @@ string full path to dll
                                                         break;
                                                     case 1:
                                                         BFHServers.UpdateServerPlayers(server_id, actualbuffer);
+                                                        WriteLog($"BFH Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
                                                         break;
                                                     case 2:
                                                         BFHServers.Remove(server_id);
@@ -1652,9 +1664,59 @@ string full path to dll
                         }
                     }
                 case ZloGame.BF_HardLine:
-                    //title = BattlefieldHardline
-                    //1013920
-                    return null;
+                    {
+                        //title = BattlefieldHardline
+                        //1013920
+                        title = "BattlefieldHardline";
+                        string bfhoffers = "1013920";
+                        switch (playmode)
+                        {
+                            case 0:
+                                //single
+                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
+                            case 1:
+                                //multi
+                                if (pw != "")
+                                {
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                                else
+                                {
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                            case 2:
+                                //commander
+                                if (pw != "")
+                                {
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                                else
+                                {
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                            case 3:
+                                //spectator
+                                if (pw != "")
+                                {
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                                else
+                                {
+
+                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                                }
+                            case 4:
+                                //test range
+                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_LaunchPlayground%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
+                            case 5:
+                                //co-op
+                                //currently returns single player
+                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
+                            default:
+                                //default is single player
+                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
+                        }
+                    }
                 case ZloGame.None:
                     return null;
                 default:

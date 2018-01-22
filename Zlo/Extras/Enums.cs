@@ -39,7 +39,11 @@ namespace Zlo.Extras
         BF4_Commander,
         BF4_COOP,
 
-        BFH_Multi_Player
+        BFH_Multi_Player,
+        BFH_Spectator,
+        BFH_Commander,
+        BFH_COOP,
+
     }
     public enum OfflinePlayModes
     {

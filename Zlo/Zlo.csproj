@@ -71,7 +71,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="GamesData\BFH\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dlls\Newtonsoft.Json.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

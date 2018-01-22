@@ -12,7 +12,7 @@ namespace Zlo.Extentions
     {
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll" , CharSet = CharSet.Auto , SetLastError = true)]
-        public static extern bool WaitNamedPipe(string name , int timeout);
+        internal static extern bool WaitNamedPipe(string name , int timeout);
 
         /// <summary>
         /// Provides an indication if the named pipe exists. 
@@ -43,7 +43,7 @@ namespace Zlo.Extentions
         /// ERROR_PIPE_LISTENING        536L Waiting for a process to open the other end of the pipe.
         /// 
         /// </remarks>
-        static public bool NamedPipeExists(string pipeName)
+        internal static bool NamedPipeExists(string pipeName)
         {
             try
             {
@@ -67,13 +67,13 @@ namespace Zlo.Extentions
             }
         }
 
-        public static byte[] ReadReversedBytes(this BinaryReader br , int count)
+        internal static byte[] ReadReversedBytes(this BinaryReader br , int count)
         {
             var bytes = br.ReadBytes(count);
             Array.Reverse(bytes);
             return bytes;
         }
-        public static string ReadZString(this BinaryReader br)
+        internal static string ReadZString(this BinaryReader br)
         {            
             StringBuilder s = new StringBuilder();
             try
@@ -90,7 +90,7 @@ namespace Zlo.Extentions
                 return s.ToString();
             }
         }
-        public static string ReadCountedString(this BinaryReader br , int count)
+        internal static string ReadCountedString(this BinaryReader br , int count)
         {
             StringBuilder s = new StringBuilder();
 
@@ -100,15 +100,15 @@ namespace Zlo.Extentions
             }                        
             return s.ToString();
         }
-        public static uint ReadZUInt32(this BinaryReader br)
+        internal static uint ReadZUInt32(this BinaryReader br)
         {
             return BitConverter.ToUInt32(br.ReadReversedBytes(4) , 0);
         }
-        public static ulong ReadZUInt64(this BinaryReader br)
+        internal static ulong ReadZUInt64(this BinaryReader br)
         {
             return BitConverter.ToUInt64(br.ReadReversedBytes(8) , 0);
         }
-        public static ushort ReadZUInt16(this BinaryReader br)
+        internal static ushort ReadZUInt16(this BinaryReader br)
         {
             return BitConverter.ToUInt16(br.ReadReversedBytes(2) , 0);
         }
