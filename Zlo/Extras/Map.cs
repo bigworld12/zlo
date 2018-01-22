@@ -47,7 +47,7 @@ namespace Zlo.Extras
         {
             get
             {
-                return ReferenceEquals(this , ParentMapRotation.LogicalCurrentMap);
+                return ReferenceEquals(this, ParentMapRotation.LogicalCurrentMap);
             }
         }
 
@@ -58,7 +58,7 @@ namespace Zlo.Extras
         {
             get
             {
-                return ReferenceEquals(this , ParentMapRotation.LogicalNextMap);
+                return ReferenceEquals(this, ParentMapRotation.LogicalNextMap);
             }
         }
 
@@ -73,25 +73,25 @@ namespace Zlo.Extras
             }
         }
 
-        public static bool operator ==(API_MapBase first , API_MapBase second)
+        public static bool operator ==(API_MapBase first, API_MapBase second)
         {
-            if (ReferenceEquals(first , null))
-                return ReferenceEquals(second , null);
+            if (first is null)
+                return second is null;
 
             return first.Equals(second);
         }
-        public static bool operator !=(API_MapBase first , API_MapBase second)
+        public static bool operator !=(API_MapBase first, API_MapBase second)
         {
             return !(first == second);
         }
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(obj , null) || GetType() != obj.GetType())
+            if (obj is null || GetType() != obj.GetType())
             {
                 return false;
             }
 
-            if (ReferenceEquals(this , obj))
+            if (ReferenceEquals(this, obj))
                 return true;
             var goodobj = obj as API_MapBase;
             return (goodobj.GameModeName == GameModeName) && (goodobj.MapName == MapName);
@@ -103,7 +103,7 @@ namespace Zlo.Extras
 
         internal API_MapBase() { }
         internal API_MapBase(API_MapRotationBase p) { _parent = p; }
-        internal API_MapBase(string mname , string gmname , API_MapRotationBase p)
+        internal API_MapBase(string mname, string gmname, API_MapRotationBase p)
         {
             MapName = mname;
             GameModeName = gmname;
@@ -113,7 +113,7 @@ namespace Zlo.Extras
     /// <summary>
     /// describes a map rotation
     /// </summary>
-    public class API_MapRotationBase : Dictionary<int , API_MapBase>
+    public class API_MapRotationBase : Dictionary<int, API_MapBase>
     {
         internal API_MapRotationBase() { }
 
@@ -179,7 +179,7 @@ namespace Zlo.Extras
             }
         }
 
-        internal void Parse(string mapsinfo , string mapsraw , ZloGame game)
+        internal void Parse(string mapsinfo, string mapsraw, ZloGame game)
         {
             API_MapBase[] oldmaps;
             if (Values != null)
@@ -195,75 +195,27 @@ namespace Zlo.Extras
             int oldnext = NextMapIndex;
             Clear();
             //parse maps rotation
-            string[] rawmgms = mapsraw.Split(new[] { ';' } , StringSplitOptions.RemoveEmptyEntries);
+            string[] rawmgms = mapsraw.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < rawmgms.Length; i++)
             {
                 //each map
                 //name,gamemode
-                var rawmgm = rawmgms[i].Split(new[] { ',' } , StringSplitOptions.RemoveEmptyEntries);
+                var rawmgm = rawmgms[i].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (rawmgm.Length > 0)
                 {
-                    var m = new API_MapBase(this);
-                    switch (game)
+                    var m = new API_MapBase(this)
                     {
-                        case ZloGame.BF_3:
-                            if (API_Dictionaries.API_BF3_Maps.ContainsKey(rawmgm[0]))
-                            {
-                                m.MapName = API_Dictionaries.API_BF3_Maps[rawmgm[0]];
-                            }
-                            else
-                            {
-                                m.MapName = rawmgm[0];
-                            }
-                            if (rawmgm.Length > 1)
-                            {
-                                if (API_Dictionaries.API_BF3_GameModes.ContainsKey(rawmgm[1]))
-                                {
-                                    m.GameModeName = API_Dictionaries.API_BF3_GameModes[rawmgm[1]];
-                                }
-                                else
-                                {
-                                    m.GameModeName = rawmgm[1];
-                                }
-                            }
-                            else
-                            {
-                                m.GameModeName = string.Empty;
-                            }
-
-                            break;
-                        case ZloGame.BF_4:
-                            if (API_Dictionaries.API_BF4_Maps.ContainsKey(rawmgm[0]))
-                            {
-                                m.MapName = API_Dictionaries.API_BF4_Maps[rawmgm[0]];
-                            }
-                            else
-                            {
-                                m.MapName = rawmgm[0];
-                            }
-                            if (rawmgm.Length > 1)
-                            {
-                                if (API_Dictionaries.API_BF4_GameModes.ContainsKey(rawmgm[1]))
-                                {
-                                    m.GameModeName = API_Dictionaries.API_BF4_GameModes[rawmgm[1]];
-                                }
-                                else
-                                {
-                                    m.GameModeName = rawmgm[1];
-                                }
-                            }
-                            else
-                            {
-                                m.GameModeName = string.Empty;
-                            }
-                            break;
-                        case ZloGame.BF_HardLine:
-                        default:
-                            m.MapName = rawmgm[0];
-                            m.GameModeName = rawmgm[1];
-                            break;
+                        MapName = API_Dictionaries.GetMapName(game, rawmgm[0])
+                    };
+                    if (rawmgm.Length > 1)
+                    {
+                        m.GameModeName = API_Dictionaries.GetMapName(game, rawmgm[1]);
                     }
-                    Add(i , m);
+                    else
+                    {
+                        m.GameModeName = string.Empty;
+                    }
+                    Add(i, m);
                 }
 
             }

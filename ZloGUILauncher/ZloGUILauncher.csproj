@@ -93,6 +93,7 @@
     <Compile Include="DllInjector.xaml.cs">
       <DependentUpon>DllInjector.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GUI Classes\BFH_GUI_Server.cs" />
     <Compile Include="GUI Classes\GUI_Lists.cs" />
     <Compile Include="GUI Classes\GUI_Map.cs" />
     <Compile Include="GUI Classes\GUI_Player.cs" />
@@ -104,6 +105,9 @@
     </Compile>
     <Compile Include="Views\BF4StatsWin.xaml.cs">
       <DependentUpon>BF4StatsWin.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BFHView.xaml.cs">
+      <DependentUpon>BFHView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DllInjectionController.xaml.cs">
       <DependentUpon>DllInjectionController.xaml</DependentUpon>
@@ -123,8 +127,11 @@
     <Compile Include="Views\ListViews\BF3ServerListView.xaml.cs">
       <DependentUpon>BF3ServerListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ListViews\BF4StatsListWindow.xaml.cs">
-      <DependentUpon>BF4StatsListWindow.xaml</DependentUpon>
+    <Compile Include="Views\ListViews\StatsListWindow.xaml.cs">
+      <DependentUpon>StatsListWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ListViews\BFHServerListView.xaml.cs">
+      <DependentUpon>BFHServerListView.xaml</DependentUpon>
     </Compile>
     <Page Include="DllInjector.xaml">
       <SubType>Designer</SubType>
@@ -147,6 +154,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\BF4StatsWin.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BFHView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -174,7 +185,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ListViews\BF4StatsListWindow.xaml">
+    <Page Include="Views\ListViews\StatsListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ListViews\BFHServerListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

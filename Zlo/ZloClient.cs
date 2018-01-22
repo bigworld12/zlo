@@ -26,7 +26,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(10, 0, 1, 0);
+        private Version _localVer = new Version(11, 0, 0, 0);
 
         private JObject serverJson;
 
@@ -540,7 +540,7 @@ string full path to dll
 
                 case OnlinePlayModes.BFH_Multi_Player:
                     rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1);
-                    break;                  
+                    break;
                 default:
                     return;
             }
@@ -566,7 +566,7 @@ string full path to dll
                 catch (Exception ex)
                 {
                     RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
-                }              
+                }
             }
         }
         public void JoinOfflineGame(OfflinePlayModes playmode)
@@ -617,7 +617,7 @@ string full path to dll
             catch (Exception ex)
             {
                 RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
-            } 
+            }
         }
         public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode, uint serverid, string password)
         {
@@ -637,7 +637,7 @@ string full path to dll
                     rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 2, password);
                     break;
 
-                    
+
                 case OnlinePlayModes.BFH_Multi_Player:
                     rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1, password);
                     break;
@@ -1172,7 +1172,7 @@ string full path to dll
                                             string statname = br.ReadZString();
                                             byte statvalue = br.ReadByte();
 
-                                            FinalItems[statname] = new API_Item(statname, statvalue == 1 ? true : false);
+                                            FinalItems[statname] = new API_Item(statname, statvalue == 1 ? true : false, (ZloGame)game);
                                         }
                                     }
                                     catch (Exception ex)
@@ -1210,8 +1210,7 @@ string full path to dll
 
         public static void WriteLog(string log)
         {
-            if (ToWrite.Count > 0)
-                ToWrite.Enqueue(log);
+            ToWrite.Enqueue(log);
             if (ToWrite.Count == 1)
             {
                 ActualWriteLog();

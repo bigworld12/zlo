@@ -41,7 +41,8 @@
                 <Button Margin="3" VerticalAlignment="Center" Content="Dll Injector" Click="ShowDllInjectorButton_Click"/>
                 <Button Margin="3" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
                 
-                <Button Margin="3" VerticalAlignment="Center" Content="New Official Discord Server" Click="OfficialDiscordButton_Click"/>
+                <Button Margin="3" VerticalAlignment="Center" Content="Community Discord Server" Click="OfficialDiscordButton_Click"/>
+                <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/bSUMe9P​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             </StackPanel>
             
         </Grid>
@@ -53,6 +54,16 @@
                 <Grid>
                     <!--BF4-->
                     <views:BF4View x:Name="Ibf4View"/>
+                </Grid>
+
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Foreground="Red">Battlefield Hardline</TextBlock>
+                </TabItem.Header>
+                <Grid>
+                    <!--BFH-->
+                    <views:BFHView x:Name="IbfhView"/>
                 </Grid>
 
             </TabItem>

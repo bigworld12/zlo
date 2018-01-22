@@ -1,0 +1,104 @@
+﻿<UserControl x:Class="ZloGUILauncher.Views.BFHView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ZloGUILauncher.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="331.469" d:DesignWidth="858.042">
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="5" Grid.Column="0">
+                <TextBlock Text="Dogtag advanced : "/>
+                <TextBox x:Name="BFH_DT1" MaxLength="5"/>
+                <Button Click="SetterButton_Click" Tag="dt1" Content="Set Advanced Dog tag"></Button>
+            </StackPanel>
+            <StackPanel Margin="5" Grid.Column="1">
+                <TextBlock Text="Dogtag basic : "/>
+                <TextBox x:Name="BFH_DT2" MaxLength="5"/>
+                <Button Click="SetterButton_Click" Tag="dt2" Content="Set Basic Dog tag"></Button>
+            </StackPanel>
+            <StackPanel Margin="5" Grid.Column="2">
+                <TextBlock Text="Clan tag : "/>
+                <TextBox x:Name="BFH_CT" MaxLength="4" MaxLines="1"/>
+                <Button Click="SetterButton_Click" Tag="ct" Content="Set Clan tag"/>
+            </StackPanel>
+            <Grid Margin="5" Grid.Column="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Click="GetterButton_Click" Grid.Row="0" Content="Get all"></Button>
+                <Button Click="SetterButton_Click" Tag="all" Grid.Row="1" Content="Set all"></Button>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Button  Click="JoinSinglePlayerButton_Click" Margin="10" Content="Join Single Player" Grid.Column="0"/>
+        </Grid>
+        <Grid Grid.Row="2">
+            <TabControl>
+                <TabItem Header="Server List">
+                    <Grid>
+                        <local:BFHServerListView/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Stats">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Button Content="Refresh stats" Click="StatsRefreshButton_Click"/>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Button  Content="Stats List" Click="StatsAsListButton_Click" Margin="20"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Items">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Refresh" Click="ItemsRefreshButton_Click"/>
+                        </Grid>
+                        <DataGrid Grid.Row="1" x:Name="ItemsDG"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  IsSynchronizedWithCurrentItem="True" 
+                                  IsTextSearchEnabled="True" AutoGenerateColumns="False" 
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Flag Name" Binding="{Binding Path=Value.FlagName,Mode=OneWay}"/>
+                                <DataGridTextColumn Header="Item Name" Binding="{Binding Path=Value.ItemName,Mode=OneWay}"/>
+                                <DataGridCheckBoxColumn Header="Item Acquired" Binding="{Binding Path=Value.ItemExists,Mode=OneWay}"/>
+                                <DataGridTextColumn Header="Item Description" Binding="{Binding Path=Value.ItemDescription,Mode=OneWay}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</UserControl>

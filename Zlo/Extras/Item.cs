@@ -32,13 +32,15 @@ namespace Zlo.Extras
         /// </summary>
         public bool ItemExists { get; internal set; }
 
-        internal API_Item(string flag , bool exists)
+        internal API_Item(string flag , bool exists,ZloGame game)
         {
             FlagName = flag;
             ItemExists = exists;
-            var translated = (JObject)GameData.BF4_items[flag];            
-            ItemName = translated["rname"].ToObject<string>();
-            ItemDescription = translated["rdesc"].ToObject<string>();            
+
+
+            API_Dictionaries.GetItemDetails(game, flag, out var name, out var desc);
+            ItemName = name;
+            ItemDescription = desc;
         }
 
         /// <summary>

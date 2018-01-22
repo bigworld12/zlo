@@ -17,11 +17,11 @@ namespace ZloGUILauncher.Views
     /// <summary>
     /// Interaction logic for BF4StatsListWindow.xaml
     /// </summary>
-    public partial class BF4StatsListWindow : Window
+    public partial class StatsListWindow : Window
     {
-        public BF4StatsListWindow()
+        public StatsListWindow()
         {
-            InitializeComponent();
+            InitializeComponent();  
         }
 
         private void Window_Closing(object sender , System.ComponentModel.CancelEventArgs e)

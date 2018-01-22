@@ -39,10 +39,13 @@ namespace ZloGUILauncher
                 //App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
                 App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
 
+                //App.Client.GetStats(Zlo.Extras.ZloGame.BF_HardLine);
+                //App.Client.GetItems(Zlo.Extras.ZloGame.BF_HardLine);
+
                 App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
                 App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
 
-                App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
+                //App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
             }
         }
 
@@ -128,8 +131,10 @@ Exit
                 var bat_path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "UpdateBat.bat");
                 //create the bat file
                 File.WriteAllText(bat_path , BatchText);
-                ProcessStartInfo si = new ProcessStartInfo(bat_path);
-                si.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                ProcessStartInfo si = new ProcessStartInfo(bat_path)
+                {
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+                };
                 Process.Start(si);
                 Dispatcher.Invoke(() => { Application.Current.Shutdown(); });
             }
@@ -174,8 +179,7 @@ Exit
 
         private void MainTabControl_SelectionChanged(object sender , SelectionChangedEventArgs e)
         {
-            var tc = sender as TabControl;
-            if (tc != null)
+            if (sender is TabControl tc)
             {
                 if (tc.SelectedIndex < 0)
                 {
@@ -187,6 +191,9 @@ Exit
                         App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
                         break;
                     case 1:
+                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_HardLine);
+                        break;
+                    case 2:
                         App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
                         break;
                     default:
@@ -197,7 +204,7 @@ Exit
 
         private void OfficialDiscordButton_Click(object sender , RoutedEventArgs e)
         {
-            Process.Start("https://discord.me/zlocommunity");
+            Process.Start("https://discord.gg/bSUMe9P​​​​​​​");
         }
 
         private void ShowDllInjectorButton_Click(object sender , RoutedEventArgs e)

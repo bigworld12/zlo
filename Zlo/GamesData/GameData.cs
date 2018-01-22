@@ -164,8 +164,7 @@ namespace Zlo
         }
         public static bool IsNum(object obj)
         {
-            double baseo;
-            return double.TryParse(obj.ToString() , out baseo);
+            return double.TryParse(obj.ToString(), out double _);
         }
     }
 }

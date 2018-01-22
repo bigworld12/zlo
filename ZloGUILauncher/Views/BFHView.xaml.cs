@@ -17,11 +17,11 @@ using Zlo.Extras;
 namespace ZloGUILauncher.Views
 {
     /// <summary>
-    /// Interaction logic for BF4View.xaml
+    /// Interaction logic for BFHView.xaml
     /// </summary>
-    public partial class BF4View : UserControl
+    public partial class BFHView : UserControl
     {
-        public BF4View()
+        public BFHView()
         {
             InitializeComponent();
             App.Client.StatsReceived += Client_StatsReceived;
@@ -31,13 +31,13 @@ namespace ZloGUILauncher.Views
 
         private void Client_ClanDogTagsReceived(ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
-            if (game == ZloGame.BF_4)
+            if (game == ZloGame.BF_HardLine)
             {
                 Dispatcher.Invoke(() =>
                 {
-                    BF4_DT1.Text = dogtag1.ToString();
-                    BF4_DT2.Text = dogtag2.ToString();
-                    BF4_CT.Text = clanTag;
+                    BFH_DT1.Text = dogtag1.ToString();
+                    BFH_DT2.Text = dogtag2.ToString();
+                    BFH_CT.Text = clanTag;
                 });
 
             }
@@ -45,16 +45,16 @@ namespace ZloGUILauncher.Views
 
         private void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
         {
-            if (Game == ZloGame.BF_4)
+            if (Game == ZloGame.BF_HardLine)
             {
                 Dispatcher.Invoke(() => { ItemsDG.ItemsSource = List; });
 
             }
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game, Dictionary<string, float> List)
+        private void Client_StatsReceived(ZloGame Game, Dictionary<string, float> List)
         {
-            if (Game == ZloGame.BF_4)
+            if (Game == ZloGame.BF_HardLine)
             {
                 Dispatcher.Invoke(() => { StatsListWin.StatsDG.ItemsSource = List; });
             }
@@ -65,59 +65,33 @@ namespace ZloGUILauncher.Views
         {
             get
             {
-                if (m_StatsListWin == null)
+                if (m_StatsListWin is null)
                 {
                     m_StatsListWin = new StatsListWindow();
                 }
                 return m_StatsListWin;
             }
         }
-
-        private static BF4StatsWin m_StatsWin;
-        public static BF4StatsWin StatsWin
-        {
-            get
-            {
-                if (m_StatsWin == null)
-                {
-                    m_StatsWin = new BF4StatsWin();
-                }
-                return m_StatsWin;
-            }
-        }
-
-
-
         private void StatsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
+            App.Client.GetStats(ZloGame.BF_HardLine);
         }
 
         private void ItemsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
+            App.Client.GetItems(ZloGame.BF_HardLine);
         }
 
         private void JoinSinglePlayerButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Single_Player);
+            App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BFH_Single_Player);
         }
-
-        private void JoinTestRangeButton_Click(object sender, RoutedEventArgs e)
-        {
-            App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BF4_Test_Range);
-        }
-
+        
         private void StatsAsListButton_Click(object sender, RoutedEventArgs e)
         {
             StatsListWin.Show();
         }
-
-        private void StatsAsWindowButton_Click(object sender, RoutedEventArgs e)
-        {
-            StatsWin.Show();
-            //StatsWin.BGPlayer.Source = new Uri("Media/bf4/City Background.mp4",uriKind: UriKind.Relative);
-        }
+        
 
         private void SetterButton_Click(object sender, RoutedEventArgs e)
         {
@@ -126,7 +100,7 @@ namespace ZloGUILauncher.Views
             {
                 case "dt1":
                     {
-                        if (ushort.TryParse(BF4_DT1.Text, out ushort holder))
+                        if (ushort.TryParse(BFH_DT1.Text, out ushort holder))
                         {
                             App.Client.SetClanDogTags(dt_advanced: holder);
                         }
@@ -134,7 +108,7 @@ namespace ZloGUILauncher.Views
                     }
                 case "dt2":
                     {
-                        if (ushort.TryParse(BF4_DT2.Text, out ushort holder))
+                        if (ushort.TryParse(BFH_DT2.Text, out ushort holder))
                         {
                             App.Client.SetClanDogTags(dt_basic: holder);
                         }
@@ -142,21 +116,21 @@ namespace ZloGUILauncher.Views
                     }
                 case "ct":
                     {
-                        App.Client.SetClanDogTags(clantag: BF4_CT.Text);
+                        App.Client.SetClanDogTags(clantag: BFH_CT.Text);
                         break;
                     }
                 case "all":
                     {
                         ushort? finaldt1 = null, finaldt2 = null;
-                        if (ushort.TryParse(BF4_DT1.Text, out ushort holderdt1))
+                        if (ushort.TryParse(BFH_DT1.Text, out ushort holderdt1))
                         {
                             finaldt1 = holderdt1;
                         }
-                        if (ushort.TryParse(BF4_DT2.Text, out ushort holderdt2))
+                        if (ushort.TryParse(BFH_DT2.Text, out ushort holderdt2))
                         {
                             finaldt2 = holderdt2;
                         }
-                        App.Client.SetClanDogTags(finaldt1, finaldt2, BF4_CT.Text);
+                        App.Client.SetClanDogTags(finaldt1, finaldt2, BFH_CT.Text);
                         break;
                     }
                 default:

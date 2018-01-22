@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,81 @@ namespace Zlo.Extras
 {
     public static class API_Dictionaries
     {
-        public static Dictionary<string , string> API_BF4_Maps { get; internal set; } = new Dictionary<string , string>
+        public static string GetMapName(ZloGame game,string key)
+        {
+            switch (game)
+            {
+                case ZloGame.BF_3:
+                    if (API_BF3_Maps.ContainsKey(key))
+                        return API_BF3_Maps[key];
+                    break;
+                case ZloGame.BF_4:
+                    if (API_BF4_Maps.ContainsKey(key))
+                        return API_BF4_Maps[key];
+                    break;
+                case ZloGame.BF_HardLine:
+                    if (API_BFH_Maps.ContainsKey(key))
+                        return API_BFH_Maps[key];
+                    break;
+                case ZloGame.None:
+                    break;
+                default:
+                    break;
+            }
+            return key;
+        }
+        public static string GetGameModeName(ZloGame game, string key)
+        {
+            switch (game)
+            {
+                case ZloGame.BF_3:
+                    if (API_BF3_GameModes.ContainsKey(key))
+                        return API_BF3_GameModes[key];
+                    break;
+                case ZloGame.BF_4:
+                    if (API_BF4_GameModes.ContainsKey(key))
+                        return API_BF4_GameModes[key];
+                    break;
+                case ZloGame.BF_HardLine:
+                    if (API_BFH_GameModes.ContainsKey(key))
+                        return API_BFH_GameModes[key];
+                    break;
+                case ZloGame.None:
+                    break;
+                default:
+                    break;
+            }
+            return key;
+        }
+        public static void GetItemDetails(ZloGame game,string key,out string name,out string desc)
+        {
+            switch (game)
+            {
+                case ZloGame.BF_4:
+                    var translated = (JObject)GameData.BF4_items[key];
+                    if (translated != null)
+                    {
+                        name = translated["rname"]?.ToObject<string>();
+                        desc = translated["rdesc"]?.ToObject<string>();
+                    }
+                    else
+                    {
+                        name = key;
+                        desc = string.Empty;
+                    }
+                    break;
+                case ZloGame.BF_3:
+                case ZloGame.BF_HardLine:
+                case ZloGame.None:
+                default:
+                    name = key;
+                    desc = string.Empty;
+                    break;
+            }
+            
+            
+        }
+        public static Dictionary<string, string> API_BF4_Maps { get; internal set; } = new Dictionary<string, string>
         {
             #region BF4_Maps
             { "MP_Abandoned","Zavod 311" },
@@ -48,7 +123,7 @@ namespace Zlo.Extras
         };
 
 
-        public static Dictionary<string , string> API_BF4_GameModes { get; internal set; } = new Dictionary<string , string>
+        public static Dictionary<string, string> API_BF4_GameModes { get; internal set; } = new Dictionary<string, string>
         {
             #region  BF4_GameModes
             { "ConquestLarge0","Conquest Large" },
@@ -93,7 +168,7 @@ namespace Zlo.Extras
 
 
 
-        public static Dictionary<string , string> API_BF3_Maps { get; internal set; } = new Dictionary<string , string>
+        public static Dictionary<string, string> API_BF3_Maps { get; internal set; } = new Dictionary<string, string>
         {
             #region BF3_Maps	
             { "MP_001","Grand Bazaar" },
@@ -128,7 +203,7 @@ namespace Zlo.Extras
             #endregion
         };
 
-        public static Dictionary<string , string> API_BF3_GameModes { get; internal set; } = new Dictionary<string , string>
+        public static Dictionary<string, string> API_BF3_GameModes { get; internal set; } = new Dictionary<string, string>
         {
             #region BF3_GameModes	
             { "ConquestLarge0","Conquest Large" },
@@ -168,5 +243,45 @@ namespace Zlo.Extras
             #endregion
         };
 
+
+
+        public static Dictionary<string, string> API_BFH_Maps { get; internal set; } = new Dictionary<string, string>()
+        {
+            #region BFH_Maps
+            { "mp_bank" , "Bank Job" },
+{ "mp_bloodout" , "The Block" },
+{ "mp_desert05" , "Dust Bowl" },
+{ "mp_downtown" , "Downtown" },
+{ "mp_eastside" , "Derailed" },
+{ "mp_glades" , "Everglades" },
+{ "mp_growhouse" , "Growhouse" },
+{ "mp_hills" , "Hollywood Heights" },
+{ "mp_offshore" , "Riptide" },
+{ "xp1_mallcops" , "Black Friday" },
+{ "xp1_nights" , "Code Blue" },
+{ "xp1_projects" , "The Beat" },
+{ "xp1_sawmill" , "Backwoods" },
+{ "xp25_bank" , "Night Job" },
+{ "xp25_sawmill" , "Night Woods" },
+{ "xp2_cargoship" , "The Docks" },
+{ "xp2_coastal" , "Break Pointe" },
+{ "xp2_museum02" , "Museum" },
+{ "xp2_precinct7" , "Precinct 7" },
+{ "xp3_border" , "Double Cross" },
+{ "xp3_cistern02" , "Diversion" },
+{ "xp3_highway" , "Pacific Highway" },
+{ "xp3_traindodge" , "Train Dodge" },
+{ "xp4_alcatraz" , "Alcatraz" },
+{ "xp4_cemetery" , "Cemetery" },
+{ "xp4_chinatown" , "Chinatown" },
+{ "xp4_snowcrash" , "Thin Ice" }
+
+	        #endregion            
+        };
+
+        public static Dictionary<string, string> API_BFH_GameModes { get; internal set; } = new Dictionary<string, string>()
+        {
+
+        };
     }
 }

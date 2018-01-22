@@ -18,11 +18,13 @@ namespace Zlo.Extras
     /// </summary>
     public abstract class ServerBase
     {
-        internal ServerBase(uint id)
+        internal ServerBase(uint id,ZloGame game)
         {
             m_ServerID = id;
-
+            Game = game;
         }
+
+        public ZloGame Game { get; protected set; }
 
         #region Props
         private uint m_ServerID;
@@ -166,7 +168,7 @@ namespace Zlo.Extras
 
 
         #endregion
-        internal void Parse(byte[] serverbuffer)
+        internal virtual void Parse(byte[] serverbuffer)
         {
             Attributes.Clear();
             using (var ms = new MemoryStream(serverbuffer))
@@ -279,7 +281,7 @@ namespace Zlo.Extras
                 IsPasswordProtected = false;
             }
         }
-        internal void Parse(BinaryReader br)
+        internal virtual void Parse(BinaryReader br)
         {
             if (br == null)
             {
@@ -320,7 +322,7 @@ namespace Zlo.Extras
 
             FixAttrs();
         }
-        internal void ParsePlayers(byte[] playersbuffer)
+        internal virtual void ParsePlayers(byte[] playersbuffer)
         {
             if (playersbuffer.Length < 2)
             {
@@ -337,7 +339,7 @@ namespace Zlo.Extras
 
     public class API_BF3ServerBase : ServerBase
     {
-        internal API_BF3ServerBase(uint id) : base(id)
+        internal API_BF3ServerBase(uint id) : base(id, ZloGame.BF_3)
         {
         }
 
@@ -351,7 +353,7 @@ namespace Zlo.Extras
         /// </summary>
         public uint TotalCapacity { get; internal set; }
 
-        internal new void Parse(byte[] serverbuffer)
+        internal override void Parse(byte[] serverbuffer)
         {
             using (var ms = new MemoryStream(serverbuffer))
             using (var br = new BinaryReader(ms, Encoding.ASCII))
@@ -364,39 +366,25 @@ namespace Zlo.Extras
 
             if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
             {
-                MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], ZloGame.BF_3);
+                MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], Game);
                 Attributes.Remove("maps");
                 Attributes.Remove("mapsinfo");
             }
             if (Attributes.ContainsKey("level"))
             {
-                if (API_Dictionaries.API_BF3_Maps.ContainsKey(Attributes["level"]))
-                {
-                    MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF3_Maps[Attributes["level"]];
-                }
-                else
-                {
-                    MapRotation.CurrentActualMap.MapName = Attributes["level"];
-                }
+                MapRotation.CurrentActualMap.MapName = API_Dictionaries.GetMapName(Game, Attributes["level"]);
                 Attributes.Remove("level");
             }
             if (Attributes.ContainsKey("mode"))
             {
-                if (API_Dictionaries.API_BF3_GameModes.ContainsKey(Attributes["mode"]))
-                {
-                    MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF3_GameModes[Attributes["mode"]];
-                }
-                else
-                {
-                    MapRotation.CurrentActualMap.GameModeName = Attributes["mode"];
-                }
+                MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.GetGameModeName(Game, Attributes["mode"]);
                 Attributes.Remove("mode");
             }
         }
     }
     public class API_BF4ServerBase : ServerBase
     {
-        internal API_BF4ServerBase(uint id) : base(id)
+        internal API_BF4ServerBase(uint id) : base(id, ZloGame.BF_4)
         {
         }
 
@@ -423,7 +411,7 @@ namespace Zlo.Extras
         public uint GMRG { get; internal set; }
         public tRNFO RNFO { get; internal set; }
         public string SCID { get; internal set; }
-        internal new void Parse(byte[] serverbuffer)
+        internal override void Parse(byte[] serverbuffer)
         {
             try
             {
@@ -495,34 +483,20 @@ namespace Zlo.Extras
                   GameMode  raw.ATTRS?["levellocation"]*/
                 if (Attributes.ContainsKey("maps") && Attributes.ContainsKey("mapsinfo"))
                 {
-                    MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], ZloGame.BF_4);
+                    MapRotation.Parse(Attributes["mapsinfo"], Attributes["maps"], Game);
                     Attributes.Remove("maps");
                     Attributes.Remove("mapsinfo");
                 }
 
                 if (Attributes.ContainsKey("level"))
                 {
-                    if (API_Dictionaries.API_BF4_Maps.ContainsKey(Attributes["level"]))
-                    {
-                        MapRotation.CurrentActualMap.MapName = API_Dictionaries.API_BF4_Maps[Attributes["level"]];
-                    }
-                    else
-                    {
-                        MapRotation.CurrentActualMap.MapName = Attributes["level"];
-                    }
+                    MapRotation.CurrentActualMap.MapName = API_Dictionaries.GetMapName(Game, Attributes["level"]);
                     Attributes.Remove("level");
                 }
 
                 if (Attributes.ContainsKey("levellocation"))
                 {
-                    if (API_Dictionaries.API_BF4_GameModes.ContainsKey(Attributes["levellocation"]))
-                    {
-                        MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.API_BF4_GameModes[Attributes["levellocation"]];
-                    }
-                    else
-                    {
-                        MapRotation.CurrentActualMap.GameModeName = Attributes["levellocation"];
-                    }
+                    MapRotation.CurrentActualMap.GameModeName = API_Dictionaries.GetGameModeName(Game, Attributes["levellocation"]);
                     Attributes.Remove("levellocation");
                 }
             }
@@ -536,6 +510,7 @@ namespace Zlo.Extras
     {
         internal API_BFHServerBase(uint id) : base(id)
         {
+            Game = ZloGame.BF_HardLine;
         }
     }
     #endregion
