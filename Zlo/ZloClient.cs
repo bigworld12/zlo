@@ -26,7 +26,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(11, 0, 0, 0);
+        private Version _localVer = new Version(11, 1, 0, 0);
 
         private JObject serverJson;
 
@@ -227,7 +227,8 @@ namespace Zlo
 ""bf3"" : [],
 ""bf4"" : [],
 ""bfh"" : []
-    }
+    },
+""last_game"" : 1
 }";
         internal JObject SavedObjects = null;
         /// <summary>
@@ -261,6 +262,8 @@ namespace Zlo
                     {
                         SavedObjects["dlls"]["bfh"] = JArray.FromObject(bfh_list);
                     }
+
+
 
                     File.WriteAllText(saveFileName, SavedObjects.ToString());
                 }
@@ -696,6 +699,47 @@ string full path to dll
 
         private ZloGame ActiveServerListener = ZloGame.None;
 
+        public ZloGame SavedActiveServerListener
+        {
+            get
+            {
+                if (SavedObjects == null)
+                {
+                    return ZloGame.None;
+                }
+                if (SavedObjects.TryGetValue("last_game", out var saved))
+                {
+                    return (ZloGame)saved.ToObject<byte>();
+                }
+                else
+                {
+                    SavedObjects["last_game"] = (byte)ZloGame.None;
+                    return ZloGame.None;
+                }
+            }
+            internal set
+            {
+                if (SavedObjects != null)
+                {
+                    byte? oldval = null;
+                    if (SavedObjects["last_game"] != null)
+                    {
+                        oldval = SavedObjects["last_game"].ToObject<byte>();
+                    }
+                    else
+                    {
+                        oldval = null;
+                    }
+                    if (oldval.HasValue && oldval.Value == (byte)value)
+                    {
+                        return;
+                    }
+                    SavedObjects["last_game"] = (byte)value;
+                    SaveSettings();
+                }
+            }
+        }
+
 
         public void SubToServerList(ZloGame game)
         {
@@ -713,6 +757,7 @@ string full path to dll
             ActiveServerListener = game;
             //0 == subscribe            
             SendRequest(ZloRequest.Server_List, ActiveServerListener, 0);
+            SavedActiveServerListener = game;
             GetClanDogTags();
         }
         public void UnSubServerList()
@@ -722,6 +767,23 @@ string full path to dll
                 return;
             }
             //1 == unsubscribe
+            //first clear local cache
+
+            if (ActiveServerListener == ZloGame.BF_3)
+                for (int i = BF3Servers.Count - 1; i >= 0; i--)
+                {
+                    BF3Servers.RemoveAt(i);
+                }
+            if (ActiveServerListener == ZloGame.BF_4)
+                for (int i = BF4Servers.Count - 1; i >= 0; i--)
+                {
+                    BF4Servers.RemoveAt(i);
+                }
+            if (ActiveServerListener == ZloGame.BF_HardLine)
+                for (int i = BFHServers.Count - 1; i >= 0; i--)
+                {
+                    BFHServers.RemoveAt(i);
+                }
             SendRequest(ZloRequest.Server_List, ActiveServerListener, 1);
             ActiveServerListener = ZloGame.None;
         }
@@ -1218,17 +1280,23 @@ string full path to dll
         }
 
         static Queue<string> ToWrite = new Queue<string>();
+        static object l = new object();
         private static void ActualWriteLog()
         {
             Task.Run(() =>
             {
                 try
                 {
-
-                    File.AppendAllText(@".\Demo-Log.txt", $"\n================================\n{DateTime.Now.ToString()}\n{ToWrite.Dequeue()}\n================================");
-                    if (ToWrite.Count > 0)
+                    lock (l)
                     {
-                        ActualWriteLog();
+                        if (ToWrite.Count > 0)
+                        {
+                            File.AppendAllText(@".\Demo-Log.txt", $"\n================================\n{DateTime.Now.ToString()}\n{ToWrite.Dequeue()}\n================================");
+                        }
+                        if (ToWrite.Count > 0)
+                        {
+                            ActualWriteLog();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1435,8 +1503,7 @@ string full path to dll
                 return true;
             }
         }
-
-
+        
         internal void AddToQueue(Request req)
         {
             //if it's the only one in the queue, trigger it
@@ -1479,15 +1546,37 @@ string full path to dll
                 if (!ListenerClient.WritePacket(CurrentRequest.data))
                 {
                     CurrentRequest.GiveResponce(null);
+                    return;
                 }
                 else
                 {
                     WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{Hexlike(CurrentRequest.data.Skip(5).ToArray())}");
+                    if (!CurrentRequest.IsRespondable)
+                    {
+                        CurrentRequest.GiveResponce(null);
+                        return;
+                    }
+                    else
+                    {
+                        //should wait for responce for 5 seconds
+                        var t = new System.Timers.Timer
+                        {
+                            AutoReset = false,
+                            Interval = new TimeSpan(0, 0, 5).TotalMilliseconds
+                        };
+                        ElapsedEventHandler removeRequestDelegate = null;
+                        removeRequestDelegate = (s, e) => {
+                            t.Elapsed -= removeRequestDelegate;
+                            t.Stop();
+                            CurrentRequest.GiveResponce(null);
+                        };
+
+                        t.Elapsed += removeRequestDelegate;
+                        t.Start();
+                    }
                 }
-                if (!CurrentRequest.IsRespondable)
-                {
-                    CurrentRequest.GiveResponce(null);
-                }
+
+                
             }
         }
         private void ExecuteCMDTimer(object sender, ElapsedEventArgs e)
@@ -1504,12 +1593,37 @@ string full path to dll
 
             if (!ListenerClient.WritePacket(CurrentRequest.data))
             {
+                //failed to write
                 CurrentRequest.GiveResponce(null);
+                return;
             }
-            if (!CurrentRequest.IsRespondable)
+            else
             {
-                CurrentRequest.GiveResponce(null);
+                //wrote successfully
+                if (!CurrentRequest.IsRespondable)
+                {
+                    CurrentRequest.GiveResponce(null);
+                }
+                else
+                {
+                    //should wait for responce for 5 seconds
+                    var t = new System.Timers.Timer
+                    {
+                        AutoReset = false,
+                        Interval = new TimeSpan(0, 0, 5).TotalMilliseconds
+                    };
+                    ElapsedEventHandler removeRequestDelegate = null;
+                    removeRequestDelegate = (s, args) => {
+                        t.Elapsed -= removeRequestDelegate;
+                        t.Stop();
+                        CurrentRequest.GiveResponce(null);
+                    };
+
+                    t.Elapsed += removeRequestDelegate;
+                    t.Start();
+                }
             }
+            
         }
 
         private Request CurrentRequest;

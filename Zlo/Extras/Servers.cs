@@ -324,7 +324,7 @@ namespace Zlo.Extras
         }
         internal virtual void ParsePlayers(byte[] playersbuffer)
         {
-            if (playersbuffer.Length < 2)
+            if (playersbuffer.Length == 0)
             {
                 return;
             }
@@ -535,7 +535,7 @@ namespace Zlo.Extras
             using (var br = new BinaryReader(ms, Encoding.ASCII))
             {
                 byte t = br.ReadByte();
-                for (int i = 0; i < t; ++i)
+                for (byte i = 0; i < t; ++i)
                 {
                     byte slot = br.ReadByte();
                     uint id = br.ReadZUInt32();
@@ -633,6 +633,20 @@ namespace Zlo.Extras
                 ServerRemoved?.Invoke(server.ServerID, server);
             }
         }
+        internal new void RemoveAt(int index)
+        {
+            if (index < 0 || index >= Count)
+            {
+                return;
+            }
+            var serv = this[index];
+            if (serv == null)
+            {
+                return;
+            }
+            base.RemoveAt(index);
+            ServerRemoved?.Invoke(serv.ServerID, serv);
+        }
 
         internal void Remove(uint ServerID)
         {
@@ -710,6 +724,20 @@ namespace Zlo.Extras
         internal API_BF4ServersListBase(API_ZloClient client)
         {
             _client = client;
+        }
+        internal new void RemoveAt(int index)
+        {
+            if (index < 0 || index >= Count)
+            {
+                return;
+            }
+            var serv = this[index];
+            if (serv == null)
+            {
+                return;
+            }
+            base.RemoveAt(index);
+            ServerRemoved?.Invoke(serv.ServerID, serv);
         }
 
         public event API_BF4ServerEventHandler ServerAdded;
@@ -815,7 +843,20 @@ namespace Zlo.Extras
         {
             _client = client;
         }
-
+        internal new void RemoveAt(int index)
+        {
+            if (index < 0 || index >= Count)
+            {
+                return;
+            }
+            var serv = this[index];
+            if (serv == null)
+            {
+                return;
+            }
+            base.RemoveAt(index);
+            ServerRemoved?.Invoke(serv.ServerID, serv);
+        }
         public event API_BFHServerEventHandler ServerAdded;
         public event API_BFHServerEventHandler ServerUpdated;
         public event API_BFHServerEventHandler ServerRemoved;

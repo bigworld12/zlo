@@ -56,22 +56,10 @@ namespace ZloGUILauncher.Views
         {
             if (Game == ZloGame.BF_HardLine)
             {
-                Dispatcher.Invoke(() => { StatsListWin.StatsDG.ItemsSource = List; });
+                Dispatcher.Invoke(() => { StatsDG.ItemsSource = List; });
             }
         }
-
-        private static StatsListWindow m_StatsListWin;
-        public static StatsListWindow StatsListWin
-        {
-            get
-            {
-                if (m_StatsListWin is null)
-                {
-                    m_StatsListWin = new StatsListWindow();
-                }
-                return m_StatsListWin;
-            }
-        }
+        
         private void StatsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
             App.Client.GetStats(ZloGame.BF_HardLine);
@@ -84,13 +72,10 @@ namespace ZloGUILauncher.Views
 
         private void JoinSinglePlayerButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.JoinOfflineGame(Zlo.Extras.OfflinePlayModes.BFH_Single_Player);
+            App.Client.JoinOfflineGame(OfflinePlayModes.BFH_Single_Player);
         }
         
-        private void StatsAsListButton_Click(object sender, RoutedEventArgs e)
-        {
-            StatsListWin.Show();
-        }
+        
         
 
         private void SetterButton_Click(object sender, RoutedEventArgs e)

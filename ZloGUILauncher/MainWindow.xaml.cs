@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Zlo.Extras;
 
 namespace ZloGUILauncher
 {
@@ -36,16 +37,32 @@ namespace ZloGUILauncher
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             if (App.Client.Connect())
             {
-                //App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
-                App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
+                switch (App.Client.SavedActiveServerListener)
+                {
+                    case ZloGame.BF_3:
+                        MainTabControl.SelectedIndex = 2;
+                        //App.Client.SubToServerList(ZloGame.BF_3);
+                        App.Client.GetStats(ZloGame.BF_3);
+                        break;
+                  
+                    case ZloGame.BF_HardLine:
+                        MainTabControl.SelectedIndex = 1;
 
-                //App.Client.GetStats(Zlo.Extras.ZloGame.BF_HardLine);
-                //App.Client.GetItems(Zlo.Extras.ZloGame.BF_HardLine);
+                        //App.Client.SubToServerList(ZloGame.BF_HardLine);
+                        App.Client.GetStats(ZloGame.BF_HardLine);
+                        App.Client.GetItems(ZloGame.BF_HardLine);
+                        break;
 
-                App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
-                App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
+                    default:
+                    case ZloGame.None:
+                    case ZloGame.BF_4:
+                        MainTabControl.SelectedIndex = 0;
 
-                //App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
+                        //App.Client.SubToServerList(ZloGame.BF_4);
+                        App.Client.GetStats(ZloGame.BF_4);
+                        App.Client.GetItems(ZloGame.BF_4);
+                        break;
+                }
             }
         }
 
@@ -188,13 +205,13 @@ Exit
                 switch (tc.SelectedIndex)
                 {
                     case 0:
-                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_4);
+                        App.Client.SubToServerList(ZloGame.BF_4);
                         break;
                     case 1:
-                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_HardLine);
+                        App.Client.SubToServerList(ZloGame.BF_HardLine);
                         break;
                     case 2:
-                        App.Client.SubToServerList(Zlo.Extras.ZloGame.BF_3);
+                        App.Client.SubToServerList(ZloGame.BF_3);
                         break;
                     default:
                         break;

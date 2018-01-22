@@ -66,7 +66,12 @@
                             <Button Content="Refresh stats" Click="StatsRefreshButton_Click"/>
                         </Grid>
                         <Grid Grid.Row="1">
-                            <Button  Content="Stats List" Click="StatsAsListButton_Click" Margin="20"/>
+                            <DataGrid Grid.Row="1" x:Name="StatsDG"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  IsSynchronizedWithCurrentItem="True" 
+                                  IsTextSearchEnabled="True" AutoGenerateColumns="True" 
+                                  IsReadOnly="True"/>
                         </Grid>
                     </Grid>
                 </TabItem>
