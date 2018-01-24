@@ -11,7 +11,7 @@ namespace Zlo
 {
     internal class ZloTCPClient
     {
-        public delegate void ZloPacketReceivedEventHandler(byte pid , byte[] data);
+        public delegate void ZloPacketReceivedEventHandler(byte pid, byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
 
         public bool IsConnected
@@ -21,12 +21,12 @@ namespace Zlo
 
         private TcpClient Client { get; set; }
 
-        private API_ZloClient parent { get; set; }
+        private API_ZloClient Parent { get; set; }
 
         public ZloTCPClient(API_ZloClient c)
         {
+            Parent = c;
             Client = new TcpClient();
-            parent = c;
             ListenerThread = new Thread(ReadLoop)
             {
                 IsBackground = true
@@ -35,14 +35,53 @@ namespace Zlo
         public void Connect()
         {
             IsOn = true;
-            Client.Connect("127.0.0.1" , 48486);
+            if (Client == null)
+            {
+                Client = new TcpClient();
+            }
+            if (ListenerThread == null)
+            {
+                ListenerThread = new Thread(ReadLoop)
+                {
+                    IsBackground = true
+                };
+            }
+            Client.Connect("127.0.0.1", 48486);
             ListenerThread.Start();
+        }
+        public bool ReConnect()
+        {
+            try
+            {
+                if (IsOn)
+                {
+                    Disconnect();
+                }
+                Client = new TcpClient();
+                ListenerThread = new Thread(ReadLoop)
+                {
+                    IsBackground = true
+                };
+                Connect();
+                return true;
+            }
+            catch
+            {
+                IsOn = false;
+                return false;
+            }
         }
         public void Disconnect()
         {
             IsOn = false;
-            Client.Close();
-            
+            if (Client != null)
+            {
+                Client.Close();
+            }
+            if (ListenerThread != null)
+            {
+                ListenerThread.Abort();
+            }
         }
 
         public bool IsOn = false;
@@ -55,6 +94,7 @@ namespace Zlo
         int pid = -1;
         uint packetlen;
         bool iswaitingforlen = true;
+        int counter = 0;
         private void ReadLoop()
         {
             while (true)
@@ -68,12 +108,23 @@ namespace Zlo
                 {
                     if (!Client.Connected)
                     {
-                        Client.Connect("127.0.0.1" , 48486);
+                        Client.Client?.Disconnect(true);
+                        Client.Connect("127.0.0.1", 48486);
                     }
                 }
                 catch (Exception ex)
                 {
-                    parent.RaiseError(ex , "Error occured when connecting to tcp server");
+                    if (counter >= 5)
+                    {
+                        counter = 0;
+                        Parent.RaiseError(ex, "Error occured when connecting to tcp server");
+                        IsOn = false;
+                        return;
+                    }
+                    else
+                    {
+                        counter++;
+                    }
                     Thread.Sleep(500);
                 }
 
@@ -92,18 +143,18 @@ namespace Zlo
                                 int numberOfBytesRead;
                                 try
                                 {
-                                    while ((numberOfBytesRead = ns.Read(_buffer , 0 , _buffer.Length)) > 0)
+                                    while ((numberOfBytesRead = ns.Read(_buffer, 0, _buffer.Length)) > 0)
                                     {
 
                                         //only deal with the data if numberOfBytesRead was greater than 0
-                                        var read_buffer = GetRange(_buffer , 0 , numberOfBytesRead);
+                                        var read_buffer = GetRange(_buffer, 0, numberOfBytesRead);
                                         CurrentBuffer.AddRange(read_buffer);
                                         ParsingStep_PID();
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    parent.RaiseError(ex , "Failed to read the data from the network stream");
+                                    Parent.RaiseError(ex, "Failed to read the data from the network stream");
                                 }
                             }
                             else
@@ -144,10 +195,10 @@ namespace Zlo
             if (CurrentBuffer.Count >= 4)
             {
                 using (var actual_stream = new MemoryStream(CurrentBuffer.ToArray()))
-                using (var br = new BinaryReader(actual_stream , Encoding.ASCII))
+                using (var br = new BinaryReader(actual_stream, Encoding.ASCII))
                 {
                     packetlen = br.ReadZUInt32();
-                    CurrentBuffer.RemoveRange(0 , 4);
+                    CurrentBuffer.RemoveRange(0, 4);
                     iswaitingforlen = false;
                 }
                 //do actual packet reading step
@@ -165,8 +216,8 @@ namespace Zlo
             //read [packetlen] bytes, if they don't exist fully yet, just return
             if (CurrentBuffer.Count >= packetlen)
             {
-                SendPacketToAPI((byte)pid , GetRange(CurrentBuffer , 0 , packetlen));
-                CurrentBuffer.RemoveRange(0 , (int)packetlen);
+                SendPacketToAPI((byte)pid, GetRange(CurrentBuffer, 0, packetlen));
+                CurrentBuffer.RemoveRange(0, (int)packetlen);
                 //go to the first step without adding any buffer
                 pid = -1;
                 iswaitingforlen = true;
@@ -174,7 +225,7 @@ namespace Zlo
             }
         }
 
-        private byte[] GetRange(byte[] toget , int startindex , int count)
+        private byte[] GetRange(byte[] toget, int startindex, int count)
         {
             var ret = new byte[count];
             int finalindx = startindex + count;
@@ -184,7 +235,7 @@ namespace Zlo
             }
             return ret;
         }
-        private byte[] GetRange(List<byte> toget , uint startindex , uint count)
+        private byte[] GetRange(List<byte> toget, uint startindex, uint count)
         {
             var final = new List<byte>();
             uint finalindx = startindex + count;
@@ -196,10 +247,10 @@ namespace Zlo
         }
 
 
-        private void SendPacketToAPI(byte spid , byte[] buffer)
+        private void SendPacketToAPI(byte spid, byte[] buffer)
         {
-            ZloPacketReceived?.Invoke(spid , buffer);
-           
+            ZloPacketReceived?.Invoke(spid, buffer);
+
         }
         public bool WritePacket(byte[] info)
         {
@@ -217,7 +268,7 @@ namespace Zlo
             }
             catch (Exception ex)
             {
-                parent.RaiseError(ex , "Error occured when writing to network stream");
+                Parent.RaiseError(ex, "Error occured when writing to network stream");
                 return false;
             }
 

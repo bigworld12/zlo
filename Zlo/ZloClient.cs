@@ -57,18 +57,11 @@ namespace Zlo
                 GameStateReceived += ZloClient_GameStateReceived;
 
                 m_client = new ZloTCPClient(this);
-                PingTimer = new System.Timers.Timer(20 * 1000);
-
+                
 
                 BF3_Pipe = new NamedPipeClientStream(".", "venice_snowroller");
                 BF4_Pipe = new NamedPipeClientStream(".", "warsaw_snowroller");
                 BFH_Pipe = new NamedPipeClientStream(".", "omaha_snowroller");
-
-                BF3_Pipe_Listener = new Thread(BF3_Pipe_Loop) { IsBackground = true };
-
-                BF4_Pipe_Listener = new Thread(BF4_Pipe_Loop) { IsBackground = true };
-
-                BFH_Pipe_Listener = new Thread(BFH_Pipe_Loop) { IsBackground = true };
 
                 ListenerClient.ZloPacketReceived -= ListenerClient_DataReceived;
                 ListenerClient.ZloPacketReceived += ListenerClient_DataReceived;
@@ -440,42 +433,86 @@ namespace Zlo
                     ErrorOccured?.Invoke(ex, "Error when Checking updates");
                 }
             });
-
-
             try
             {
                 IsOn = true;
 
+                BF3_Pipe_Listener = new Thread(BF3_Pipe_Loop) { IsBackground = true };
+                BF4_Pipe_Listener = new Thread(BF4_Pipe_Loop) { IsBackground = true };
+                BFH_Pipe_Listener = new Thread(BFH_Pipe_Loop) { IsBackground = true };
+
                 BF3_Pipe_Listener.Start();
                 BF4_Pipe_Listener.Start();
                 BFH_Pipe_Listener.Start();
-
-                ListenerClient.Connect();
+                PingTimer = new System.Timers.Timer(20 * 1000);
+                ListenerClient.ReConnect();
                 ConnectionStateChanged?.Invoke(true);
-                //Thread.Sleep(1000);
                 GetUserInfo();
                 return true;
             }
-            catch (SocketException se)
-            {
-                Disconnected?.Invoke(DisconnectionReasons.ZClientNotOpen);
-                PingTimer.Elapsed -= PingTimer_Elapsed;
-                PingTimer.Stop();
-                ErrorOccured?.Invoke(se, "ZClient isn't open");
-                return false;
-            }
             catch (Exception ex)
             {
-                if (PingTimer != null)
+                Close();
+                if (ex is SocketException se)
                 {
-                    PingTimer.Elapsed -= PingTimer_Elapsed;
+                    Disconnected?.Invoke(DisconnectionReasons.ZClientNotOpen);
+                    ErrorOccured?.Invoke(se, "ZClient isn't open");
                 }
-
-                PingTimer?.Stop();
-                ErrorOccured?.Invoke(ex, "Error when connecting");
+                else
+                {
+                    Disconnected?.Invoke(DisconnectionReasons.UnKnown);
+                    ErrorOccured?.Invoke(ex, "Error when connecting");
+                }
                 return false;
             }
         }
+        public bool ReConnect()
+        {
+            try
+            {
+                if (IsOn)
+                {
+                    Close();
+                }
+                return Connect();
+            }
+            catch
+            {
+                IsOn = false;
+                return false;
+            }
+        }
+        private bool IsOn = false;
+        public void Close()
+        {
+            try
+            {
+                CurrentPlayerID = 0;
+                CurrentPlayerName = string.Empty;
+                if (PingTimer != null)
+                {
+                    PingTimer.Elapsed -= PingTimer_Elapsed;
+                    PingTimer.Stop();
+                }
+                if (IsOn)
+                {
+                    UnSubServerList();
+                }
+                IsOn = false;
+                ListenerClient.Disconnect();
+
+                BF3_Pipe_Listener.Abort();
+                BF4_Pipe_Listener.Abort();
+                BFH_Pipe_Listener.Abort();
+
+                ConnectionStateChanged?.Invoke(false);
+            }
+            catch (Exception ex)
+            {
+                ErrorOccured?.Invoke(ex, "Error occured when disconnecting zclient");
+            }
+        }
+
 
         public List<string> GetDllsList(ZloGame game)
         {
@@ -853,24 +890,7 @@ string full path to dll
         }
 
 
-        private bool IsOn = false;
-        public void Close()
-        {
-            try
-            {
-                CurrentPlayerID = 0;
-                CurrentPlayerName = string.Empty;
 
-                UnSubServerList();
-
-
-                IsOn = false;
-                ListenerClient.Disconnect();
-                ConnectionStateChanged?.Invoke(false);
-            }
-            catch (Exception ex) { ErrorOccured?.Invoke(ex, "Error occured when disconnecting zclient"); }
-
-        }
         #endregion
 
         #region API Properties
@@ -982,6 +1002,11 @@ string full path to dll
                 }
                 switch (request)
                 {
+                    case ZloRequest.Ping:
+                        {
+                            req.ReceivedResponce += PingRequestResult;
+                            break;
+                        }
                     case ZloRequest.Server_List:
                         {
                             if (game == ZloGame.None)
@@ -1028,7 +1053,6 @@ string full path to dll
                         }
                         Payloads.Add((byte)game);
                         break;
-                    case ZloRequest.Ping:
                     case ZloRequest.User_Info:
                     default:
                         //empty payloads
@@ -1045,6 +1069,20 @@ string full path to dll
                 AddToQueue(req);
             });
         }
+
+        private void PingRequestResult(Request Sender)
+        {
+            Sender.ReceivedResponce -= PingRequestResult;
+            if (Sender.pid == 0 && Sender.Responce == null)
+            {
+                //disconnect from zclient
+                //ErrorOccured?.Invoke(ex, "Error occured when requesting ping");
+              
+                Disconnected?.Invoke(DisconnectionReasons.PingFail);
+                Close();
+            }
+        }
+
         private void ListenerClient_DataReceived(byte pid, byte[] bytes)
         {
             if (CurrentRequest != null && CurrentRequest.pid == pid && CurrentRequest.IsDone == false && CurrentRequest.IsRespondable)
@@ -1474,8 +1512,6 @@ string full path to dll
                 {
                     ErrorOccured?.Invoke(ex, "Error Occured when Trying to connect to BF Hardline pipe");
                 }
-
-
             }
         }
 
@@ -1503,7 +1539,7 @@ string full path to dll
                 return true;
             }
         }
-        
+
         internal void AddToQueue(Request req)
         {
             //if it's the only one in the queue, trigger it
@@ -1579,7 +1615,7 @@ string full path to dll
                     }
                 }
 
-                
+
             }
         }
         private void ExecuteCMDTimer(object sender, ElapsedEventArgs e)

@@ -28,42 +28,73 @@ namespace ZloGUILauncher
         public MainWindow()
         {
             InitializeComponent();
-            App.Current.MainWindow = this;
+            Application.Current.MainWindow = this;
             App.Client.ErrorOccured += Client_ErrorOccured;
             App.Client.UserInfoReceived += Client_UserInfoReceived;
             App.Client.GameStateReceived += Client_GameStateReceived;
             App.Client.APIVersionReceived += Client_APIVersionReceived;
             App.Client.Disconnected += Client_Disconnected;
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
+            DoConnect();
+        }
+
+        public void DoConnect()
+        {
             if (App.Client.Connect())
             {
-                switch (App.Client.SavedActiveServerListener)
-                {
-                    case ZloGame.BF_3:
-                        MainTabControl.SelectedIndex = 2;
-                        //App.Client.SubToServerList(ZloGame.BF_3);
-                        App.Client.GetStats(ZloGame.BF_3);
-                        break;
-                  
-                    case ZloGame.BF_HardLine:
-                        MainTabControl.SelectedIndex = 1;
-
-                        //App.Client.SubToServerList(ZloGame.BF_HardLine);
-                        App.Client.GetStats(ZloGame.BF_HardLine);
-                        App.Client.GetItems(ZloGame.BF_HardLine);
-                        break;
-
-                    default:
-                    case ZloGame.None:
-                    case ZloGame.BF_4:
-                        MainTabControl.SelectedIndex = 0;
-
-                        //App.Client.SubToServerList(ZloGame.BF_4);
-                        App.Client.GetStats(ZloGame.BF_4);
-                        App.Client.GetItems(ZloGame.BF_4);
-                        break;
-                }
+                AfterSuccessfulConnect();
             }
+            else
+            {
+                AfterFailedConnect();
+            }
+        }
+        public void ReConnect()
+        {
+            if (App.Client.ReConnect())
+            {
+                AfterSuccessfulConnect();
+            }
+            else
+            {
+                AfterFailedConnect();
+            }
+        }
+        public void AfterSuccessfulConnect()
+        {
+            switch (App.Client.SavedActiveServerListener)
+            {
+                case ZloGame.BF_3:
+                    MainTabControl.SelectedIndex = 2;
+                    //App.Client.SubToServerList(ZloGame.BF_3);
+                    App.Client.GetStats(ZloGame.BF_3);
+                    break;
+
+                case ZloGame.BF_HardLine:
+                    MainTabControl.SelectedIndex = 1;
+
+                    //App.Client.SubToServerList(ZloGame.BF_HardLine);
+                    App.Client.GetStats(ZloGame.BF_HardLine);
+                    App.Client.GetItems(ZloGame.BF_HardLine);
+                    break;
+
+                default:
+                case ZloGame.None:
+                case ZloGame.BF_4:
+                    MainTabControl.SelectedIndex = 0;
+
+                    //App.Client.SubToServerList(ZloGame.BF_4);
+                    App.Client.GetStats(ZloGame.BF_4);
+                    App.Client.GetItems(ZloGame.BF_4);
+                    break;
+            }
+        }
+        public void AfterFailedConnect()
+        {
+
+            IsConnectedTextBlock.Text = "DisConnected";
+            IsConnectedTextBlock.Foreground = Brushes.Red;
+            reconnectButton.IsEnabled = true;
         }
 
         private void Client_ConnectionStateChanged(bool IsConnectedToZloClient)
@@ -78,8 +109,7 @@ namespace ZloGUILauncher
                 }
                 else
                 {
-                    IsConnectedTextBlock.Text = "DisConnected";
-                    IsConnectedTextBlock.Foreground = Brushes.Red;
+                    AfterFailedConnect();
                 }
 
             });
@@ -176,7 +206,7 @@ Exit
 
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
-            MessageBox.Show($"{Error.ToString()}" , CustomMessage);
+            //MessageBox.Show($"{Error.ToString()}" , CustomMessage);
         }
 
         private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
@@ -228,6 +258,11 @@ Exit
         {
             var di = new DllInjector();            
             di.Show();
+        }
+
+        private void reconnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            ReConnect();
         }
     }
 }
