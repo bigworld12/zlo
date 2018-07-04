@@ -164,7 +164,7 @@ namespace Demo
             Client.BF4Servers.ServerUpdated += BF4Servers_ServerUpdated;
         }
         #region Event Methods
-        private static void BF4Servers_ServerUpdated(uint id , API_BF4ServerBase server)
+        private static void BF4Servers_ServerUpdated(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
 
@@ -174,10 +174,10 @@ namespace Demo
                 MyServer.UpdateMyServer();
             }
         }
-        private static void BF4Servers_ServerRemoved(uint id , API_BF4ServerBase server)
+        private static void BF4Servers_ServerRemoved(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)},Players = {server.Players.Count}");
-          
+
             if (MyBF4ServerList.Any(x => x.ServerID == id))
             {
                 var MyServer = MyBF4ServerList.Find(x => x.ServerID == id);
@@ -187,7 +187,7 @@ namespace Demo
                 }
             }
         }
-        private static void BF4Servers_ServerAdded(uint id , API_BF4ServerBase server)
+        private static void BF4Servers_ServerAdded(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
 
@@ -195,48 +195,48 @@ namespace Demo
             if (!MyBF4ServerList.Any(x => x.ServerID == id))
             {
                 MyBF4ServerList.Add(MyServer);
-            }            
+            }
         }
 
 
 
-        private static void BF3Servers_ServerUpdated(uint id , API_BF3ServerBase server)
+        private static void BF3Servers_ServerUpdated(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
         }
-        private static void BF3Servers_ServerRemoved(uint id , API_BF3ServerBase server)
+        private static void BF3Servers_ServerRemoved(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)},Players = {server.Players.Count}");
         }
-        private static void BF3Servers_ServerAdded(uint id , API_BF3ServerBase server)
+        private static void BF3Servers_ServerAdded(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
         }
 
 
         //Note : this method gets called everytime you connect to zclient
-        private static void Client_UserInfoReceived(uint UserID , string UserName)
+        private static void Client_UserInfoReceived(uint UserID, string UserName)
         {
 
             Console.WriteLine($"User Info : ID = {UserID},Name = {UserName}");
         }
 
 
-        private static void Client_StatsReceived(ZloGame Game , Dictionary<string,float> List)
+        private static void Client_StatsReceived(ZloGame Game, Dictionary<string, float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private static void Client_ItemsReceived(ZloGame Game , Dictionary<string , API_Item> List)
+        private static void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }
 
 
-        private static void Client_GameStateReceived(ZloGame game , string type , string message)
+        private static void Client_GameStateReceived(ZloGame game, string type, string message)
         {
             Console.WriteLine($"[{game}] [{type}] {message}");
         }
-        private static void Client_ErrorOccured(Exception Error , string CustomMessage)
+        private static void Client_ErrorOccured(Exception Error, string CustomMessage)
         {
             Console.WriteLine($"{CustomMessage}\n{Error.ToString()}");
         }
@@ -248,7 +248,7 @@ namespace Demo
         {
             Console.WriteLine($"IsConnectedToZloClient ? : {IsConnectedToZloClient}");
         }
-        private static void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
+        private static void Client_APIVersionReceived(Version Current, Version Latest, bool IsNeedUpdate, string DownloadAdress)
         {
             Console.WriteLine("===================================================");
             Console.WriteLine($"Current version : {Current}\nServer Version : {Latest}\nIs my version old ? : {IsNeedUpdate}\nIf it's old where should i download new version ? {DownloadAdress}");
@@ -355,57 +355,57 @@ namespace Demo
             Client.BF4Servers.ServerUpdated += BF4Servers_ServerUpdated;
         }
 
-        private void BF4Servers_ServerUpdated(uint id , API_BF4ServerBase server)
+        private void BF4Servers_ServerUpdated(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Updated : id = {id},server name : {server.ServerName}");
         }
-        private void BF4Servers_ServerRemoved(uint id , API_BF4ServerBase server)
+        private void BF4Servers_ServerRemoved(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)}");
         }
-        private void BF4Servers_ServerAdded(uint id , API_BF4ServerBase server)
+        private void BF4Servers_ServerAdded(uint id, API_BF4ServerBase server)
         {
             Console.WriteLine($"BF4 Server Added : id = {id},server name : {server.ServerName}");
         }
 
 
 
-        private void BF3Servers_ServerUpdated(uint id , API_BF3ServerBase server)
+        private void BF3Servers_ServerUpdated(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.ServerName}");
         }
-        private void BF3Servers_ServerRemoved(uint id , API_BF3ServerBase server)
+        private void BF3Servers_ServerRemoved(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)}");
         }
-        private void BF3Servers_ServerAdded(uint id , API_BF3ServerBase server)
+        private void BF3Servers_ServerAdded(uint id, API_BF3ServerBase server)
         {
             Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.ServerName}");
         }
 
 
 
-        private void Client_UserInfoReceived(uint UserID , string UserName)
+        private void Client_UserInfoReceived(uint UserID, string UserName)
         {
             Console.WriteLine($"User Info : ID = {UserID},Name = {UserName}");
         }
 
 
-        private void Client_StatsReceived(ZloGame Game , Dictionary<string , float> List)
+        private void Client_StatsReceived(ZloGame Game, Dictionary<string, float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private void Client_ItemsReceived(ZloGame Game , Dictionary<string , API_Item> List)
+        private void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }
 
 
-        private void Client_GameStateReceived(ZloGame game , string type , string message)
+        private void Client_GameStateReceived(ZloGame game, string type, string message)
         {
             Console.WriteLine($"[{game}] [{type}] {message}");
         }
-        private void Client_ErrorOccured(Exception Error , string CustomMessage)
+        private void Client_ErrorOccured(Exception Error, string CustomMessage)
         {
             Console.WriteLine($"{CustomMessage}\n{Error.ToString()}");
         }
@@ -417,7 +417,7 @@ namespace Demo
         {
             Console.WriteLine($"IsConnectedToZloClient ? : {IsConnectedToZloClient}");
         }
-        private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
+        private void Client_APIVersionReceived(Version Current, Version Latest, bool IsNeedUpdate, string DownloadAdress)
         {
             Console.WriteLine("===================================================");
             Console.WriteLine($"Current version : {Current}\nServer Version : {Latest}\nIs my version old ? : {IsNeedUpdate}\nIf so where should i download new version ? {DownloadAdress}");

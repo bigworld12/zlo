@@ -72,8 +72,15 @@ namespace ZloGUILauncher.Servers
         public string ServerType
         {
             get
-            {
-                return raw.Attributes["servertype"];
+            {                
+                if (raw.Attributes.TryGetValue("servertype",out var typ))
+                {
+                    return typ;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
         

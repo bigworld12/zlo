@@ -62,6 +62,9 @@ namespace ZloGUILauncher
         }
         public void AfterSuccessfulConnect()
         {
+            IsConnectedTextBlock.Text = "Connected";
+            IsConnectedTextBlock.Foreground = Brushes.Green;
+            reconnectButton.IsEnabled = false;
             switch (App.Client.SavedActiveServerListener)
             {
                 case ZloGame.BF_3:
@@ -88,10 +91,10 @@ namespace ZloGUILauncher
                     App.Client.GetItems(ZloGame.BF_4);
                     break;
             }
+           
         }
         public void AfterFailedConnect()
         {
-
             IsConnectedTextBlock.Text = "DisConnected";
             IsConnectedTextBlock.Foreground = Brushes.Red;
             reconnectButton.IsEnabled = true;
@@ -116,9 +119,12 @@ namespace ZloGUILauncher
 
         }
 
-        private void Client_Disconnected(Zlo.Extras.DisconnectionReasons Reason)
+        private void Client_Disconnected(DisconnectionReasons Reason)
         {
-            MessageBox.Show($"Client Disconnected for reason : {Reason}");
+            var msg = $"Client Disconnected for reason : {Reason}";
+            
+            Zlo.API_ZloClient.WriteLog(msg);
+            MessageBox.Show(msg);
         }
 
         private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
@@ -206,6 +212,7 @@ Exit
 
         private void Client_ErrorOccured(Exception Error , string CustomMessage)
         {
+            Zlo.API_ZloClient.WriteLog($"{CustomMessage}\n{Error.ToString()}");
             //MessageBox.Show($"{Error.ToString()}" , CustomMessage);
         }
 

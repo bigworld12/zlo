@@ -32,6 +32,7 @@ namespace Zlo
                 IsBackground = true
             };
         }
+
         public void Connect()
         {
             IsOn = true;
@@ -108,8 +109,7 @@ namespace Zlo
                 {
                     if (!Client.Connected)
                     {
-                        Client.Client?.Disconnect(true);
-                        Client.Connect("127.0.0.1", 48486);
+                        ReConnect();
                     }
                 }
                 catch (Exception ex)
