@@ -282,5 +282,10 @@ Exit
         {
             App.Client.IsEnableDiscordRPC = false;
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            App.Client.Close();
+        }
     }
 }

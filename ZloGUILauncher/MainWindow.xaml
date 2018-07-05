@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:ZloGUILauncher"
         xmlns:views="clr-namespace:ZloGUILauncher.Views" x:Class="ZloGUILauncher.MainWindow"
         xmlns:helpers="clr-namespace:ZloGUILauncher"    
+    Closing="Window_Closing"
     mc:Ignorable="d"
         Title="Bigworld12 new API launcher" Height="421.981" Width="955.963">
     <Window.Resources>
