@@ -9,26 +9,53 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZloGUILauncher", "ZloGUILauncher\ZloGUILauncher.csproj", "{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordRpc", "..\discord-rpc.net\DiscordRpc\DiscordRpc.csproj", "{67A174C3-1B23-4620-83F4-E7ADA4A991AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Debug|x64.ActiveCfg = Debug|x64
+		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Debug|x64.Build.0 = Debug|x64
 		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Release|x64.ActiveCfg = Release|x64
+		{DB55F0F7-53EA-4911-BE2A-82926AB6AD28}.Release|x64.Build.0 = Release|x64
 		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Debug|x64.ActiveCfg = Debug|x64
+		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Debug|x64.Build.0 = Debug|x64
 		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Release|x64.ActiveCfg = Release|x64
+		{B7A2F637-11C5-46CF-A191-C7B8E8918325}.Release|x64.Build.0 = Release|x64
 		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Debug|x64.ActiveCfg = Debug|x64
+		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Debug|x64.Build.0 = Debug|x64
 		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Release|x64.ActiveCfg = Release|x64
+		{BA2ED80F-F18A-4A4C-BB46-1DEA5BBE5F38}.Release|x64.Build.0 = Release|x64
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Debug|x64.ActiveCfg = Debug|x64
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Debug|x64.Build.0 = Debug|x64
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Release|x64.ActiveCfg = Release|x64
+		{67A174C3-1B23-4620-83F4-E7ADA4A991AB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4024FB6C-B1BC-4310-BD56-0B283474E609}
 	EndGlobalSection
 EndGlobal

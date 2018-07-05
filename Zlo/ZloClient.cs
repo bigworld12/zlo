@@ -18,7 +18,7 @@ using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Windows;
 using Microsoft.Win32;
-
+using DiscordRpc;
 namespace Zlo
 {
     /// <summary>
@@ -26,7 +26,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(11, 1, 0, 0);
+        private Version _localVer = new Version(11, 3, 0, 0);
 
         private JObject serverJson;
 
@@ -57,7 +57,7 @@ namespace Zlo
                 GameStateReceived += ZloClient_GameStateReceived;
 
                 m_client = new ZloTCPClient(this);
-                
+
 
                 BF3_Pipe = new NamedPipeClientStream(".", "venice_snowroller");
                 BF4_Pipe = new NamedPipeClientStream(".", "warsaw_snowroller");
@@ -71,13 +71,217 @@ namespace Zlo
 
                 ClanDogTagsReceived -= API_ZloClient_ClanDogTagsReceived;
                 ClanDogTagsReceived += API_ZloClient_ClanDogTagsReceived;
+
+                StartDiscordRPC();
             }
             catch (Exception ex)
             {
                 ErrorOccured?.Invoke(ex, "Error When Initializing the client");
             }
         }
+        private RichPresence DiscordRPC;
+        private void StartDiscordRPC()
+        {
+            /*
+                 RPC stuff
+                 */
 
+            var token = "464170401472446465";
+            DiscordRPC = new RichPresence();
+            DiscordRPC.Initialize(token);
+            DiscordRPC.Ready += DiscordRPC_Ready;
+            DiscordRPC.Errored += DiscordRPC_Errored;
+            DiscordRPC.Disconnected += DiscordRPC_Disconnected;
+            RunCallbacks();
+
+
+
+        }
+        private void StopDiscordRPC()
+        {
+            _cancel = true;
+            DiscordRPC.Dispose();
+        }
+        private bool _cancel;
+        private void RunCallbacks()
+        {
+            Task.Run(() =>
+            {
+                while (!_cancel)
+                {
+                    DiscordRPC.RunCallbacks();
+                    Thread.Sleep(1000);
+                }
+            });
+        }
+        private void DiscordRPC_Disconnected(int errorCode, string message)
+        {
+            WriteLog($"Discord RPC Disconnected: {errorCode}\n{message}");
+        }
+
+        private void DiscordRPC_Errored(int errorCode, string message)
+        {
+            WriteLog($"Discord RPC Errored: {errorCode}\n{message}");
+        }
+        //start update pesence timer
+        System.Timers.Timer RPCUpdateTimer = new System.Timers.Timer(3000);
+        private void DiscordRPC_Ready()
+        {
+            WriteLog("Discord RPC Ready!");
+            RPCUpdateTimer.Elapsed -= RPCUpdateTimer_Elapsed;
+            RPCUpdateTimer.Elapsed += RPCUpdateTimer_Elapsed;
+            RPCUpdateTimer.Start();
+        }
+
+        private void RPCUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (DiscordRPC == null || _cancel)
+            {
+                return;
+            }
+            UpdateCurrentPresence();
+        }
+
+        private void UpdateCurrentPresence()
+        {
+            DiscordRPC.Update(GetCurrentPresence());
+        }
+        uint? latestServerID;
+        private RichPresenceBuilder GetCurrentPresence()
+        {
+            string gamelogo = "", gameName = "", shortGameName = "", state = "", detail = "", imgDesc = "";
+            int current = 0, maxsize = 0;
+            ZloGame Choice;
+            void GetGameName()
+            {
+                switch (Choice)
+                {
+                    case ZloGame.BF_3:
+                        gamelogo = "bf3";
+                        gameName = "BATTLEFIELD 3";
+                        shortGameName = "BF3";
+                        break;
+                    case ZloGame.BF_4:
+                        gamelogo = "bf4";
+                        gameName = "BATTLEFIELD 4";
+                        shortGameName = "BF4";
+                        break;
+                    case ZloGame.BF_HardLine:
+                        gamelogo = "bfh";
+                        gameName = "BATTLEFIELD HARDLINE";
+                        shortGameName = "BFH";
+                        break;
+                    case ZloGame.None:
+                    default:
+                        break;
+                }
+            }
+
+            if (!LatestGameState_Game.HasValue)
+            {
+                Choice = ActiveServerListener;
+                GetGameName();
+                state = "Browsing Servers";
+                detail = $"Browsing {shortGameName} Servers";
+                imgDesc = detail;
+                latestDate = null;
+            }
+            else
+            {
+                Choice = LatestGameState_Game.Value;
+                GetGameName();
+                ParsePipeMessage(Choice, LatestGameState_Type, LatestGameState_Message, out var s, out var IsInGame);
+                if (IsInGame)
+                {
+                    if (!latestDate.HasValue)
+                        latestDate = DateTime.Now;
+                    if (s != null)
+                    {
+                        if (!latestServerID.HasValue)
+                        {
+                            latestServerID = s.ServerID;
+                        }
+                        else
+                        {
+                            if (latestServerID != s.ServerID)
+                            {
+                                //server changed
+                                latestDate = DateTime.Now;
+                                latestServerID = s.ServerID;
+                            }                            
+                        }
+                        current = s.Players.Count;
+                        maxsize = s.MaxPlayers;
+                        string map = s.MapRotation.CurrentActualMap.MapName;
+                        string gamemode = s.MapRotation.CurrentActualMap.GameModeName;
+
+                        detail = s.ServerName;
+                        state = map;
+                        imgDesc = $"[{shortGameName}] {s.ServerName} [{gamemode} - {map}]";
+                    }
+                    else
+                    {
+                        detail = "Unknown server";
+                        state = "IN-GAME";
+                        imgDesc = "IN-GAME";
+                    }
+                }
+                else
+                {
+                    latestDate = null;
+                    latestServerID = null;
+                    state = string.Empty;
+                    detail = $"Browsing {gameName} Servers";
+                    imgDesc = gameName;
+                }
+            }
+            return new RichPresenceBuilder()
+                .WithArtwork(gamelogo, imgDesc, "zlo_s", $"zloemu.net")
+                .WithState(state, detail)
+                .WithPartyInfo(current, maxsize)
+                .WithTimeInfo(latestDate, null);
+        }
+        private void ParsePipeMessage(ZloGame game, string type, string message, out ServerBase Server, out bool IsInGame)
+        {
+            //StateChanging;State_Connecting State_ClaimReservation 14
+            //StateChanging;State_Connecting State_Game 14
+            //GameWaiting;14
+            //StateChanged;State_Game State_NA 14
+            if (message == $"State_Game State_NA {CurrentPlayerID}" || message == $"State_Game State_ClaimReservation {CurrentPlayerID}")
+            {
+                IsInGame = true;
+
+                switch (game)
+                {
+                    case ZloGame.BF_3:
+                        Server = BF3Servers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
+                        IsInGame = true;
+                        break;
+                    case ZloGame.BF_4:
+                        Server = BF4Servers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
+                        IsInGame = true;
+                        break;
+                    case ZloGame.BF_HardLine:
+                        Server = BFHServers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
+                        IsInGame = true;
+                        break;
+                    case ZloGame.None:
+                    default:
+                        Server = null;
+                        IsInGame = false;
+                        break;
+                }
+            }
+            else
+            {
+                IsInGame = false;
+                Server = null;
+            }
+        }
+        private ZloGame? LatestGameState_Game;
+        private string LatestGameState_Type;
+        private string LatestGameState_Message;
+        private DateTime? latestDate;
         private void API_ZloClient_ClanDogTagsReceived(ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
             ClanDogTagsPerGame[game] = new Tuple<ushort, ushort, string>(dogtag1, dogtag2, clanTag);
@@ -99,6 +303,11 @@ namespace Zlo
             //= in-game
             //
             //no left game
+            LatestGameState_Game = game;
+            LatestGameState_Type = type;
+            LatestGameState_Message = message;
+            latestDate = DateTime.Now;
+            UpdateCurrentPresence();
             string trimmed = message.Trim(' ');
             var dllz = GetDllsList(game);
             if (dllz == null || game == ZloGame.None)
@@ -797,6 +1006,11 @@ string full path to dll
             SavedActiveServerListener = game;
             GetClanDogTags();
         }
+
+        
+
+
+
         public void UnSubServerList()
         {
             if (ActiveServerListener == ZloGame.None)
@@ -1077,7 +1291,7 @@ string full path to dll
             {
                 //disconnect from zclient
                 //ErrorOccured?.Invoke(ex, "Error occured when requesting ping");
-              
+
                 Disconnected?.Invoke(DisconnectionReasons.PingFail);
                 Close();
             }
@@ -1199,7 +1413,7 @@ string full path to dll
                                                         break;
                                                     case 1:
                                                         BF4Servers.UpdateServerPlayers(server_id, actualbuffer);
-                                                        WriteLog($"BF4 Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
+                                                        //WriteLog($"BF4 Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
                                                         break;
                                                     case 2:
                                                         BF4Servers.Remove(server_id);
@@ -1214,7 +1428,7 @@ string full path to dll
                                                         break;
                                                     case 1:
                                                         BFHServers.UpdateServerPlayers(server_id, actualbuffer);
-                                                        WriteLog($"BFH Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
+                                                        //WriteLog($"BFH Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
                                                         break;
                                                     case 2:
                                                         BFHServers.Remove(server_id);
@@ -1318,28 +1532,26 @@ string full path to dll
         }
 
         static Queue<string> ToWrite = new Queue<string>();
-        static object l = new object();
         private static void ActualWriteLog()
         {
             Task.Run(() =>
             {
+                start:
                 try
                 {
-                    lock (l)
+                    lock (ToWrite)
                     {
                         if (ToWrite.Count > 0)
                         {
-                            File.AppendAllText(@".\Demo-Log.txt", $"\n================================\n{DateTime.Now.ToString()}\n{ToWrite.Dequeue()}\n================================");
-                        }
-                        if (ToWrite.Count > 0)
-                        {
+                            File.AppendAllText(@".\ZloAPILog.txt", $"\n================================\n{DateTime.Now.ToString()}\n{ToWrite.Dequeue()}\n================================");
                             ActualWriteLog();
                         }
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine(ex.ToString());
+                    Thread.Sleep(200);
+                    goto start;
                 }
             });
         }
@@ -1589,7 +1801,7 @@ string full path to dll
                 }
                 else
                 {
-                    WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{Hexlike(CurrentRequest.data.Skip(5).ToArray())}");
+                    //WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{Hexlike(CurrentRequest.data.Skip(5).ToArray())}");
                     if (!CurrentRequest.IsRespondable)
                     {
                         CurrentRequest.GiveResponce(null);

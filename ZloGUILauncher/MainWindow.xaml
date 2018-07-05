@@ -42,8 +42,8 @@
                 <Button Margin="3" VerticalAlignment="Center" Content="Dll Injector" Click="ShowDllInjectorButton_Click"/>
                 <Button Margin="3" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
                 
-                <Button Margin="3" VerticalAlignment="Center" Content="Community Discord Server" Click="OfficialDiscordButton_Click"/>
-                <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/bSUMe9P​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Button Margin="3" VerticalAlignment="Center" Content="Get Evonix Launcher" Click="OfficialDiscordButton_Click"/>
+                <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/m3vEHyN​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             </StackPanel>
             
         </Grid>
