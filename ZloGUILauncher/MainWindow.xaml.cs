@@ -36,6 +36,7 @@ namespace ZloGUILauncher
             App.Client.Disconnected += Client_Disconnected;
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             DoConnect();
+            DiscordRPCCheck.IsChecked = App.Client.IsEnableDiscordRPC;
         }
 
         public void DoConnect()
@@ -270,6 +271,16 @@ Exit
         private void reconnectButton_Click(object sender, RoutedEventArgs e)
         {
             ReConnect();
+        }
+
+        private void DiscordRPCCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            App.Client.IsEnableDiscordRPC = true;
+        }
+
+        private void DiscordRPCCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            App.Client.IsEnableDiscordRPC = false;
         }
     }
 }

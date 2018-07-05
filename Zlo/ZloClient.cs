@@ -19,6 +19,8 @@ using System.Globalization;
 using System.Windows;
 using Microsoft.Win32;
 using DiscordRpc;
+using System.Runtime.CompilerServices;
+
 namespace Zlo
 {
     /// <summary>
@@ -26,11 +28,50 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(11, 3, 0, 0);
+        private Version _localVer = new Version(11, 3, 1, 0);
 
         private JObject serverJson;
 
         private static bool IsInitlaized = false;
+
+
+
+
+
+
+        private bool m_IsEnableDiscordRPC = true;
+        /// <summary>
+        /// True -> will enable DiscordRPC
+        /// False -> will disable DiscordRPC        
+        /// </summary>
+        public bool IsEnableDiscordRPC
+        {
+            get { return m_IsEnableDiscordRPC; }
+            set
+            {
+                if (m_IsEnableDiscordRPC == false && value == true)
+                {
+                    m_IsEnableDiscordRPC = true;
+                    //enable 
+                    StartDiscordRPC();
+                }
+                else if (m_IsEnableDiscordRPC == true && value == false)
+                {
+                    m_IsEnableDiscordRPC = false;
+                    //enable 
+                    StopDiscordRPC();
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+
+
+
+
+
 
         /// <summary>
         /// MUST BE INITIALIZED ONLY ONCE
@@ -71,8 +112,6 @@ namespace Zlo
 
                 ClanDogTagsReceived -= API_ZloClient_ClanDogTagsReceived;
                 ClanDogTagsReceived += API_ZloClient_ClanDogTagsReceived;
-
-                StartDiscordRPC();
             }
             catch (Exception ex)
             {
@@ -82,10 +121,6 @@ namespace Zlo
         private RichPresence DiscordRPC;
         private void StartDiscordRPC()
         {
-            /*
-                 RPC stuff
-                 */
-
             var token = "464170401472446465";
             DiscordRPC = new RichPresence();
             DiscordRPC.Initialize(token);
@@ -93,23 +128,21 @@ namespace Zlo
             DiscordRPC.Errored += DiscordRPC_Errored;
             DiscordRPC.Disconnected += DiscordRPC_Disconnected;
             RunCallbacks();
-
-
-
         }
         private void StopDiscordRPC()
         {
-            _cancel = true;
             DiscordRPC.Dispose();
         }
-        private bool _cancel;
         private void RunCallbacks()
         {
             Task.Run(() =>
             {
-                while (!_cancel)
+                while (IsOn)
                 {
-                    DiscordRPC.RunCallbacks();
+                    if (IsEnableDiscordRPC)
+                    {
+                        DiscordRPC.RunCallbacks();
+                    }
                     Thread.Sleep(1000);
                 }
             });
@@ -127,15 +160,16 @@ namespace Zlo
         System.Timers.Timer RPCUpdateTimer = new System.Timers.Timer(3000);
         private void DiscordRPC_Ready()
         {
-            WriteLog("Discord RPC Ready!");
+            if (IsEnableDiscordRPC) WriteLog("Discord RPC Ready!");
             RPCUpdateTimer.Elapsed -= RPCUpdateTimer_Elapsed;
             RPCUpdateTimer.Elapsed += RPCUpdateTimer_Elapsed;
+            RPCUpdateTimer.AutoReset = true;
             RPCUpdateTimer.Start();
         }
 
         private void RPCUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (DiscordRPC == null || _cancel)
+            if (DiscordRPC == null || !IsEnableDiscordRPC)
             {
                 return;
             }
@@ -181,7 +215,7 @@ namespace Zlo
             {
                 Choice = ActiveServerListener;
                 GetGameName();
-                state = "Browsing Servers";
+                //state = "Browsing Servers";
                 detail = $"Browsing {shortGameName} Servers";
                 imgDesc = detail;
                 latestDate = null;
@@ -208,7 +242,7 @@ namespace Zlo
                                 //server changed
                                 latestDate = DateTime.Now;
                                 latestServerID = s.ServerID;
-                            }                            
+                            }
                         }
                         current = s.Players.Count;
                         maxsize = s.MaxPlayers;
@@ -307,7 +341,7 @@ namespace Zlo
             LatestGameState_Type = type;
             LatestGameState_Message = message;
             latestDate = DateTime.Now;
-            UpdateCurrentPresence();
+
             string trimmed = message.Trim(' ');
             var dllz = GetDllsList(game);
             if (dllz == null || game == ZloGame.None)
@@ -607,6 +641,7 @@ namespace Zlo
         /// occurs when the api connects/disconnects from ZClient
         /// </summary>
         public event API_ConnectionStateChanged ConnectionStateChanged;
+
         #endregion
 
         #region API Methods
@@ -657,6 +692,8 @@ namespace Zlo
                 ListenerClient.ReConnect();
                 ConnectionStateChanged?.Invoke(true);
                 GetUserInfo();
+
+                StartDiscordRPC();
                 return true;
             }
             catch (Exception ex)
@@ -713,7 +750,7 @@ namespace Zlo
                 BF3_Pipe_Listener.Abort();
                 BF4_Pipe_Listener.Abort();
                 BFH_Pipe_Listener.Abort();
-
+                StopDiscordRPC();
                 ConnectionStateChanged?.Invoke(false);
             }
             catch (Exception ex)
@@ -1007,7 +1044,7 @@ string full path to dll
             GetClanDogTags();
         }
 
-        
+
 
 
 
@@ -1102,9 +1139,6 @@ string full path to dll
 
             SendRequest(ZloRequest.Player_Info, ActiveServerListener, final.ToArray());
         }
-
-
-
         #endregion
 
         #region API Properties
@@ -1536,23 +1570,23 @@ string full path to dll
         {
             Task.Run(() =>
             {
+                string line;
+                lock (ToWrite)
+                {
+                    if (ToWrite.Count == 0) return;
+                    line = ToWrite.Dequeue();
+                }
                 start:
                 try
                 {
-                    lock (ToWrite)
-                    {
-                        if (ToWrite.Count > 0)
-                        {
-                            File.AppendAllText(@".\ZloAPILog.txt", $"\n================================\n{DateTime.Now.ToString()}\n{ToWrite.Dequeue()}\n================================");
-                            ActualWriteLog();
-                        }
-                    }
+                    File.AppendAllText(@".\ZloAPILog.txt", $"\n================================\n{DateTime.Now.ToString()}\n{line}\n================================");
                 }
                 catch
                 {
                     Thread.Sleep(200);
                     goto start;
                 }
+                ActualWriteLog();
             });
         }
 

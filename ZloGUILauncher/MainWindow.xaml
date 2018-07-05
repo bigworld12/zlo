@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:ZloGUILauncher.Views" x:Class="ZloGUILauncher.MainWindow"
         xmlns:helpers="clr-namespace:ZloGUILauncher"    
     mc:Ignorable="d"
-        Title="Bigworld12 new API launcher" Height="385.981" Width="771.963">
+        Title="Bigworld12 new API launcher" Height="421.981" Width="955.963">
     <Window.Resources>
         <ResourceDictionary>
             <Style TargetType="{x:Type ScrollViewer}">
@@ -35,17 +35,18 @@
                 <Button x:Name="reconnectButton" IsEnabled="False" Content="Re-Connect" Click="reconnectButton_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5 0 0 0"/>
             </StackPanel>
             <StackPanel Margin="3" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock Text="Player : "/>
-                <TextBlock x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
-            </StackPanel>
+                <TextBlock VerticalAlignment="Center" Text="Player : "/>
+                <TextBlock VerticalAlignment="Center" x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
+                <CheckBox x:Name="DiscordRPCCheck" Checked="DiscordRPCCheck_Checked" Unchecked="DiscordRPCCheck_Unchecked" VerticalAlignment="Center" Margin="5 0" Content="Discord Rich Presence"/>
+            </StackPanel>            
             <StackPanel Orientation="Horizontal"  Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button Margin="3" VerticalAlignment="Center" Content="Dll Injector" Click="ShowDllInjectorButton_Click"/>
                 <Button Margin="3" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
-                
+
                 <Button Margin="3" VerticalAlignment="Center" Content="Get Evonix Launcher" Click="OfficialDiscordButton_Click"/>
                 <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/m3vEHyN​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             </StackPanel>
-            
+
         </Grid>
         <TabControl SelectionChanged="MainTabControl_SelectionChanged" Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
             <TabItem>
@@ -77,7 +78,7 @@
                     <views:BF3View/>
                 </Grid>
             </TabItem>
-           
+
         </TabControl>
         <StatusBar Grid.Row="2">
             <TextBlock VerticalAlignment="Center" Text="Lastest Game State : "/>
