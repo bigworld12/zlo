@@ -11,3 +11,5 @@ has pattern :
 "file":"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21917&authkey=ALekr9fqNDtElnE"
 }
 ```
+
+Documentation on using the API : https://gist.github.com/bigworld12/9eb609407859c571c02ad0c48251b767
