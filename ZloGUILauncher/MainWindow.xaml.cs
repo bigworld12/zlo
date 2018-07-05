@@ -258,7 +258,7 @@ Exit
 
         private void OfficialDiscordButton_Click(object sender , RoutedEventArgs e)
         {
-            Process.Start("https://discord.gg/bSUMe9P​​​​​​​");
+            Process.Start("https://discord.gg/m3vEHyN");
         }
 
         private void ShowDllInjectorButton_Click(object sender , RoutedEventArgs e)
