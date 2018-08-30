@@ -69,9 +69,8 @@ namespace ZloGUILauncher
 
         public static void OnFixScrollingPropertyChanged(object sender , DependencyPropertyChangedEventArgs e)
         {
-            ScrollViewer viewer = sender as ScrollViewer;
-            if (viewer == null)
-                throw new ArgumentException("The dependency property can only be attached to a ScrollViewer" , "sender");
+            if (!(sender is ScrollViewer viewer))
+                throw new ArgumentException("The dependency property can only be attached to a ScrollViewer", "sender");
 
             if ((bool)e.NewValue == true)
                 viewer.PreviewMouseWheel += HandlePreviewMouseWheel;
