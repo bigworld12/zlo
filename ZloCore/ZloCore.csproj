@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Zlofenix, bigworld12</Authors>
+    <Company>Zlofenix, bigworld12</Company>
+    <Description>.net api for zclient</Description>
+    <AssemblyName>Zlo</AssemblyName>
+    <RootNamespace>Zlo</RootNamespace>
+    <PackageProjectUrl>https://zloemu.net/</PackageProjectUrl>
+    <PackageTags>z zl zlo zloa zloap zloapi</PackageTags>
+    <AssemblyVersion>14.0.0.0</AssemblyVersion>
+    <FileVersion>14.0.0.0</FileVersion>
+    <Version>14.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Dlls\DiscordRpc.dll" />
+    <None Remove="Dlls\DiscordRPC.pdb" />
+    <None Remove="Dlls\Newtonsoft.Json.dll" />
+    <None Remove="Dlls\System.Interactive.Async.dll" />
+    <None Remove="FodyWeavers.xml" />
+    <None Remove="GamesData\BF3\BF3_stats.json" />
+    <None Remove="GamesData\BF4\BF4_Items.json" />
+    <None Remove="GamesData\BF4\BF4_RanksDetails.json" />
+    <None Remove="GamesData\BF4\BF4_Stats.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Dlls\DiscordRpc.dll" />
+    <EmbeddedResource Include="Dlls\DiscordRPC.pdb" />
+    <EmbeddedResource Include="Dlls\Newtonsoft.Json.dll" />
+    <EmbeddedResource Include="Dlls\System.Interactive.Async.dll" />
+    <EmbeddedResource Include="GamesData\BF3\BF3_stats.json" />
+    <EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
+    <EmbeddedResource Include="GamesData\BF4\BF4_RanksDetails.json" />
+    <EmbeddedResource Include="GamesData\BF4\BF4_Stats.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="GamesData\BFH\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="3.1.0" />
+    <PackageReference Include="Fody" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DiscordRpc">
+      <HintPath>Dlls\DiscordRpc.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

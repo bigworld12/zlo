@@ -5,7 +5,7 @@ using Zlo.Extras;
 using System.Linq;
 
 
-namespace Demo
+namespace DemoCore
 {
     class Program
     {

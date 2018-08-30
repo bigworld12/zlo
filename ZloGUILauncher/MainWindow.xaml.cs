@@ -268,7 +268,7 @@ Exit
             di.Show();
         }
 
-        private void reconnectButton_Click(object sender, RoutedEventArgs e)
+        private void ReconnectButton_Click(object sender, RoutedEventArgs e)
         {
             ReConnect();
         }

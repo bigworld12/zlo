@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using static Zlo.Extentions.Helpers;
 using System.Collections;
 
@@ -18,24 +17,20 @@ namespace Zlo.Extras
     /// </summary>
     public abstract class ServerBase
     {
-        internal ServerBase(uint id,ZloGame game)
+        internal ServerBase(uint id, ZloGame game)
         {
-            m_ServerID = id;
+            ServerID = id;
             Game = game;
         }
 
         public ZloGame Game { get; protected set; }
 
         #region Props
-        private uint m_ServerID;
 
         /// <summary>
         /// server id on zloemu
         /// </summary>
-        public uint ServerID
-        {
-            get { return m_ServerID; }
-        }
+        public uint ServerID { get; }
 
 
 
@@ -130,7 +125,7 @@ namespace Zlo.Extras
                 if (m_Players == null)
                 {
                     m_Players = new API_PlayerListBase();
-                    BindingOperations.EnableCollectionSynchronization(m_Players, new object());
+                    //BindingOperations.EnableCollectionSynchronization(m_Players, new object());
                 }
                 return m_Players;
             }
@@ -612,7 +607,7 @@ namespace Zlo.Extras
         public event API_BF3ServerEventHandler ServerUpdated;
         public event API_BF3ServerEventHandler ServerRemoved;
 
-        private API_ZloClient _client;
+        private readonly API_ZloClient _client;
 
         internal new void Add(API_BF3ServerBase server)
         {
@@ -744,7 +739,7 @@ namespace Zlo.Extras
         public event API_BF4ServerEventHandler ServerUpdated;
         public event API_BF4ServerEventHandler ServerRemoved;
 
-        private API_ZloClient _client;
+        private readonly API_ZloClient _client;
 
         internal new void Add(API_BF4ServerBase server)
         {
@@ -861,7 +856,7 @@ namespace Zlo.Extras
         public event API_BFHServerEventHandler ServerUpdated;
         public event API_BFHServerEventHandler ServerRemoved;
 
-        private API_ZloClient _client;
+        private readonly API_ZloClient _client;
 
         internal new void Add(API_BFHServerBase server)
         {

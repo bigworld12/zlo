@@ -1,25 +1,28 @@
-﻿using System;
+﻿using DiscordRPC;
+using DiscordRPC.Logging;
+using DiscordRPC.Message;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using static Zlo.Extentions.Helpers;
-using System.Diagnostics;
 using System.Timers;
-using Zlo.Extras;
-using System.IO.Pipes;
-using System.ComponentModel;
-using System.Reflection;
-using Newtonsoft.Json.Linq;
-using System.Globalization;
 using System.Windows;
-using Microsoft.Win32;
-using DiscordRpc;
-using System.Runtime.CompilerServices;
+using Zlo.Extras;
+using static Zlo.Extentions.Helpers;
 
 namespace Zlo
 {
@@ -28,7 +31,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(11, 3, 2, 0);
+        private Version _localVer = new Version(14, 0, 0, 0);
 
         private JObject serverJson;
 
@@ -46,7 +49,7 @@ namespace Zlo
         /// </summary>
         public bool IsEnableDiscordRPC
         {
-            get { return m_IsEnableDiscordRPC; }
+            get => m_IsEnableDiscordRPC;
             set
             {
                 if (m_IsEnableDiscordRPC == false && value == true)
@@ -118,70 +121,87 @@ namespace Zlo
                 ErrorOccured?.Invoke(ex, "Error When Initializing the client");
             }
         }
-        private RichPresence DiscordRPC;
+        private RichPresence DiscordRPCState = new RichPresence()
+        {
+            Details = "Zlo Launcher"
+        };
+        private DiscordRpcClient RpcClient;
         private void StartDiscordRPC()
         {
             var token = "464170401472446465";
-            DiscordRPC = new RichPresence();
-            DiscordRPC.Initialize(token);
-            DiscordRPC.Ready += DiscordRPC_Ready;
-            DiscordRPC.Errored += DiscordRPC_Errored;
-            DiscordRPC.Disconnected += DiscordRPC_Disconnected;
-            RunCallbacks();
+            RpcClient = new DiscordRpcClient(token)
+            {
+                Logger = new ConsoleLogger() { Coloured = true, Level = LogLevel.Info }
+            };
+            RpcClient.OnReady += DiscordRPC_Ready;
+            RpcClient.OnClose += RpcClient_OnClose;
+            RpcClient.OnError += RpcClient_OnError;
+            RpcClient.OnPresenceUpdate += RpcClient_OnPresenceUpdate;
+
+            RpcClient.SetPresence(DiscordRPCState);
+            RpcClient.Initialize();
+
+            Task.Run(() => MainLoop());
         }
+        private void MainLoop()
+        {
+            while (IsOn && RpcClient != null)
+            {
+                RpcClient.Invoke();
+                Thread.Sleep(1000);
+                if (DiscordRPCState == null || !IsEnableDiscordRPC)
+                {
+                    return;
+                }
+                UpdateCurrentPresence();
+            }
+        }
+        private void RpcClient_OnPresenceUpdate(object sender, PresenceMessage args)
+        {
+            WriteLog($"Discord RPC Updated: {args.Name}");
+        }
+
+        private void RpcClient_OnError(object sender, ErrorMessage args)
+        {
+            WriteLog($"Discord RPC Error: {args.Code}\nMessage: {args.Message}\nMessage Type : {args.Type}\n");
+        }
+
+        private void RpcClient_OnClose(object sender, CloseMessage args)
+        {
+            WriteLog($"Discord RPC Closed: {args.Code}\nReason: {args.Reason}\nMessage Type : {args.Type}");
+        }
+
         private void StopDiscordRPC()
         {
-            DiscordRPC.Dispose();
-        }
-        private void RunCallbacks()
-        {
-            Task.Run(() =>
-            {
-                while (IsOn)
-                {
-                    if (IsEnableDiscordRPC)
-                    {
-                        DiscordRPC.RunCallbacks();
-                    }
-                    Thread.Sleep(1000);
-                }
-            });
-        }
-        private void DiscordRPC_Disconnected(int errorCode, string message)
-        {
-            WriteLog($"Discord RPC Disconnected: {errorCode}\n{message}");
+            RpcClient.Dispose();
         }
 
-        private void DiscordRPC_Errored(int errorCode, string message)
-        {
-            WriteLog($"Discord RPC Errored: {errorCode}\n{message}");
-        }
         //start update pesence timer
-        System.Timers.Timer RPCUpdateTimer = new System.Timers.Timer(3000);
-        private void DiscordRPC_Ready()
+        private void DiscordRPC_Ready(object sender, ReadyMessage args)
         {
-            if (IsEnableDiscordRPC) WriteLog("Discord RPC Ready!");
-            RPCUpdateTimer.Elapsed -= RPCUpdateTimer_Elapsed;
-            RPCUpdateTimer.Elapsed += RPCUpdateTimer_Elapsed;
-            RPCUpdateTimer.AutoReset = true;
-            RPCUpdateTimer.Start();
+            if (IsEnableDiscordRPC)
+                WriteLog("Discord RPC Ready!");            
         }
 
-        private void RPCUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+       
+        private string PartyID = Secrets.CreateFriendlySecret(new Random());
+        private void UpdateCurrentPresence()
         {
-            if (DiscordRPC == null || !IsEnableDiscordRPC)
+            var backup = DiscordRPCState?.Clone();
+            var newRPC = GetCurrentPresence();
+            var bjson = JObject.FromObject(backup);
+            var njson = JObject.FromObject(newRPC);
+            if (JToken.DeepEquals(bjson, njson))
             {
                 return;
             }
-            UpdateCurrentPresence();
-        }
-
-        private void UpdateCurrentPresence()
-        {
-            DiscordRPC.Update(GetCurrentPresence());
+            Console.WriteLine("Set New RPC state");
+            DiscordRPCState = newRPC;
+            if (!RpcClient.Disposed)
+                RpcClient.SetPresence(newRPC);
         }
         uint? latestServerID;
-        private RichPresenceBuilder GetCurrentPresence()
+        private RichPresence GetCurrentPresence()
         {
             string gamelogo = "", gameName = "", shortGameName = "", state = "", detail = "", imgDesc = "";
             int current = 0, maxsize = 0;
@@ -228,7 +248,7 @@ namespace Zlo
                 if (IsInGame)
                 {
                     if (!latestDate.HasValue)
-                        latestDate = DateTime.Now;
+                        latestDate = DateTime.UtcNow;
                     if (s != null)
                     {
                         if (!latestServerID.HasValue)
@@ -240,7 +260,7 @@ namespace Zlo
                             if (latestServerID != s.ServerID)
                             {
                                 //server changed
-                                latestDate = DateTime.Now;
+                                latestDate = DateTime.UtcNow;
                                 latestServerID = s.ServerID;
                             }
                         }
@@ -269,11 +289,23 @@ namespace Zlo
                     imgDesc = gameName;
                 }
             }
-            return new RichPresenceBuilder()
-                .WithArtwork(gamelogo, imgDesc, "zlo_s", $"zloemu.net")
-                .WithState(state, detail)
-                .WithPartyInfo(current, maxsize)
-                .WithTimeInfo(latestDate, null);
+            var res = new RichPresence()
+            {
+                Assets = new Assets()
+                {
+                    LargeImageKey = gamelogo,
+                    LargeImageText = imgDesc,
+                    SmallImageKey = "zlo_s",
+                    SmallImageText = "zloemu.net"
+                },
+                Details = detail,
+                State = state
+            };
+            if (maxsize != 0)
+                res.Party = new Party() { ID = PartyID, Size = current, Max = maxsize };
+            if (latestDate.HasValue)
+                res.Timestamps = new Timestamps() { Start = latestDate };
+            return res;
         }
         private void ParsePipeMessage(ZloGame game, string type, string message, out ServerBase Server, out bool IsInGame)
         {
@@ -340,7 +372,7 @@ namespace Zlo
             LatestGameState_Game = game;
             LatestGameState_Type = type;
             LatestGameState_Message = message;
-            latestDate = DateTime.Now;
+            latestDate = DateTime.UtcNow;
 
             string trimmed = message.Trim(' ');
             var dllz = GetDllsList(game);
@@ -403,32 +435,29 @@ namespace Zlo
         };
 
         private ZloTCPClient m_client;
-        private ZloTCPClient ListenerClient
-        {
-            get { return m_client; }
-        }
+        private ZloTCPClient ListenerClient => m_client;
 
         System.Timers.Timer PingTimer;
 
         private NamedPipeClientStream m_BF3_pipe;
         private NamedPipeClientStream BF3_Pipe
         {
-            get { return m_BF3_pipe; }
-            set { m_BF3_pipe = value; }
+            get => m_BF3_pipe;
+            set => m_BF3_pipe = value;
         }
 
         private NamedPipeClientStream m_BF4_Pipe;
         private NamedPipeClientStream BF4_Pipe
         {
-            get { return m_BF4_Pipe; }
-            set { m_BF4_Pipe = value; }
+            get => m_BF4_Pipe;
+            set => m_BF4_Pipe = value;
         }
 
         private NamedPipeClientStream m_BFh_pipe;
         private NamedPipeClientStream BFH_Pipe
         {
-            get { return m_BFh_pipe; }
-            set { m_BFh_pipe = value; }
+            get => m_BFh_pipe;
+            set => m_BFh_pipe = value;
         }
 
 
@@ -1190,10 +1219,7 @@ string full path to dll
             }
         }
 
-        public bool IsConnectedToZCLient
-        {
-            get { return ListenerClient.IsConnected; }
-        }
+        public bool IsConnectedToZCLient => ListenerClient.IsConnected;
 
 
         private JObject m_BF3_Stats;
