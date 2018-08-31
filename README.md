@@ -5,7 +5,6 @@ https://bitbucket.org/bigworld12/zlo/src/23214c8524120c48e9066b072de528668a9dd24
 
 has pattern : 
 ```
-#!json
 {
 "version" : "8.0.1.0",
 "file":"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21917&authkey=ALekr9fqNDtElnE"
