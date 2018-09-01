@@ -144,7 +144,6 @@ namespace DemoCore
 
         public static void SubscribeToEvents()
         {
-            Client.APIVersionReceived += Client_APIVersionReceived;
             Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             Client.Disconnected += Client_Disconnected;
             Client.ErrorOccured += Client_ErrorOccured;
@@ -337,7 +336,6 @@ namespace DemoCore
         }
         public void SubscribeEvents()
         {
-            Client.APIVersionReceived += Client_APIVersionReceived;
             Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             Client.Disconnected += Client_Disconnected;
             Client.ErrorOccured += Client_ErrorOccured;
