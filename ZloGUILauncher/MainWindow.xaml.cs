@@ -32,9 +32,9 @@ namespace ZloGUILauncher
             App.Client.ErrorOccured += Client_ErrorOccured;
             App.Client.UserInfoReceived += Client_UserInfoReceived;
             App.Client.GameStateReceived += Client_GameStateReceived;
-            App.Client.APIVersionReceived += Client_APIVersionReceived;
             App.Client.Disconnected += Client_Disconnected;
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
+            Title = $"Bigworld12 API launcher (Version {App.Client.CurrentApiVersion.ToString()})";
             DoConnect();
             DiscordRPCCheck.IsChecked = App.Client.IsEnableDiscordRPC;
         }
@@ -92,7 +92,7 @@ namespace ZloGUILauncher
                     App.Client.GetItems(ZloGame.BF_4);
                     break;
             }
-           
+
         }
         public void AfterFailedConnect()
         {
@@ -123,87 +123,87 @@ namespace ZloGUILauncher
         private void Client_Disconnected(DisconnectionReasons Reason)
         {
             var msg = $"Client Disconnected for reason : {Reason}";
-            
+
             Zlo.API_ZloClient.WriteLog(msg);
             MessageBox.Show(msg);
         }
 
-        private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
-        {
-            if (IsNeedUpdate)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll" , "Update Notification" , MessageBoxButton.OK);
-                    string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
-                    string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
+        //private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
+        //{
+        //    if (IsNeedUpdate)
+        //    {
+        //        Dispatcher.Invoke(() =>
+        //        {
+        //            MessageBox.Show($"Current dll version : {Current}\nLatest dll version : {Latest}\nPress Ok to start Updating Zlo.dll" , "Update Notification" , MessageBoxButton.OK);
+        //            string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
+        //            string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
 
-                    using (WebClient wc = new WebClient())
-                    {
-                        wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                        wc.DownloadFileAsync(new Uri(DownloadAdress) , Newdll);
-                    }
-                });
-            }
-            else
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    Title = $"Bigworld12 new API launcher (Version {Current.ToString()})";
-                });
-            }
-        }
+        //            using (WebClient wc = new WebClient())
+        //            {
+        //                wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
+        //                wc.DownloadFileAsync(new Uri(DownloadAdress) , Newdll);
+        //            }
+        //        });
+        //    }
+        //    else
+        //    {
+        //        Dispatcher.Invoke(() =>
+        //        {
+        //            Title = $"Bigworld12 new API launcher (Version {Current.ToString()})";
+        //        });
+        //    }
+        //}
 
-        private void Wc_DownloadFileCompleted(object sender , System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            //Zlo.dll completed
-            if (e.Error != null)
-            {
-                //error occured
-                Client_ErrorOccured(e.Error , "Error occured when updating Zlo.dll");
-            }
-            else
-            {
-                //no errors
-                string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
-                string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
-                string BatchText =
-                   $@"
-@ECHO off
-SETLOCAL EnableExtensions
-set EXE={AppDomain.CurrentDomain.FriendlyName}
-echo Waiting for process %EXE% to close ...
-:LOOP
-@Timeout /T 1 /NOBREAK>nul
-tasklist /FI ""IMAGENAME eq %EXE%"" 2>NUL | find /I /N ""%EXE%"">NUL
-if ""%ERRORLEVEL%""==""0"" goto LOOP
-echo Process %EXE% closed
-move /y ""{Newdll}"" ""{Sourcedll}"" 
-start """" ""{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , AppDomain.CurrentDomain.FriendlyName)}"" ""done""
-Exit
-";
-                var bat_path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "UpdateBat.bat");
-                //create the bat file
-                File.WriteAllText(bat_path , BatchText);
-                ProcessStartInfo si = new ProcessStartInfo(bat_path)
-                {
-                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
-                };
-                Process.Start(si);
-                Dispatcher.Invoke(() => { Application.Current.Shutdown(); });
-            }
-        }
+        //        private void Wc_DownloadFileCompleted(object sender , System.ComponentModel.AsyncCompletedEventArgs e)
+        //        {
+        //            //Zlo.dll completed
+        //            if (e.Error != null)
+        //            {
+        //                //error occured
+        //                Client_ErrorOccured(e.Error , "Error occured when updating Zlo.dll");
+        //            }
+        //            else
+        //            {
+        //                //no errors
+        //                string Sourcedll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo.dll");
+        //                string Newdll = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Zlo_New.dll");
+        //                string BatchText =
+        //                   $@"
+        //@ECHO off
+        //SETLOCAL EnableExtensions
+        //set EXE={AppDomain.CurrentDomain.FriendlyName}
+        //echo Waiting for process %EXE% to close ...
+        //:LOOP
+        //@Timeout /T 1 /NOBREAK>nul
+        //tasklist /FI ""IMAGENAME eq %EXE%"" 2>NUL | find /I /N ""%EXE%"">NUL
+        //if ""%ERRORLEVEL%""==""0"" goto LOOP
+        //echo Process %EXE% closed
+        //move /y ""{Newdll}"" ""{Sourcedll}"" 
+        //start """" ""{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , AppDomain.CurrentDomain.FriendlyName)}"" ""done""
+        //Exit
+        //";
+        //                var bat_path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "UpdateBat.bat");
+        //                //create the bat file
+        //                File.WriteAllText(bat_path , BatchText);
+        //                ProcessStartInfo si = new ProcessStartInfo(bat_path)
+        //                {
+        //                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+        //                };
+        //                Process.Start(si);
+        //                Dispatcher.Invoke(() => { Application.Current.Shutdown(); });
+        //            }
+        //        }
 
-        private void Client_GameStateReceived(Zlo.Extras.ZloGame game , string type , string message)
+        private void Client_GameStateReceived(Zlo.Extras.ZloGame game, string type, string message)
         {
             Dispatcher.Invoke(() =>
             {
-                App.GameStateViewer.StateReceived(game , type , message);
+                App.GameStateViewer.StateReceived(game, type, message);
                 LatestGameStateTextBlock.Text = $"[{game}] [{type}] {message}";
             });
         }
 
-        private void Client_UserInfoReceived(uint UserID , string UserName)
+        private void Client_UserInfoReceived(uint UserID, string UserName)
         {
             Dispatcher.Invoke(() =>
             {
@@ -211,18 +211,18 @@ Exit
             });
         }
 
-        private void Client_ErrorOccured(Exception Error , string CustomMessage)
+        private void Client_ErrorOccured(Exception Error, string CustomMessage)
         {
             Zlo.API_ZloClient.WriteLog($"{CustomMessage}\n{Error.ToString()}");
             //MessageBox.Show($"{Error.ToString()}" , CustomMessage);
         }
 
-        private void ViewAllGameStatesButton_Click(object sender , RoutedEventArgs e)
+        private void ViewAllGameStatesButton_Click(object sender, RoutedEventArgs e)
         {
             App.GameStateViewer.Show();
         }
 
-        private void RestartLauncherButton_Click(object sender , RoutedEventArgs e)
+        private void RestartLauncherButton_Click(object sender, RoutedEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -232,7 +232,7 @@ Exit
             });
         }
 
-        private void MainTabControl_SelectionChanged(object sender , SelectionChangedEventArgs e)
+        private void MainTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is TabControl tc)
             {
@@ -257,14 +257,14 @@ Exit
             }
         }
 
-        private void OfficialDiscordButton_Click(object sender , RoutedEventArgs e)
+        private void OfficialDiscordButton_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://discord.gg/m3vEHyN");
         }
 
-        private void ShowDllInjectorButton_Click(object sender , RoutedEventArgs e)
+        private void ShowDllInjectorButton_Click(object sender, RoutedEventArgs e)
         {
-            var di = new DllInjector();            
+            var di = new DllInjector();
             di.Show();
         }
 

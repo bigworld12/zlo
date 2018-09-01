@@ -31,17 +31,8 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient
     {
-        private Version _localVer = new Version(15, 1, 0, 0);
-
-        private JObject serverJson;
-
+        public Version CurrentApiVersion { get; } = new Version(15, 2, 0, 0);
         private static bool IsInitlaized = false;
-
-
-
-
-
-
         private bool m_IsEnableDiscordRPC = true;
         /// <summary>
         /// True -> will enable DiscordRPC
@@ -180,10 +171,10 @@ namespace Zlo
         private void DiscordRPC_Ready(object sender, ReadyMessage args)
         {
             if (IsEnableDiscordRPC)
-                WriteLog("Discord RPC Ready!");            
+                WriteLog("Discord RPC Ready!");
         }
 
-       
+
         private string PartyID = Secrets.CreateFriendlySecret(new Random());
         private void UpdateCurrentPresence()
         {
@@ -663,7 +654,9 @@ namespace Zlo
 
         /// <summary>
         /// occurs after receiving the current api version
+        /// this event is now obsolete, use instead <see cref="CurrentApiVersion"/>
         /// </summary>
+        [Obsolete("there will be no longer online checking for zlo.dll, you will need to ship zlo.dll yourself with the application, you shouldn't use this event and instead use the property '" + nameof(CurrentApiVersion) + "' to know the current version", true)]
         public event API_APIVersionReceivedEventHandler APIVersionReceived;
 
         /// <summary>
@@ -676,36 +669,38 @@ namespace Zlo
         #region API Methods
         public bool Connect()
         {
-            Task.Run(() =>
-            {
-                try
-                {
-                    //check for the version here                                        
-                    string check = @"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21916&authkey=AG6BDDR2epUlUNo";
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        //check for the version here                                        
+            //        string check = @"https://onedrive.live.com/download?cid=0AF30EAB900CEF1B&resid=AF30EAB900CEF1B%21916&authkey=AG6BDDR2epUlUNo";
 
-                    using (WebClient wc = new WebClient())
-                    {
-                        serverJson = JObject.Parse(wc.DownloadString(check));
-                        if (!Version.TryParse(serverJson["version"].ToObject<string>(), out Version newver))
-                        {
-                            newver = _localVer;
-                        }
-                        var isne = newver > _localVer;
-                        if (isne)
-                        {
-                            APIVersionReceived?.Invoke(_localVer, newver, true, serverJson["file"].ToObject<string>());
-                        }
-                        else
-                        {
-                            APIVersionReceived?.Invoke(_localVer, newver, false, string.Empty);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ErrorOccured?.Invoke(ex, "Error when Checking updates");
-                }
-            });
+            //        using (WebClient wc = new WebClient())
+            //        {
+            //            serverJson = JObject.Parse(wc.DownloadString(check));
+            //            if (!Version.TryParse(serverJson["version"].ToObject<string>(), out Version newver))
+            //            {
+            //                newver = CurrentApiVersion;
+            //            }
+            //            var isne = newver > CurrentApiVersion;
+            //            if (isne)
+            //            {
+            //                APIVersionReceived?.Invoke(CurrentApiVersion, newver, true, serverJson["file"].ToObject<string>());
+            //            }
+            //            else
+            //            {
+            //                APIVersionReceived?.Invoke(CurrentApiVersion, newver, false, string.Empty);
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        ErrorOccured?.Invoke(ex, "Error when Checking updates");
+            //    }
+            //});
+
+            APIVersionReceived?.Invoke(CurrentApiVersion, CurrentApiVersion, false, null);
             try
             {
                 IsOn = true;
