@@ -43,6 +43,7 @@
     <DefineConstants>TRACE;DEBUG;RELEASE;NETCOREAPP;NETCOREAPP2_0</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,6 +53,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>50C07CE8B63DF08303E7E808BB4E8A743507F4F5</ManifestCertificateThumbprint>
@@ -117,9 +119,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Zlo, Version=15.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zlo.15.2.0\lib\net462\Zlo.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -416,9 +415,7 @@
     <Resource Include="Media\bf4\ranks\r99.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="FodyWeavers.xml">
-      <SubType>Designer</SubType>
-    </Resource>
+    <Resource Include="FodyWeavers.xml" />
     <Content Include="Media\bf4\City Background.mp4">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -428,6 +425,12 @@
     <Resource Include="Media\bf4\Kits\kits_recon.png" />
     <Resource Include="Media\bf4\Kits\kits_support.png" />
     <Resource Include="Media\bf4\whitestar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZloCore\ZloCore.csproj">
+      <Project>{55d3eca7-3b5f-4b98-b771-53430cedea3d}</Project>
+      <Name>ZloCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

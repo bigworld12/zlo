@@ -136,7 +136,7 @@ namespace ZloGUILauncher.Views
             }
             else
             {
-                App.Client.JoinOnlineGame(OnlinePlayModes.BFH_Multi_Player, server.ID);
+                App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Multi_Player, server.ID);
             }
         }
         string requestmsg = "Please Enter the server password : \nNote : If you are sure the server doesn't have a password, press done and leave the password box empty";
@@ -156,7 +156,7 @@ namespace ZloGUILauncher.Views
             }
             else
             {
-                App.Client.JoinOnlineGame(OnlinePlayModes.BFH_Spectator, server.ID);
+                App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Spectator, server.ID);
             }
         }
         private void JoinCommanderButton_Click(object sender, RoutedEventArgs e)
@@ -175,7 +175,7 @@ namespace ZloGUILauncher.Views
             }
             else
             {
-                App.Client.JoinOnlineGame(OnlinePlayModes.BFH_Commander, server.ID);
+                App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Commander, server.ID);
             }
         }
 

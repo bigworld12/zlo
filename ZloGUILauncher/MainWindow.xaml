@@ -33,7 +33,6 @@
             <StackPanel Margin="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
                 <TextBlock Text="ZClient State : " VerticalAlignment="Center"/>
                 <TextBlock x:Name="IsConnectedTextBlock" Text="DisConnected" Foreground="Red" VerticalAlignment="Center"/>
-                <Button x:Name="reconnectButton" IsEnabled="False" Content="Re-Connect" Click="ReconnectButton_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5 0 0 0"/>
             </StackPanel>
             <StackPanel Margin="3" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" Text="Player : "/>

@@ -134,7 +134,7 @@ namespace ZloGUILauncher.Views
             }
             else
             {
-                App.Client.JoinOnlineGame(OnlinePlayModes.BF3_Multi_Player , server.ID);
+                App.Client.JoinOnlineServer(OnlinePlayModes.BF3_Multi_Player , server.ID);
             }
         }
 

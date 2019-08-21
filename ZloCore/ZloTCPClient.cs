@@ -6,163 +6,124 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
+using Zlo.Extras;
 using static Zlo.Extentions.Helpers;
 namespace Zlo
 {
-    internal class ZloTCPClient
+    internal class ZloTCPClient : IDisposable
     {
         public delegate void ZloPacketReceivedEventHandler(byte pid, byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
+        public event API_ConnectionStateChanged IsConnectedChanged;
 
-        public bool IsConnected => Client.Connected;
+        private bool m_IsConnected;
+        private readonly object _lock = new object();
+        public bool IsConnected
+        {
+            get { lock (_lock) { return m_IsConnected; }; }
+            private set
+            {
+                lock (_lock)
+                {
+                    if (m_IsConnected == value)
+                        return;
+                    m_IsConnected = value;
+                    IsConnectedChanged?.Invoke(value);
+                }
+            }
+        }
+
+        private double ReconnectIntervals => Parent.ReconnectInterval.TotalMilliseconds;
 
         private TcpClient Client { get; set; }
-
-        private API_ZloClient Parent { get; set; }
+        public API_ZloClient Parent { get; }
 
         public ZloTCPClient(API_ZloClient c)
         {
             Parent = c;
-            Client = new TcpClient();
             ListenerThread = new Thread(ReadLoop)
             {
                 IsBackground = true
             };
-        }
-
-        public void Connect()
-        {
-            IsOn = true;
-            if (Client == null)
-            {
-                Client = new TcpClient();
-            }
-            if (ListenerThread == null)
-            {
-                ListenerThread = new Thread(ReadLoop)
-                {
-                    IsBackground = true
-                };
-            }
-            Client.Connect("127.0.0.1", 48486);
             ListenerThread.Start();
         }
-        public bool ReConnect()
+
+        public bool Connect()
         {
+            if (IsConnected)
+                return true;
             try
             {
-                if (IsOn)
+                if (Client != null)
                 {
-                    Disconnect();
+                    Client.Close();
                 }
-                Client = new TcpClient();
-                ListenerThread = new Thread(ReadLoop)
-                {
-                    IsBackground = true
-                };
-                Connect();
-                return true;
             }
-            catch
+            catch { }
+
+            try
             {
-                IsOn = false;
-                return false;
+                Client = new TcpClient("127.0.0.1", 48486);
+                IsConnected = Client.Connected;
+                return IsConnected;
             }
-        }
-        public void Disconnect()
-        {
-            IsOn = false;
-            if (Client != null)
+            catch (Exception ex)
             {
-                Client.Close();
+                IsConnected = false;
+                return IsConnected;
             }
-            if (ListenerThread != null)
+            finally
             {
-                ListenerThread.Abort();
+                StartReconnectTimer();
             }
         }
 
-        public bool IsOn = false;
-
-        Thread ListenerThread;
-
+       
+        Thread ListenerThread { get; }
         private NetworkStream ns;
-
         List<byte> CurrentBuffer = new List<byte>();
         int pid = -1;
         uint packetlen;
         bool iswaitingforlen = true;
-        int counter = 0;
         private void ReadLoop()
         {
             while (true)
             {
-                if (!IsOn)
+                if (!IsConnected || Client == null || !Client.Connected)
                 {
-                    return;
-                }
-                //try to connect
-                try
-                {
-                    if (!Client.Connected)
-                    {
-                        ReConnect();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (counter >= 5)
-                    {
-                        counter = 0;
-                        Parent.RaiseError(ex, "Error occured when connecting to tcp server");
-                        IsOn = false;
-                        return;
-                    }
-                    else
-                    {
-                        counter++;
-                    }
+                    StartReconnectTimer();
                     Thread.Sleep(500);
+                    continue;
                 }
-
-                if (Client.Connected)
+                using (ns = Client.GetStream())
                 {
-                    using (ns = Client.GetStream())
+                    byte[] _buffer = new byte[1024];
+                    while (Client.Connected)
                     {
-                        byte[] _buffer = new byte[1024];
-                        while (Client.Connected)
+                        //read the available data
+                        int numberOfBytesRead;
+                        try
                         {
-                            //try to read, gives true when there are bytes to read
-                            //should move the parsing loop outside
-                            if (ns.CanRead)
+                            while ((numberOfBytesRead = ns.Read(_buffer, 0, _buffer.Length)) > 0)
                             {
-                                //read the available data
-                                int numberOfBytesRead;
-                                try
-                                {
-                                    while ((numberOfBytesRead = ns.Read(_buffer, 0, _buffer.Length)) > 0)
-                                    {
-
-                                        //only deal with the data if numberOfBytesRead was greater than 0
-                                        var read_buffer = GetRange(_buffer, 0, numberOfBytesRead);
-                                        CurrentBuffer.AddRange(read_buffer);
-                                        ParsingStep_PID();
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Parent.RaiseError(ex, "Failed to read the data from the network stream");
-                                }
+                                //only deal with the data if numberOfBytesRead was greater than 0
+                                var read_buffer = GetRange(_buffer, 0, numberOfBytesRead);
+                                CurrentBuffer.AddRange(read_buffer);
+                                ParsingStep_PID();
                             }
-                            else
-                            {
-
-                            }
-                            //wait 200 ms until it is able to read
-                            Thread.Sleep(200);
                         }
+                        catch (Exception ex)
+                        {
+                            IsConnected = false;
+                            StartReconnectTimer();
+                            break;
+                        }
+                        //wait 200 ms until it is able to read
+                        Thread.Sleep(200);
                     }
                 }
+
                 //wait 200 ms until next connect
                 Thread.Sleep(200);
             }
@@ -247,28 +208,113 @@ namespace Zlo
         private void SendPacketToAPI(byte spid, byte[] buffer)
         {
             ZloPacketReceived?.Invoke(spid, buffer);
-
         }
         public bool WritePacket(byte[] info)
         {
             try
             {
-                if (Client.Connected)
+                if (IsConnected && Client != null && Client.Connected)
                 {
                     Client.Client.Send(info);
                     return true;
                 }
                 else
                 {
-                    return false;
+                    IsConnected = false;
+                    return IsConnected;
                 }
             }
             catch (Exception ex)
             {
-                Parent.RaiseError(ex, "Error occured when writing to network stream");
-                return false;
+                IsConnected = false;
+                return IsConnected;
             }
-
+            finally
+            {
+                if (!IsConnected)
+                {
+                    //start reconnect timer here
+                    StartReconnectTimer();
+                }
+            }
         }
+
+        private System.Timers.Timer reconnectTimer = new System.Timers.Timer();
+        internal void StartReconnectTimer()
+        {
+            lock (reconnectTimer)
+            {
+                if (reconnectTimer.Enabled || IsConnected)
+                    return;
+                reconnectTimer.AutoReset = true;
+                reconnectTimer.Interval = ReconnectIntervals;
+                reconnectTimer.Elapsed += Elapsed;
+                void Elapsed(object sender, ElapsedEventArgs e)
+                {
+                    if (IsConnected)
+                    {
+                        reconnectTimer.Elapsed -= Elapsed;
+                        reconnectTimer.Enabled = false;
+                    }
+                    else
+                    {
+                        //connect
+                        if (Connect())
+                            Elapsed(null, null);
+                        else
+                            reconnectTimer.Interval = ReconnectIntervals;
+                    }
+                }
+            }
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    IsConnected = false;
+                    try
+                    {
+                        if (Client != null)
+                        {
+                            Client.Close();
+                        }
+                    }
+                    catch
+                    { }
+                    finally
+                    {
+                        Client = null;
+                    }
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~ZloTCPClient() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

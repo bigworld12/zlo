@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Zlo.Extras;
 
 namespace ZloGUILauncher.Views
 {
@@ -108,6 +110,25 @@ namespace ZloGUILauncher.Views
         private void GetterButton_Click(object sender, RoutedEventArgs e)
         {
             App.Client.GetClanDogTags();
+        }
+
+        private void HostCOOPButton_Click(object sender, RoutedEventArgs e)
+        {
+            var level = (BF3_COOP_LEVELS)COOPLevelSelector.SelectedIndex;
+            var diff = (COOP_Difficulty)COOPDiffSelector.SelectedIndex;
+            var host = App.Client.HostBf3Coop(level, diff);
+            if (host != null)
+                Process.Start(host);
+        }
+        private void JoinCOOPButton_Click(object sender, RoutedEventArgs e)
+        {
+            var friendId = FriendId.Text;
+            if (uint.TryParse(friendId, out var fid))
+            {
+                var join = App.Client.JoinBf3Coop(fid);
+                if (join != null)
+                    Process.Start(join);
+            }
         }
     }
 }

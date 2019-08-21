@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Zlo;
 using Zlo.Extras;
 
 namespace ZloGUILauncher.Views
@@ -90,7 +91,7 @@ namespace ZloGUILauncher.Views
                         }
                     }
                     ViewerListBox.Items.Refresh();
-                    App.Client.SaveSettings();
+                    Settings.Save();
                 }
             }
         }
@@ -106,7 +107,7 @@ namespace ZloGUILauncher.Views
                     dz.Remove(item);
                 }
                 ViewerListBox.Items.Refresh();
-                App.Client.SaveSettings();
+                Settings.Save();
             }
         }
     }

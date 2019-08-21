@@ -14,19 +14,10 @@ namespace Zlo.Extras
     /// </summary>
     public class API_MapBase
     {
-
-
-        private API_MapRotationBase _parent;
         /// <summary>
         /// the owner map rotation
         /// </summary>
-        public API_MapRotationBase ParentMapRotation
-        {
-            get
-            {
-                return _parent;
-            }
-        }
+        public API_MapRotationBase ParentMapRotation { get; }
 
 
 
@@ -102,12 +93,12 @@ namespace Zlo.Extras
         }
 
         internal API_MapBase() { }
-        internal API_MapBase(API_MapRotationBase p) { _parent = p; }
+        internal API_MapBase(API_MapRotationBase p) { ParentMapRotation = p; }
         internal API_MapBase(string mname, string gmname, API_MapRotationBase p)
         {
             MapName = mname;
             GameModeName = gmname;
-            _parent = p;
+            ParentMapRotation = p;
         }
     }
     /// <summary>
@@ -116,24 +107,14 @@ namespace Zlo.Extras
     public class API_MapRotationBase : Dictionary<int, API_MapBase>
     {
         internal API_MapRotationBase() { }
-
-        private int m_CurrentMapIndex;
         /// <summary>
         /// the current map index <see cref="LogicalCurrentMap"/> to get the map related to that index
         /// </summary>
-        public int CurrentMapIndex
-        {
-            get { return m_CurrentMapIndex; }
-        }
-
-        private int m_NextMapIndex;
+        public int CurrentMapIndex { get; private set; }
         /// <summary>
         /// the next map index <see cref="LogicalNextMap"/> to get the map related to that index
         /// </summary>
-        public int NextMapIndex
-        {
-            get { return m_NextMapIndex; }
-        }
+        public int NextMapIndex { get; private set; }
 
 
         public API_MapBase LogicalCurrentMap
@@ -223,8 +204,8 @@ namespace Zlo.Extras
 
             //parse maps info
             var infos = mapsinfo.Split(';').Select(x => x.Split(',')).ToArray();
-            m_CurrentMapIndex = int.Parse(infos[1][0]);
-            m_NextMapIndex = int.Parse(infos[1][1]);
+            CurrentMapIndex = int.Parse(infos[1][0]);
+            NextMapIndex = int.Parse(infos[1][1]);
 
             //if (LogicalCurrentMap != null)
             //{
