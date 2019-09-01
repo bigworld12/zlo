@@ -61,7 +61,7 @@ namespace Zlo
 
                 ListenerClient = new ZloTCPClient(this);
 
-                InitializePipes();              
+                InitializePipes();
                 ListenerClient.ZloPacketReceived += ListenerClient_DataReceived;
                 UserInfoReceived += ZloClient_UserInfoReceived;
                 ClanDogTagsReceived += API_ZloClient_ClanDogTagsReceived;
@@ -72,7 +72,7 @@ namespace Zlo
             }
         }
 
-    
+
 
         private void API_ZloClient_ClanDogTagsReceived(ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
@@ -153,7 +153,7 @@ namespace Zlo
         ZloTCPClient ListenerClient { get; }
 
         System.Timers.Timer PingTimer;
-      
+
 
         /// <summary>
         /// represents the latest player id that was received
@@ -298,7 +298,7 @@ string full path to dll
             AddToQueue(req);
         }
 
-       
+
         /// <summary>
         /// this method is automatically called by the api each sucessfull connect,
         /// so you don't need to call it , just listen to the UserInfoReceived event or use the 
@@ -355,21 +355,21 @@ string full path to dll
             //1 == unsubscribe
             //first clear local cache
 
-            if (ActiveServerListener == ZloGame.BF_3)
-                for (int i = BF3Servers.Count - 1; i >= 0; i--)
-                {
-                    BF3Servers.RemoveAt(i);
-                }
-            if (ActiveServerListener == ZloGame.BF_4)
-                for (int i = BF4Servers.Count - 1; i >= 0; i--)
-                {
-                    BF4Servers.RemoveAt(i);
-                }
-            if (ActiveServerListener == ZloGame.BF_HardLine)
-                for (int i = BFHServers.Count - 1; i >= 0; i--)
-                {
-                    BFHServers.RemoveAt(i);
-                }
+            //if (ActiveServerListener == ZloGame.BF_3)
+            //    for (int i = BF3Servers.Count - 1; i >= 0; i--)
+            //    {
+            //        BF3Servers.RemoveAt(i);
+            //    }
+            //if (ActiveServerListener == ZloGame.BF_4)
+            //    for (int i = BF4Servers.Count - 1; i >= 0; i--)
+            //    {
+            //        BF4Servers.RemoveAt(i);
+            //    }
+            //if (ActiveServerListener == ZloGame.BF_HardLine)
+            //    for (int i = BFHServers.Count - 1; i >= 0; i--)
+            //    {
+            //        BFHServers.RemoveAt(i);
+            //    }
             SendRequest(ZloRequest.Server_List, ActiveServerListener, 1);
             ActiveServerListener = ZloGame.None;
         }
@@ -867,7 +867,7 @@ string full path to dll
         {
             SendRequest(ZloRequest.Ping);
         }
-        
+
 
         private bool ProcessPipeMessage(ZloGame game, byte[] buffer, int readelements)
         {
@@ -899,23 +899,30 @@ string full path to dll
             //else just wait for the rest to finish
             req.ReceivedResponce -= Req_ReceivedResponce;
             req.ReceivedResponce += Req_ReceivedResponce;
-            RequestQueue.Add(req);
-
-            if (RequestQueue.Count == 1)
+            lock (RequestQueue)
             {
-                TriggerQueue();
+                RequestQueue.Add(req);
+                if (RequestQueue.Count == 1)
+                {
+                    TriggerQueue();
+                }
             }
+
+
         }
         private void Req_ReceivedResponce(Request Sender)
         {
             //current request just got finished and received
             //remove it from the queue list to trigger the next one
             Sender.ReceivedResponce -= Req_ReceivedResponce;
-            if (RequestQueue.Contains(Sender))
+            lock (RequestQueue)
             {
-                RequestQueue.Remove(Sender);
-            }
-            TriggerQueue();
+                if (RequestQueue.Contains(Sender))
+                {
+                    RequestQueue.Remove(Sender);
+                }
+                TriggerQueue();
+            }            
         }
         internal void TriggerQueue()
         {
@@ -1020,7 +1027,7 @@ string full path to dll
         private Request CurrentRequest;
 
 
-    
+
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
