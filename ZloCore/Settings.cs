@@ -17,6 +17,25 @@ namespace Zlo
     [Serializable]
     public sealed class Settings
     {
+        static Settings()
+        {
+            try
+            {
+                //Init code
+                if (TryLoad())
+                {
+                    Log.WriteLog($"Loaded Settings from : ({Path.GetFullPath(Settings.SavePath)})");
+                }
+                else
+                {
+                    Log.WriteLog($"Couldn't load settings from : ({Path.GetFullPath(Settings.SavePath)}), using default settings instead");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
         public static Settings CurrentSettings { get; } = new Settings();
         /// <summary>
         /// Default is Zlo_settings.json
@@ -24,7 +43,7 @@ namespace Zlo
         public static readonly string SavePath = "Zlo_settings.json";
         internal static void DoSaveSettings()
         {
-            if (Save())
+            if (TrySave())
             {
                 Log.WriteLog($"Saved settings to ({Path.GetFullPath(SavePath)})");
             }
@@ -39,10 +58,14 @@ namespace Zlo
         public bool IsEnableDiscordRPC { get; set; } = true;
 
         /// <summary>
-        /// Contains paths to injected dlls, please call <see cref="Save"/> after editing the lists
+        /// Contains paths to injected dlls, please call <see cref="TrySave"/> after editing the lists
         /// </summary>
         [JsonProperty("dlls")]
         public DllInjectionSettings InjectedDlls { get; } = new DllInjectionSettings();
+
+        [JsonProperty("rpc")]
+        public RPC_Settings RPC { get; } = new RPC_Settings();
+        
 
         private readonly static JsonSerializerSettings settings = new JsonSerializerSettings
         {
@@ -120,41 +143,30 @@ namespace Zlo
             });
         }
 
-        public static bool Save()
-        {
-            return SaveAsync().Result;
-        }
-        /// <summary>
-        /// tries to save the file 5 times, then returns false if it fails
-        /// </summary>
-        /// <returns></returns>
-        public static async Task<bool> SaveAsync()
+        public static bool TrySave()
         {
             var toSave = JsonConvert.SerializeObject(CurrentSettings, settings);
-            int saveTries = 0;
-        startSave:
             try
             {
-                using (var sw = new StreamWriter(SavePath))
-                {
-                    await sw.WriteAsync(toSave);
-                }
+                File.WriteAllText(SavePath, toSave);
                 return true;
             }
             catch
             {
-                saveTries++;
-                if (saveTries <= 5)
-                {
-                    await Task.Delay(200);
-                    goto startSave;
-                }
-                else
-                {
-                    saveTries = 0;
-                    return false;
-                }
+                return false;
             }
+        }
+
+        /// <summary>
+        /// tries to save the file 5 times, then returns false if it fails
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<bool> TrySaveAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return TrySave();
+            });
         }
     }
     [Serializable]

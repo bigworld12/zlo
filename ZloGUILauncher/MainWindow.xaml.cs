@@ -35,7 +35,11 @@ namespace ZloGUILauncher
             App.Client.GameStateReceived += Client_GameStateReceived;
             App.Client.ConnectionStateChanged += Client_ConnectionStateChanged;
             Title = $"Bigworld12 launcher (Version {App.Client.CurrentApiVersion.ToString()})";
-            App.Client.Connect();
+
+            //Settings.CurrentSettings.SetCustomSetting("testFavs",new uint[] { 5 , 6 , 7 });
+            //var saved = Settings.TrySave();
+           
+            App.Client.Connect();            
             DiscordRPCCheck.IsChecked = App.Client.IsEnableDiscordRPC;
         }
         

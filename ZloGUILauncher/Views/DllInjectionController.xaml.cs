@@ -91,7 +91,7 @@ namespace ZloGUILauncher.Views
                         }
                     }
                     ViewerListBox.Items.Refresh();
-                    Settings.Save();
+                    Settings.TrySave();
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace ZloGUILauncher.Views
                     dz.Remove(item);
                 }
                 ViewerListBox.Items.Refresh();
-                Settings.Save();
+                Settings.TrySave();
             }
         }
     }

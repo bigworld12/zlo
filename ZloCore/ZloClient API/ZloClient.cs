@@ -320,22 +320,14 @@ string full path to dll
         public ZloGame ActiveServerListener
         {
             get => Settings.CurrentSettings.ActiveServerListener;
-            private set => Settings.CurrentSettings.ActiveServerListener = value;
+            private set { if (Settings.CurrentSettings.ActiveServerListener == value) return; Settings.CurrentSettings.ActiveServerListener = value; Settings.TrySave(); }
         }
 
         public void SubToServerList(ZloGame game)
         {
-            #region SubChecker
-            if (ActiveServerListener == game)
-            {
-                return;
-            }
-            else if (ActiveServerListener != ZloGame.None)
-            {
-                //unsub first
-                UnSubServerList();
-            }
-            #endregion
+            
+            //unsub first
+            UnSubServerList();
             ActiveServerListener = game;
             //0 == subscribe            
             SendRequest(ZloRequest.Server_List, ActiveServerListener, 0);
@@ -922,7 +914,7 @@ string full path to dll
                     RequestQueue.Remove(Sender);
                 }
                 TriggerQueue();
-            }            
+            }
         }
         internal void TriggerQueue()
         {

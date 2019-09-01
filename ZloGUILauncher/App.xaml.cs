@@ -18,7 +18,7 @@ namespace ZloGUILauncher
     {
         public App()
         {
-            var val = Settings.CurrentSettings.GetOrCreateCustomSetting("bf3Favs", new uint[] { 5, 6, 7 });
+            //var val = Settings.CurrentSettings.GetOrCreateCustomSetting("bf3Favs", new uint[] { 5, 6, 7 });
 
 
         }

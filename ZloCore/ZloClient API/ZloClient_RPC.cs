@@ -1,6 +1,7 @@
 ﻿using DiscordRPC;
 using DiscordRPC.Logging;
 using DiscordRPC.Message;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,14 @@ using Zlo.Extras;
 
 namespace Zlo
 {
+    public class RPC_Settings
+    {
+        [JsonIgnore]
+        public string Token { get; set; }
+        public bool UseDefaultRPC { get; set; } = true;
+        [JsonIgnore]
+        public GetPresenceFunc GetPresence { get; set; }
+    }
     public partial class API_ZloClient
     {
         private ZloGame? LatestGameState_Game;
@@ -44,6 +53,13 @@ namespace Zlo
                 }
             }
         }
+        RPC_Settings m_RPC_Settings;
+        public RPC_Settings RPC_Settings
+        {
+            get => m_RPC_Settings ?? (m_RPC_Settings = new RPC_Settings());
+        }
+
+
         private RichPresence DiscordRPCState = new RichPresence()
         {
             Details = "Zlo Launcher"
@@ -51,16 +67,21 @@ namespace Zlo
         private DiscordRpcClient RpcClient;
         private void StartDiscordRPC()
         {
-            var token = "464170401472446465";
+
+            var token = RPC_Settings.UseDefaultRPC ? "464170401472446465" : RPC_Settings.Token;
             RpcClient = new DiscordRpcClient(token)
             {
-                Logger = new ConsoleLogger() { Coloured = true, Level = LogLevel.Info }
+                //Logger = new ConsoleLogger() { Coloured = true, Level = LogLevel.Info }
             };
             RpcClient.OnReady += DiscordRPC_Ready;
             RpcClient.OnClose += RpcClient_OnClose;
             RpcClient.OnError += RpcClient_OnError;
             RpcClient.OnPresenceUpdate += RpcClient_OnPresenceUpdate;
 
+            if (!RPC_Settings.UseDefaultRPC)
+            {
+                DiscordRPCState = GetCurrentPresence();
+            }
             RpcClient.SetPresence(DiscordRPCState);
             RpcClient.Initialize();
 
@@ -116,7 +137,6 @@ namespace Zlo
             {
                 return;
             }
-            Console.WriteLine("Set New RPC state");
             DiscordRPCState = newRPC;
             if (!RpcClient.Disposed)
                 RpcClient.SetPresence(newRPC);
@@ -151,7 +171,9 @@ namespace Zlo
                         break;
                 }
             }
-
+            ServerBase s = null;
+            bool IsInGame = false;
+            string map = null, gameMode = null;
             if (!LatestGameState_Game.HasValue)
             {
                 Choice = ActiveServerListener;
@@ -165,7 +187,7 @@ namespace Zlo
             {
                 Choice = LatestGameState_Game.Value;
                 GetGameName();
-                ParsePipeMessage(Choice, LatestGameState_Type, LatestGameState_Message, out var s, out var IsInGame);
+                ParsePipeMessage(Choice, LatestGameState_Type, LatestGameState_Message, out s, out IsInGame);
                 if (IsInGame)
                 {
                     if (!latestDate.HasValue)
@@ -187,12 +209,12 @@ namespace Zlo
                         }
                         current = s.Players.Count;
                         maxsize = s.MaxPlayers;
-                        string map = s.MapRotation.CurrentActualMap.MapName;
-                        string gamemode = s.MapRotation.CurrentActualMap.GameModeName;
+                        map = s.MapRotation.CurrentActualMap.MapName;
+                        gameMode = s.MapRotation.CurrentActualMap.GameModeName;
 
                         detail = s.ServerName;
                         state = map;
-                        imgDesc = $"[{shortGameName}] {s.ServerName} [{gamemode} - {map}]";
+                        imgDesc = $"[{shortGameName}] {s.ServerName} [{gameMode} - {map}]";
                     }
                     else
                     {
@@ -210,7 +232,8 @@ namespace Zlo
                     imgDesc = gameName;
                 }
             }
-            var res = new RichPresence()
+
+            var res = RPC_Settings.UseDefaultRPC ? new RichPresence()
             {
                 Assets = new Assets()
                 {
@@ -221,12 +244,19 @@ namespace Zlo
                 },
                 Details = detail,
                 State = state
-            };
-            if (maxsize != 0)
-                res.Party = new Party() { ID = PartyID, Size = current, Max = maxsize };
-            if (latestDate.HasValue)
-                res.Timestamps = new Timestamps() { Start = latestDate };
+            } :
+            RPC_Settings.GetPresence?.Invoke(s, IsInGame, Choice, map, gameMode);
+
+            if (RPC_Settings.UseDefaultRPC)
+            {
+                if (maxsize != 0)
+                    res.Party = new Party() { ID = PartyID, Size = current, Max = maxsize };
+                if (latestDate.HasValue)
+                    res.Timestamps = new Timestamps() { Start = latestDate };
+            }
             return res;
         }
+
     }
+    public delegate RichPresence GetPresenceFunc(ServerBase currentServer, bool isInGame, ZloGame game, string map, string gameMode);
 }
