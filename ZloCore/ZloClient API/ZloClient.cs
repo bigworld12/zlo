@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using Zlo.Extras;
+using Zlo.PacketInfo;
 using static Zlo.Extentions.Helpers;
 
 namespace Zlo
@@ -215,11 +216,18 @@ namespace Zlo
         /// </summary>
         public event API_GameStateReceivedEventHandler GameStateReceived;
 
+        /// <summary>
+        /// Occurs when the game list is received
+        /// <para>see : <see cref="RunnableGameList"/></para>
+        /// </summary>
+        public event API_RunnableGameListReceivedEventHandler RunnableGameListReceived;
+        public event API_GameRunResultReceivedEventHandler GameRunResultReceived;
+
 
         /// <summary>
         /// occurs when the api connects/disconnects from ZClient
         /// </summary>
-        public event API_ConnectionStateChanged ConnectionStateChanged
+        public event API_ConnectionStateChangedEventHandler ConnectionStateChanged
         {
             add
             {
@@ -259,7 +267,21 @@ namespace Zlo
                 return false;
             }
         }
+        public void RefreshRunnableGamesList()
+        {
+            //Send request            
+            SendRequest(ZloPacketId.RunnableGameList);
+        }
+        public void SendRunGameRequest(RunnableGame game, string cmd = "")
+        {
+            var final = new List<byte>();
+            final.AddRange(QBitConv(game.ZName));
+            final.AddRange(QBitConv(cmd));
 
+            var req = ProcessRequest(ZloPacketId.RunGame, ZloGame.None, final.ToArray());
+            req.RequestInfo = new RunGame() { game = game };
+            SendRequest(req);
+        }
         public List<string> GetDllsList(ZloGame game)
         {
             if (game == ZloGame.None)
@@ -280,15 +302,14 @@ string full path to dll
             {
                 WaitBeforePeriod = TimeSpan.Zero,
                 IsRespondable = false,
-
-                pid = 7
+                pid = (int)ZloPacketId.InjectDll
             };
             var toadd = Encoding.UTF8.GetBytes(dllPath);
 
             var size = BitConverter.GetBytes(toadd.Length + 2);
             Array.Reverse(size);
 
-            var ar = new List<byte> { 7 };
+            var ar = new List<byte> { req.pid };
             ar.AddRange(size);
             ar.Add((byte)game);
             ar.AddRange(toadd);
@@ -306,15 +327,15 @@ string full path to dll
         /// </summary>
         public void GetUserInfo()
         {
-            SendRequest(ZloRequest.User_Info);
+            SendRequest(ZloPacketId.User_Info);
         }
         public void GetStats(ZloGame game)
         {
-            SendRequest(ZloRequest.Stats, game);
+            SendRequest(ZloPacketId.Stats, game);
         }
         public void GetItems(ZloGame game)
         {
-            SendRequest(ZloRequest.Items, game);
+            SendRequest(ZloPacketId.Items, game);
         }
 
         public ZloGame ActiveServerListener
@@ -325,12 +346,12 @@ string full path to dll
 
         public void SubToServerList(ZloGame game)
         {
-            
+
             //unsub first
             UnSubServerList();
             ActiveServerListener = game;
             //0 == subscribe            
-            SendRequest(ZloRequest.Server_List, ActiveServerListener, 0);
+            SendRequest(ZloPacketId.Server_List, ActiveServerListener, 0);
             GetClanDogTags();
         }
 
@@ -362,7 +383,7 @@ string full path to dll
             //    {
             //        BFHServers.RemoveAt(i);
             //    }
-            SendRequest(ZloRequest.Server_List, ActiveServerListener, 1);
+            SendRequest(ZloPacketId.Server_List, ActiveServerListener, 1);
             ActiveServerListener = ZloGame.None;
         }
         public void GetClanDogTags()
@@ -372,25 +393,9 @@ string full path to dll
             {
                 return;
             }
-            SendRequest(ZloRequest.Player_Info, ActiveServerListener, 0);
+            SendRequest(ZloPacketId.Player_Info, ActiveServerListener, 0);
         }
 
-        private byte[] QBitConv(ushort s)
-        {
-            return BitConverter.GetBytes(s).Reverse().ToArray();
-        }
-        private byte[] QBitConv(string s)
-        {
-            if (string.IsNullOrWhiteSpace(s))
-            {
-                return new byte[1] { 0 };
-            }
-            List<byte> asci = Encoding.ASCII.GetBytes(s).ToList();
-            //null termimated
-            asci.Add(0);
-            Console.WriteLine($"Converted string ({s}) to byte[] {string.Join(";", asci)}");
-            return asci.ToArray();
-        }
 
         /// <summary>
         /// <para>
@@ -427,7 +432,7 @@ string full path to dll
             final.AddRange(dt_basic.HasValue ? QBitConv(dt_basic.Value) : QBitConv(ClanDogTagsPerGame[ActiveServerListener].Item2));
             final.AddRange(clantag == ";" ? QBitConv(ClanDogTagsPerGame[ActiveServerListener].Item3) : QBitConv(clantag));
 
-            SendRequest(ZloRequest.Player_Info, ActiveServerListener, final.ToArray());
+            SendRequest(ZloPacketId.Player_Info, ActiveServerListener, final.ToArray());
         }
         #endregion
 
@@ -516,90 +521,102 @@ string full path to dll
             }
         }
 
-        #endregion
+        public RunnableGameList RunnableGameList { get; } = new RunnableGameList();
 
-        private void SendRequest(ZloRequest request, ZloGame game = ZloGame.None, params byte[] additionalPayloads)
+        #endregion
+        private Request ProcessRequest(ZloPacketId request, ZloGame game = ZloGame.None, params byte[] additionalPayloads)
+        {
+            if (request == ZloPacketId.Items && game == ZloGame.BF_3) return null;
+            List<byte> final = new List<byte> { (byte)request };
+            var req = new Request();
+            var Payloads = new List<byte>();
+            req.WaitBeforePeriod = TimeSpan.Zero;
+            if (request == ZloPacketId.Server_List)
+            {
+                req.IsRespondable = false;
+            }
+            else
+            {
+                req.IsRespondable = true;
+            }
+            switch (request)
+            {
+                case ZloPacketId.Server_List:
+                    {
+                        if (game == ZloGame.None)
+                        {
+                            return null;
+                        }
+                        //additionalPayloads is subscribe or not
+
+                        Payloads.AddRange(additionalPayloads);
+                        Payloads.Add((byte)game);
+                    }
+                    break;
+                case ZloPacketId.RunGame:
+                    {
+                        Payloads.AddRange(additionalPayloads); // string runname, string cmd
+                        break;
+                    }
+                case ZloPacketId.Player_Info:
+                    {
+                        //0 for get,1 for set
+                        if (game == ZloGame.None)
+                        {
+                            return null;
+                        }
+                        //action
+                        Payloads.Add(additionalPayloads[0]);
+                        //game
+                        Payloads.Add((byte)game);
+                        if (additionalPayloads[0] == 0)
+                        {
+                            req.IsRespondable = true;
+                        }
+                        else
+                        {
+                            req.IsRespondable = false;
+                            //params
+                            Payloads.AddRange(additionalPayloads.Skip(1));
+                        }
+                        //additionalPayloads is action [get { 0 }, set {1,ushort,ushort,string}]                          
+
+
+                        break;
+                    }
+                case ZloPacketId.Stats:
+                case ZloPacketId.Items:
+                    if (game == ZloGame.None)
+                    {
+                        return null;
+                    }
+                    Payloads.Add((byte)game);
+                    break;
+                case ZloPacketId.Ping:
+                case ZloPacketId.RunnableGameList:
+                case ZloPacketId.User_Info:
+                default:
+                    //empty payloads
+                    break;
+            }
+            final.AddRange(BitConverter.GetBytes(Payloads.Count).Reverse());
+            final.AddRange(Payloads);
+            req.data = final.ToArray();
+            req.pid = (byte)request;
+            return req;
+        }
+        private void SendRequest(Request req)
         {
             Task.Run(() =>
             {
-                if (request == ZloRequest.Items && game == ZloGame.BF_3) return;
-                List<byte> final = new List<byte> { (byte)request };
-                var req = new Request();
-                var Payloads = new List<byte>();
-                req.WaitBeforePeriod = TimeSpan.Zero;
-                if (request == ZloRequest.Server_List)
-                {
-                    req.IsRespondable = false;
-                }
-                else
-                {
-                    req.IsRespondable = true;
-                }
-                switch (request)
-                {
-                    case ZloRequest.Ping:
-                        {
-                            break;
-                        }
-                    case ZloRequest.Server_List:
-                        {
-                            if (game == ZloGame.None)
-                            {
-                                return;
-                            }
-                            //additionalPayloads is subscribe or not
-
-                            Payloads.AddRange(additionalPayloads);
-                            Payloads.Add((byte)game);
-                        }
-                        break;
-                    case ZloRequest.Player_Info:
-                        {
-                            //0 for get,1 for set
-                            if (game == ZloGame.None)
-                            {
-                                return;
-                            }
-                            //action
-                            Payloads.Add(additionalPayloads[0]);
-                            //game
-                            Payloads.Add((byte)game);
-                            if (additionalPayloads[0] == 0)
-                            {
-                                req.IsRespondable = true;
-                            }
-                            else
-                            {
-                                req.IsRespondable = false;
-                                //params
-                                Payloads.AddRange(additionalPayloads.Skip(1));
-                            }
-                            //additionalPayloads is action [get { 0 }, set {1,ushort,ushort,string}]                          
-
-
-                            break;
-                        }
-                    case ZloRequest.Stats:
-                    case ZloRequest.Items:
-                        if (game == ZloGame.None)
-                        {
-                            return;
-                        }
-                        Payloads.Add((byte)game);
-                        break;
-                    case ZloRequest.User_Info:
-                    default:
-                        //empty payloads
-                        break;
-                }
-                final.AddRange(BitConverter.GetBytes(Payloads.Count).Reverse());
-                final.AddRange(Payloads);
-                if (request == ZloRequest.Player_Info)
-                {
-                    Console.WriteLine(string.Join(",", final));
-                }
-                req.data = final.ToArray();
-                req.pid = (byte)request;
+                AddToQueue(req);
+            });
+        }
+        private void SendRequest(ZloPacketId request, ZloGame game = ZloGame.None, params byte[] additionalPayloads)
+        {
+            Task.Run(() =>
+            {
+                var req = ProcessRequest(request, game, additionalPayloads);
                 AddToQueue(req);
             });
         }
@@ -608,9 +625,10 @@ string full path to dll
 
         private void ListenerClient_DataReceived(byte pid, byte[] bytes)
         {
-            if (CurrentRequest != null && CurrentRequest.pid == pid && CurrentRequest.IsDone == false && CurrentRequest.IsRespondable)
+            var req = CurrentRequest;
+            if (req != null && req.pid == pid && req.IsDone == false && req.IsRespondable)
             {
-                CurrentRequest.GiveResponce(bytes);
+                req.GiveResponce(bytes);
             }
             //WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
 
@@ -802,6 +820,33 @@ string full path to dll
                                     });
                                     break;
                                 }
+                            case 8:
+                                {
+                                    byte isx64 = br.ReadByte();
+
+                                    RunnableGameList.IsOSx64 = isx64 == 1;
+                                    uint count = br.ReadZUInt32();
+                                    RunnableGameList.Clear();
+                                    for (int i = 0; i < count; i++)
+                                    {
+                                        string runName = br.ReadZString();
+                                        string ZName = br.ReadZString();
+                                        string name = br.ReadZString();
+
+                                        RunnableGameList.Add(new RunnableGame(name, runName, ZName));
+                                    }
+                                    RunnableGameListReceived?.Invoke();
+                                    break;
+                                }
+                            case 9:
+                                {
+                                    var runState = (GameRunResult)br.ReadByte();
+                                    if (req.RequestInfo is RunGame reqInfo)
+                                    {
+                                        GameRunResultReceived?.Invoke(reqInfo.game, runState);
+                                    }
+                                    break;
+                                }
                             default:
                                 break;
 
@@ -857,7 +902,7 @@ string full path to dll
         }
         private void PingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            SendRequest(ZloRequest.Ping);
+            SendRequest(ZloPacketId.Ping);
         }
 
 
@@ -1065,6 +1110,8 @@ string full path to dll
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
+
+
         #endregion
         #endregion
     }

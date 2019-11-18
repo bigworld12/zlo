@@ -10,9 +10,9 @@
     <RootNamespace>Zlo</RootNamespace>
     <PackageProjectUrl>https://zloemu.net/</PackageProjectUrl>
     <PackageTags>z zl zlo zloa zloap zloapi</PackageTags>
-    <AssemblyVersion>16.7.0.0</AssemblyVersion>
-    <FileVersion>16.7.0.0</FileVersion>
-    <Version>16.7.0</Version>
+    <AssemblyVersion>16.8.0.0</AssemblyVersion>
+    <FileVersion>16.8.0.0</FileVersion>
+    <Version>16.8.0</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

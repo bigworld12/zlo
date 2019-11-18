@@ -15,7 +15,7 @@ namespace Zlo
     {
         public delegate void ZloPacketReceivedEventHandler(byte pid, byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
-        public event API_ConnectionStateChanged IsConnectedChanged;
+        public event API_ConnectionStateChangedEventHandler IsConnectedChanged;
 
         private bool m_IsConnected;
         private readonly object _lock = new object();

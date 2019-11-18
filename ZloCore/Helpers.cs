@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Zlo.Extentions
+namespace Zlo
 {
     internal static partial class Helpers
     {
@@ -115,8 +115,31 @@ namespace Zlo.Extentions
         public static float ReadZFloat(this BinaryReader br)
         {
             return BitConverter.ToSingle(br.ReadReversedBytes(4) , 0);
-        }        
+        }
+
+
+        internal static byte[] QBitConv(this uint s)
+        {
+            return BitConverter.GetBytes(s).Reverse().ToArray();
+        }
+        internal static IEnumerable<byte> QBitConv(this ushort s)
+        {
+            return BitConverter.GetBytes(s).Reverse();
+        }
+        internal static byte[] QBitConv(this string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return new byte[1] { 0 };
+            }
+            List<byte> ascii = Encoding.ASCII.GetBytes(s).ToList();
+            //null termimated
+            ascii.Add(0);
+            //Console.WriteLine($"Converted string ({s}) to byte[] {string.Join(";", ascii)}");
+            return ascii.ToArray();
+        }
+
     }
 
-    
+
 }

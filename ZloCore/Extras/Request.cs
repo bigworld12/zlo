@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Zlo.PacketInfo;
 
 namespace Zlo.Extras
 {
@@ -12,20 +13,20 @@ namespace Zlo.Extras
 
         public byte[] data = null;
         public bool IsDone = false;
+        public BaseRequestPacket RequestInfo;
 
         public bool IsRespondable = false;
         public byte[] Responce = null;
-
-        public delegate void ReceivedResponceEventHandler(Request Sender);
-        public event ReceivedResponceEventHandler ReceivedResponce;
+        public event ReceivedResponseEventHandler ReceivedResponce;
 
         public TimeSpan WaitBeforePeriod = TimeSpan.Zero;
-
         public void GiveResponce(byte[] resp)
         {
             Responce = resp;
             IsDone = true;
             ReceivedResponce?.Invoke(this);
         }
+
+       
     }
 }

@@ -7,14 +7,39 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
-    public enum ZloRequest : byte
+    public enum GameRunResult : byte
+    {
+        Successful = 0,
+        NotFound = 1,
+        Error = 2
+    }
+    internal enum PlayerInfoMode
+    {
+        Get = 0,
+        Set = 1
+    }
+    internal enum StatsOrItems
+    {
+        Stats,
+        Items
+    }
+    internal enum ServerListMode
+    {
+        Subscribe = 0,
+        Unsubscribe = 1
+    }
+    public enum ZloPacketId : byte
     {
         Ping = 0,
         User_Info = 1,
-        Player_Info = 2,    
+        Player_Info = 2,
         Server_List = 3,
         Stats = 4,
-        Items = 5
+        Items = 5,
+        Packs = 6,
+        InjectDll = 7,
+        RunnableGameList = 8,
+        RunGame = 9
     }
     public enum ZloGame : byte
     {
