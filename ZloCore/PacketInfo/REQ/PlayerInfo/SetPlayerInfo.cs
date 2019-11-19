@@ -7,7 +7,7 @@ namespace Zlo.PacketInfo.REQ
 {
     internal class SetPlayerInfo : BasePlayerInfoRequest
     {       
-        public SetPlayerInfo(ZloGame game, ushort dogTagBasic, ushort dogTagAdv, string clanTag) : base(game)
+        public SetPlayerInfo(ZloBFGame game, ushort dogTagBasic, ushort dogTagAdv, string clanTag) : base(game)
         {
             DogTagBasic = dogTagBasic;
             DogTagAdvanced = dogTagAdv;

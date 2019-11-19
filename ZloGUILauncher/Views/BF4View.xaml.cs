@@ -29,9 +29,9 @@ namespace ZloGUILauncher.Views
             App.Client.ClanDogTagsReceived += Client_ClanDogTagsReceived;
         }
 
-        private void Client_ClanDogTagsReceived(ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
+        private void Client_ClanDogTagsReceived(ZloBFGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
-            if (game == ZloGame.BF_4)
+            if (game == ZloBFGame.BF_4)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -43,18 +43,18 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
+        private void Client_ItemsReceived(ZloBFGame Game, Dictionary<string, API_Item> List)
         {
-            if (Game == ZloGame.BF_4)
+            if (Game == ZloBFGame.BF_4)
             {
                 Dispatcher.Invoke(() => { ItemsDG.ItemsSource = List; });
 
             }
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game, Dictionary<string, float> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloBFGame Game, Dictionary<string, float> List)
         {
-            if (Game == ZloGame.BF_4)
+            if (Game == ZloBFGame.BF_4)
             {
                 Dispatcher.Invoke(() => { StatsListWin.StatsDG.ItemsSource = List; });
             }
@@ -90,12 +90,12 @@ namespace ZloGUILauncher.Views
 
         private void StatsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.GetStats(Zlo.Extras.ZloGame.BF_4);
+            App.Client.GetStats(Zlo.Extras.ZloBFGame.BF_4);
         }
 
         private void ItemsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.GetItems(Zlo.Extras.ZloGame.BF_4);
+            App.Client.GetItems(Zlo.Extras.ZloBFGame.BF_4);
         }
 
         private void JoinSinglePlayerButton_Click(object sender, RoutedEventArgs e)

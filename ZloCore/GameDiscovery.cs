@@ -8,7 +8,7 @@ namespace Zlo
 {
     public static class GameDiscovery
     {
-        internal static Dictionary<ZloGame, string> GamePaths => Settings.CurrentSettings.GamePaths;
+        internal static Dictionary<ZloBFGame, string> GamePaths => Settings.CurrentSettings.GamePaths;
         internal static HashSet<string> DiscoveryPaths => Settings.CurrentSettings.DiscoveryPaths;
         /// <summary>
         /// register a folder where games might exist
@@ -24,13 +24,13 @@ namespace Zlo
             DiscoveryPaths.Remove(path);
             Settings.DoSaveSettings();
         }
-        private static Dictionary<ZloGame, string> GameFileNames { get; } = new Dictionary<ZloGame, string>()
+        private static Dictionary<ZloBFGame, string> GameFileNames { get; } = new Dictionary<ZloBFGame, string>()
         {
-            { ZloGame.BF_3,"bf3.exe" },
-            { ZloGame.BF_4,"bf3.exe" },
-            { ZloGame.BF_HardLine,"bf3.exe" },
+            { ZloBFGame.BF_3,"bf3.exe" },
+            { ZloBFGame.BF_4,"bf3.exe" },
+            { ZloBFGame.BF_HardLine,"bf3.exe" },
         };
-        public static bool TryDiscoverGame(ZloGame game, out string path)
+        public static bool TryDiscoverGame(ZloBFGame game, out string path)
         {
             //first check cache
             if (GamePaths.TryGetValue(game, out var p))

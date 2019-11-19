@@ -7,23 +7,44 @@ using System.Threading.Tasks;
 
 namespace Zlo.Extras
 {
+    public enum ServerChangeTypes
+    {
+        Add,
+        Update,
+        Remove
+    }
+    internal enum ServerListEvent : byte
+    {
+        /// <summary>
+        /// Add or edit server
+        /// </summary>
+        ServerChange=0,
+        /// <summary>
+        /// player list changed
+        /// </summary>
+        PlayerListChange=1,
+        /// <summary>
+        /// Server removed
+        /// </summary>
+        ServerRemove = 2
+    }
     public enum GameRunResult : byte
     {
         Successful = 0,
         NotFound = 1,
         Error = 2
     }
-    internal enum PlayerInfoMode
+    internal enum PlayerInfoMode : byte
     {
         Get = 0,
         Set = 1
     }
-    internal enum StatsOrItems
+    internal enum StatsOrItems : byte
     {
         Stats,
         Items
     }
-    internal enum ServerListMode
+    internal enum ServerListMode : byte
     {
         Subscribe = 0,
         Unsubscribe = 1
@@ -41,7 +62,7 @@ namespace Zlo.Extras
         RunnableGameList = 8,
         RunGame = 9
     }
-    public enum ZloGame : byte
+    public enum ZloBFGame : byte
     {
         BF_3 = 0,
         BF_4 = 1,

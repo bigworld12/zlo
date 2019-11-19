@@ -7,7 +7,7 @@ namespace Zlo.PacketInfo.REQ
 {
     internal class UnsubServerList : BaseServerList
     {
-        public UnsubServerList(ZloGame game) : base(game)
+        public UnsubServerList(ZloBFGame game) : base(game)
         {
         }
 

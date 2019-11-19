@@ -7,7 +7,7 @@ namespace Zlo.PacketInfo.REQ
 {
     internal class GetPlayerInfo : BasePlayerInfoRequest
     {
-        public GetPlayerInfo(ZloGame game) : base(game)
+        public GetPlayerInfo(ZloBFGame game) : base(game)
         {
         }
         public override PlayerInfoMode PlayerInfoMode => PlayerInfoMode.Get;

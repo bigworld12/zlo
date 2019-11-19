@@ -28,11 +28,11 @@ namespace Zlo.Extras
         public string ItemDescription { get; internal set; }
 
         /// <summary>
-        /// wether you unlocked it or not
+        /// whether you unlocked it or not
         /// </summary>
         public bool ItemExists { get; internal set; }
 
-        internal API_Item(string flag , bool exists,ZloGame game)
+        internal API_Item(string flag , bool exists,ZloBFGame game)
         {
             FlagName = flag;
             ItemExists = exists;

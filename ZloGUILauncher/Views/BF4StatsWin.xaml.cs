@@ -30,9 +30,9 @@ namespace ZloGUILauncher.Views
             App.Client.StatsReceived += Client_StatsReceived;
         }
 
-        private void Client_StatsReceived(ZloGame Game , Dictionary<string , float> List)
+        private void Client_StatsReceived(ZloBFGame Game , Dictionary<string , float> List)
         {
-            if (Game == ZloGame.BF_4)
+            if (Game == ZloBFGame.BF_4)
             {
                 BF4Stats.UpdateObject();
             }
@@ -65,7 +65,7 @@ namespace ZloGUILauncher.Views
 
         private void RefreshBorder_MouseDown(object sender , MouseButtonEventArgs e)
         {
-            App.Client.GetStats(ZloGame.BF_4);
+            App.Client.GetStats(ZloBFGame.BF_4);
         }
 
         private void CloseBorder_MouseDown(object sender , MouseButtonEventArgs e)

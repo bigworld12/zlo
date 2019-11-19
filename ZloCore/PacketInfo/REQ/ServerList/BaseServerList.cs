@@ -7,12 +7,12 @@ namespace Zlo.PacketInfo.REQ
 {
     internal abstract class BaseServerList : BaseRequestPacket
     {
-        protected BaseServerList(ZloGame game)
+        protected BaseServerList(ZloBFGame game)
         {
             Game = game;
         }
         public override ZloPacketId PacketId => ZloPacketId.Server_List;
-        public ZloGame Game { get; }
+        public ZloBFGame Game { get; }
         public abstract ServerListMode Mode { get; }
         public override bool IsRespondable => false;
 

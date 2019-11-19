@@ -11,12 +11,12 @@ namespace Zlo
 {
     public partial class API_ZloClient
     {
-        private void API_ZloClient_ItemsReceived(ZloGame Game , Dictionary<string,API_Item> List)
+        private void API_ZloClient_ItemsReceived(ZloBFGame Game , Dictionary<string,API_Item> List)
         {
 
             switch (Game)
             {
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     {
                         //var finaldef = BF4_stats_def;
                         //foreach (var item in List)
@@ -29,10 +29,10 @@ namespace Zlo
                         File.WriteAllLines($".\\{CurrentPlayerName}_BF4_items_raw.txt" , List.Select(x => $"{x.Key} = {x.Value.ItemExists.ToString()}"));
                         break;
                     }
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     File.WriteAllLines($".\\{CurrentPlayerName}_BFH_items_raw.txt", List.Select(x => $"{x.Key} = {x.Value.ItemExists.ToString()}"));
                     break;
-                case ZloGame.None:
+                case ZloBFGame.None:
                     break;
                 default:
                     break;
@@ -40,11 +40,11 @@ namespace Zlo
             RaiseItemsReceived(Game , List);
         }
 
-        private void API_ZloClient_StatsReceived(ZloGame Game , Dictionary<string , float> List)
+        private void API_ZloClient_StatsReceived(ZloBFGame Game , Dictionary<string , float> List)
         {
             switch (Game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     {
                         m_BF3_Stats = JObject.Parse(BF3_stats_def);
                         AssignStats(List , BF3_Stats);
@@ -52,7 +52,7 @@ namespace Zlo
                         File.WriteAllText($".\\{CurrentPlayerName}_BF3_stats.json" , BF3_Stats.ToString());
                         break;
                     }
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     {
                         m_BF4_Stats = JObject.Parse(BF4_stats_def);
                         AssignStats(List , BF4_Stats);
@@ -62,11 +62,11 @@ namespace Zlo
                         File.WriteAllLines($".\\{CurrentPlayerName}_BF4_stats_raw.txt" , List.Select(x => x.ToString()));
                         break;
                     }
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     BFH_Stats_Handler();
                     File.WriteAllLines($".\\{CurrentPlayerName}_BFH_stats_raw.txt", List.Select(x => x.ToString()));
                     break;
-                case ZloGame.None:
+                case ZloBFGame.None:
                     break;
                 default:
                     break;

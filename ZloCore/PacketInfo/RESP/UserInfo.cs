@@ -11,7 +11,7 @@
 
         public override ZloPacketId PacketId => ZloPacketId.User_Info;
 
-        public override void DeserializeCustom(BinaryReader from)
+        public override void DeserializeCustom(byte[] packetData, BinaryReader from)
         {
             Id = from.ReadZUInt32();
             Name = from.ReadZString();

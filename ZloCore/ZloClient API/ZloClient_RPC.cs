@@ -22,7 +22,7 @@ namespace Zlo
     }
     public partial class API_ZloClient
     {
-        private ZloGame? LatestGameState_Game;
+        private ZloBFGame? LatestGameState_Game;
         private string LatestGameState_Type;
         private string LatestGameState_Message;
         private DateTime? latestDate;
@@ -146,27 +146,27 @@ namespace Zlo
         {
             string gamelogo = "", gameName = "", shortGameName = "", state = "", detail = "", imgDesc = "";
             int current = 0, maxsize = 0;
-            ZloGame Choice;
+            ZloBFGame Choice;
             void GetGameName()
             {
                 switch (Choice)
                 {
-                    case ZloGame.BF_3:
+                    case ZloBFGame.BF_3:
                         gamelogo = "bf3";
                         gameName = "BATTLEFIELD 3";
                         shortGameName = "BF3";
                         break;
-                    case ZloGame.BF_4:
+                    case ZloBFGame.BF_4:
                         gamelogo = "bf4";
                         gameName = "BATTLEFIELD 4";
                         shortGameName = "BF4";
                         break;
-                    case ZloGame.BF_HardLine:
+                    case ZloBFGame.BF_HardLine:
                         gamelogo = "bfh";
                         gameName = "BATTLEFIELD HARDLINE";
                         shortGameName = "BFH";
                         break;
-                    case ZloGame.None:
+                    case ZloBFGame.None:
                     default:
                         break;
                 }
@@ -258,5 +258,5 @@ namespace Zlo
         }
 
     }
-    public delegate RichPresence GetPresenceFunc(ServerBase currentServer, bool isInGame, ZloGame game, string map, string gameMode);
+    public delegate RichPresence GetPresenceFunc(ServerBase currentServer, bool isInGame, ZloBFGame game, string map, string gameMode);
 }

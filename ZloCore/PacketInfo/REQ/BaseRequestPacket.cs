@@ -5,19 +5,24 @@
     using System.Linq;
     using Zlo.Extras;
 
-    internal delegate void ReceivedResponseEventHandler(BaseRequestPacket request, BasePacket response);
+    internal delegate void ReceivedResponseEventHandler(BaseRequestPacket request, BaseResponsePacket response);
     /// <summary>
     /// A sendable packet
     /// </summary>
     internal abstract class BaseRequestPacket : BasePacket
     {
+
         public static readonly Dictionary<ZloPacketId, Func<BaseRequestPacket, BaseResponsePacket>> PacketIdToResponseObjectMapper = new Dictionary<ZloPacketId, Func<BaseRequestPacket, BaseResponsePacket>>()
         {
-            { ZloPacketId.Ping, (_) => new RESP.Empty(ZloPacketId.Ping) },
-            { ZloPacketId.User_Info, (_) => new RESP.UserInfo() },
-            //{ ZloPacketId.Server_List, (_)=> }
+            { ZloPacketId.Ping, (req) => new RESP.Empty(ZloPacketId.Ping) { From = req } },
+            { ZloPacketId.User_Info, (req) => new RESP.UserInfo() { From = req } },
+            { ZloPacketId.Player_Info, (req) =>  new RESP.PlayerInfo() { From = req } },
+            { ZloPacketId.Stats,(req) =>  new RESP.Stats() { From = req } },
+            { ZloPacketId.Items,(req) =>  new RESP.Items() { From = req } },
+            { ZloPacketId.RunnableGameList,(req) =>  new RESP.RunnableGameList() { From = req } },
+            { ZloPacketId.RunGame,(req) =>  new RESP.RunGame() { From = req } },
         };
-        public List<byte> Serialize()
+        public byte[] Serialize()
         {
             var l = new List<byte>
             {
@@ -29,13 +34,14 @@
             {
                 l[1 + i] = c[i];
             }
-            return l;
+            return l.ToArray();
 
         }
         public virtual void SerializeCustom(List<byte> bytes) { }
 
 
         public bool IsSent { get; set; }
+        public TimeSpan WaitBeforePeriod { get; set; } = TimeSpan.Zero;
 
 
         public BaseResponsePacket Response { get; private set; }
@@ -44,12 +50,13 @@
 
 
         public event ReceivedResponseEventHandler ReceivedResponse;
-        public void RaiseResponse(ZloPacketId respId, byte[] respData)
-        {
-            if (!IsRespondable)
-                return;
-            Response = PacketIdToResponseObjectMapper[respId](this);
-            Response.Deserialize(respData);
+        public void RaiseResponse(byte[] respData)
+        {            
+            if (IsRespondable && respData != null)
+            {
+                Response = PacketIdToResponseObjectMapper[PacketId](this);
+                Response.Deserialize(respData);
+            }            
             IsReceived = true;
             ReceivedResponse?.Invoke(this, Response);
         }

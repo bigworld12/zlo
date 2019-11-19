@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Zlo
 {
-    internal static partial class Helpers
+    internal static class Helpers
     {
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll" , CharSet = CharSet.Auto , SetLastError = true)]
@@ -46,7 +46,7 @@ namespace Zlo
         internal static bool NamedPipeExists(string pipeName)
         {
             try
-            {
+            {                
                 string normalizedPath = Path.GetFullPath($@"\\.\pipe\{pipeName}");
                 bool exists = WaitNamedPipe(normalizedPath , 0);
                 if (!exists)
@@ -138,7 +138,17 @@ namespace Zlo
             //Console.WriteLine($"Converted string ({s}) to byte[] {string.Join(";", ascii)}");
             return ascii.ToArray();
         }
+        internal static byte[] ReadAllBytes(this BinaryReader reader)
+        {
+            const int bufferSize = 4096;
+            using var ms = new MemoryStream();
+            byte[] buffer = new byte[bufferSize];
+            int count;
+            while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
+                ms.Write(buffer, 0, count);
+            return ms.ToArray();
 
+        }
     }
 
 

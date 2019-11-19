@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Zlo.Extras;
-using static Zlo.Extentions.Helpers;
 namespace Zlo
 {
     internal class ZloTCPClient : IDisposable

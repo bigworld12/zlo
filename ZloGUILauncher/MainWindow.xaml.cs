@@ -49,28 +49,28 @@ namespace ZloGUILauncher
             IsConnectedTextBlock.Foreground = Brushes.Green;
             switch (App.Client.ActiveServerListener)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     MainTabControl.SelectedIndex = 2;
                     //App.Client.SubToServerList(ZloGame.BF_3);
-                    App.Client.GetStats(ZloGame.BF_3);
+                    App.Client.GetStats(ZloBFGame.BF_3);
                     break;
 
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     MainTabControl.SelectedIndex = 1;
 
                     //App.Client.SubToServerList(ZloGame.BF_HardLine);
-                    App.Client.GetStats(ZloGame.BF_HardLine);
-                    App.Client.GetItems(ZloGame.BF_HardLine);
+                    App.Client.GetStats(ZloBFGame.BF_HardLine);
+                    App.Client.GetItems(ZloBFGame.BF_HardLine);
                     break;
 
                 default:
-                case ZloGame.None:
-                case ZloGame.BF_4:
+                case ZloBFGame.None:
+                case ZloBFGame.BF_4:
                     MainTabControl.SelectedIndex = 0;
 
                     //App.Client.SubToServerList(ZloGame.BF_4);
-                    App.Client.GetStats(ZloGame.BF_4);
-                    App.Client.GetItems(ZloGame.BF_4);
+                    App.Client.GetStats(ZloBFGame.BF_4);
+                    App.Client.GetItems(ZloBFGame.BF_4);
                     break;
             }
 
@@ -165,7 +165,7 @@ namespace ZloGUILauncher
         //            }
         //        }
 
-        private void Client_GameStateReceived(Zlo.Extras.ZloGame game, string type, string message)
+        private void Client_GameStateReceived(Zlo.Extras.ZloBFGame game, string type, string message)
         {
             Dispatcher.Invoke(() =>
             {
@@ -213,13 +213,13 @@ namespace ZloGUILauncher
                 switch (tc.SelectedIndex)
                 {
                     case 0:
-                        App.Client.SubToServerList(ZloGame.BF_4);
+                        App.Client.SubToServerList(ZloBFGame.BF_4);
                         break;
                     case 1:
-                        App.Client.SubToServerList(ZloGame.BF_HardLine);
+                        App.Client.SubToServerList(ZloBFGame.BF_HardLine);
                         break;
                     case 2:
-                        App.Client.SubToServerList(ZloGame.BF_3);
+                        App.Client.SubToServerList(ZloBFGame.BF_3);
                         break;
                     default:
                         break;

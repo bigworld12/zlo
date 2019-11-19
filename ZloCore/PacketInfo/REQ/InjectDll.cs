@@ -7,7 +7,7 @@ namespace Zlo.PacketInfo.REQ
 {
     internal class InjectDll : BaseRequestPacket
     {
-        public InjectDll(ZloGame game, string path)
+        public InjectDll(ZloBFGame game, string path)
         {
             Game = game;
             DllPath = path;
@@ -16,7 +16,7 @@ namespace Zlo.PacketInfo.REQ
         public override ZloPacketId PacketId => ZloPacketId.InjectDll;
         public override bool IsRespondable => false;
 
-        public ZloGame Game { get; }
+        public ZloBFGame Game { get; }
         public string DllPath { get; }
 
         public override void SerializeCustom(List<byte> bytes)

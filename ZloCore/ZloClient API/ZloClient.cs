@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -23,8 +24,9 @@ using System.Timers;
 using System.Windows;
 using Zlo.Extras;
 using Zlo.PacketInfo;
-using static Zlo.Extentions.Helpers;
-
+using Zlo.PacketInfo.RESP;
+using REQ = Zlo.PacketInfo.REQ;
+using RESP = Zlo.PacketInfo.RESP;
 namespace Zlo
 {
     /// <summary>
@@ -32,13 +34,13 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient : IAPI_ZloClient
     {
-        public Version CurrentApiVersion { get; } = new Version(16, 0, 0, 0);
+        public Version CurrentApiVersion { get; } = new Version(16, 8, 0, 0);
         private static bool IsInitlaized = false;
 
 
 
         /// <summary>
-        /// when zclient disconnects it will automatiically reconnect, use this variable to define how long it should take to reconnect each time
+        /// when zclient disconnects it will automatically reconnect, use this variable to define how long it should take to reconnect each time
         /// default is 1 second
         /// <para>To disable auto reconnect, assign this to <see cref="TimeSpan.MaxValue"/></para>
         /// </summary>
@@ -46,7 +48,7 @@ namespace Zlo
 
         /// <summary>
         /// MUST BE INITIALIZED ONLY ONCE
-        /// The API intializer (doesn't connect to zclient until you call <see cref="Connect"/>
+        /// The API initializer (doesn't connect to zclient until you call <see cref="Connect"/>
         /// </summary>
         public API_ZloClient()
         {
@@ -75,7 +77,7 @@ namespace Zlo
 
 
 
-        private void API_ZloClient_ClanDogTagsReceived(ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
+        private void API_ZloClient_ClanDogTagsReceived(ZloBFGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
             ClanDogTagsPerGame[game] = new Tuple<ushort, ushort, string>(dogtag1, dogtag2, clanTag);
         }
@@ -85,7 +87,7 @@ namespace Zlo
             Log.WriteLog($"[{CustomMessage}] : \n{Error.ToString()}");
         }
 
-        private void ZloClient_GameStateReceived(ZloGame game, string type, string message)
+        private void ZloClient_GameStateReceived(ZloBFGame game, string type, string message)
         {
             //[BF_4] [StateChanged] State_Game State_ClaimReservation 14
             //= in-game
@@ -103,13 +105,13 @@ namespace Zlo
 
             string trimmed = message.Trim(' ');
             var dllz = GetDllsList(game);
-            if (dllz == null || game == ZloGame.None)
+            if (dllz == null || game == ZloBFGame.None)
             {
                 return;
             }
             switch (game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     if (trimmed == $"State_Game State_NA {CurrentPlayerID}")
                     {
                         foreach (var item in dllz)
@@ -119,8 +121,8 @@ namespace Zlo
                     }
                     break;
 
-                case ZloGame.BF_4:
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_4:
+                case ZloBFGame.BF_HardLine:
                     if (trimmed == $"State_Game State_ClaimReservation {CurrentPlayerID}")
                     {
                         foreach (var item in dllz)
@@ -165,8 +167,8 @@ namespace Zlo
         /// represents the latest player name that was received
         /// </summary>
         public string CurrentPlayerName { get; private set; }
-        private Dictionary<ZloGame, Tuple<ushort, ushort, string>> ClanDogTagsPerGame = new Dictionary<ZloGame, Tuple<ushort, ushort, string>>();
-        private List<Request> RequestQueue = new List<Request>();
+        private readonly Dictionary<ZloBFGame, Tuple<ushort, ushort, string>> ClanDogTagsPerGame = new Dictionary<ZloBFGame, Tuple<ushort, ushort, string>>();
+        private ConcurrentQueue<BaseRequestPacket> RequestQueue { get; } = new ConcurrentQueue<BaseRequestPacket>();
         #endregion
 
         #region API events
@@ -175,7 +177,7 @@ namespace Zlo
         /// </summary>    
         public event API_StatsReceivedEventHandler StatsReceived;
 
-        internal void RaiseStatsReceived(ZloGame game, Dictionary<string, float> stats)
+        internal void RaiseStatsReceived(ZloBFGame game, Dictionary<string, float> stats)
         {
             StatsReceived?.Invoke(game, stats);
         }
@@ -185,7 +187,7 @@ namespace Zlo
         /// </summary>    
         public event API_ItemsReceivedEventHandler ItemsReceived;
 
-        internal void RaiseItemsReceived(ZloGame game, Dictionary<string, API_Item> stats)
+        internal void RaiseItemsReceived(ZloBFGame game, Dictionary<string, API_Item> stats)
         {
             ItemsReceived?.Invoke(game, stats);
         }
@@ -195,7 +197,7 @@ namespace Zlo
         public event API_UserInfoReceivedEventHandler UserInfoReceived;
 
 
-        internal void RaiseClanDogTagsReceived(ZloGame game, ushort dg1, ushort dg2, string ct)
+        internal void RaiseClanDogTagsReceived(ZloBFGame game, ushort dg1, ushort dg2, string ct)
         {
             ClanDogTagsReceived?.Invoke(game, dg1, dg2, ct);
         }
@@ -250,8 +252,8 @@ namespace Zlo
         {
             if (!ConnectPipes())
                 return false;
-            PingTimer = new System.Timers.Timer(20 * 1000);
-            PingTimer.Elapsed -= PingTimer_Elapsed;
+            if (PingTimer != null) PingTimer.Elapsed -= PingTimer_Elapsed;
+            PingTimer = new System.Timers.Timer(10 * 1000);
             PingTimer.Elapsed += PingTimer_Elapsed;
             PingTimer.Start();
             if (ListenerClient.Connect())
@@ -278,19 +280,19 @@ namespace Zlo
             final.AddRange(QBitConv(game.ZName));
             final.AddRange(QBitConv(cmd));
 
-            var req = ProcessRequest(ZloPacketId.RunGame, ZloGame.None, final.ToArray());
+            var req = ProcessRequest(ZloPacketId.RunGame, ZloBFGame.None, final.ToArray());
             req.RequestInfo = new RunGame() { game = game };
             SendRequest(req);
         }
-        public List<string> GetDllsList(ZloGame game)
+        public List<string> GetDllsList(ZloBFGame game)
         {
-            if (game == ZloGame.None)
+            if (game == ZloBFGame.None)
             {
                 return null;
             }
             return Settings.CurrentSettings.InjectedDlls.GetDllsList(game);
         }
-        internal void RequestDLLInject(ZloGame game, string dllPath)
+        internal void RequestDLLInject(ZloBFGame game, string dllPath)
         {
             /*             
 pid 7
@@ -329,22 +331,22 @@ string full path to dll
         {
             SendRequest(ZloPacketId.User_Info);
         }
-        public void GetStats(ZloGame game)
+        public void GetStats(ZloBFGame game)
         {
             SendRequest(ZloPacketId.Stats, game);
         }
-        public void GetItems(ZloGame game)
+        public void GetItems(ZloBFGame game)
         {
             SendRequest(ZloPacketId.Items, game);
         }
 
-        public ZloGame ActiveServerListener
+        public ZloBFGame ActiveServerListener
         {
             get => Settings.CurrentSettings.ActiveServerListener;
             private set { if (Settings.CurrentSettings.ActiveServerListener == value) return; Settings.CurrentSettings.ActiveServerListener = value; Settings.TrySave(); }
         }
 
-        public void SubToServerList(ZloGame game)
+        public void SubToServerList(ZloBFGame game)
         {
 
             //unsub first
@@ -361,7 +363,7 @@ string full path to dll
 
         public void UnSubServerList()
         {
-            if (ActiveServerListener == ZloGame.None)
+            if (ActiveServerListener == ZloBFGame.None)
             {
                 return;
             }
@@ -384,12 +386,12 @@ string full path to dll
             //        BFHServers.RemoveAt(i);
             //    }
             SendRequest(ZloPacketId.Server_List, ActiveServerListener, 1);
-            ActiveServerListener = ZloGame.None;
+            ActiveServerListener = ZloBFGame.None;
         }
         public void GetClanDogTags()
         {
             //bf3 not supported
-            if (ActiveServerListener == ZloGame.None || ActiveServerListener == ZloGame.BF_3)
+            if (ActiveServerListener == ZloBFGame.None || ActiveServerListener == ZloBFGame.BF_3)
             {
                 return;
             }
@@ -411,7 +413,7 @@ string full path to dll
         /// <param name="clantag"></param>
         public void SetClanDogTags(ushort? dt_advanced = null, ushort? dt_basic = null, string clantag = ";")
         {
-            if (ActiveServerListener == ZloGame.None || ActiveServerListener == ZloGame.BF_3)
+            if (ActiveServerListener == ZloBFGame.None || ActiveServerListener == ZloBFGame.BF_3)
             {
                 return;
             }
@@ -524,111 +526,116 @@ string full path to dll
         public RunnableGameList RunnableGameList { get; } = new RunnableGameList();
 
         #endregion
-        private Request ProcessRequest(ZloPacketId request, ZloGame game = ZloGame.None, params byte[] additionalPayloads)
-        {
-            if (request == ZloPacketId.Items && game == ZloGame.BF_3) return null;
-            List<byte> final = new List<byte> { (byte)request };
-            var req = new Request();
-            var Payloads = new List<byte>();
-            req.WaitBeforePeriod = TimeSpan.Zero;
-            if (request == ZloPacketId.Server_List)
-            {
-                req.IsRespondable = false;
-            }
-            else
-            {
-                req.IsRespondable = true;
-            }
-            switch (request)
-            {
-                case ZloPacketId.Server_List:
-                    {
-                        if (game == ZloGame.None)
-                        {
-                            return null;
-                        }
-                        //additionalPayloads is subscribe or not
 
-                        Payloads.AddRange(additionalPayloads);
-                        Payloads.Add((byte)game);
-                    }
-                    break;
-                case ZloPacketId.RunGame:
-                    {
-                        Payloads.AddRange(additionalPayloads); // string runname, string cmd
-                        break;
-                    }
-                case ZloPacketId.Player_Info:
-                    {
-                        //0 for get,1 for set
-                        if (game == ZloGame.None)
-                        {
-                            return null;
-                        }
-                        //action
-                        Payloads.Add(additionalPayloads[0]);
-                        //game
-                        Payloads.Add((byte)game);
-                        if (additionalPayloads[0] == 0)
-                        {
-                            req.IsRespondable = true;
-                        }
-                        else
-                        {
-                            req.IsRespondable = false;
-                            //params
-                            Payloads.AddRange(additionalPayloads.Skip(1));
-                        }
-                        //additionalPayloads is action [get { 0 }, set {1,ushort,ushort,string}]                          
-
-
-                        break;
-                    }
-                case ZloPacketId.Stats:
-                case ZloPacketId.Items:
-                    if (game == ZloGame.None)
-                    {
-                        return null;
-                    }
-                    Payloads.Add((byte)game);
-                    break;
-                case ZloPacketId.Ping:
-                case ZloPacketId.RunnableGameList:
-                case ZloPacketId.User_Info:
-                default:
-                    //empty payloads
-                    break;
-            }
-            final.AddRange(BitConverter.GetBytes(Payloads.Count).Reverse());
-            final.AddRange(Payloads);
-            req.data = final.ToArray();
-            req.pid = (byte)request;
-            return req;
-        }
-        private void SendRequest(Request req)
+        private void SendRequest(BaseRequestPacket req)
         {
             Task.Run(() =>
             {
                 AddToQueue(req);
             });
         }
-        private void SendRequest(ZloPacketId request, ZloGame game = ZloGame.None, params byte[] additionalPayloads)
-        {
-            Task.Run(() =>
-            {
-                var req = ProcessRequest(request, game, additionalPayloads);
-                AddToQueue(req);
-            });
-        }
-
-
-
         private void ListenerClient_DataReceived(byte pid, byte[] bytes)
         {
             var req = CurrentRequest;
-            if (req != null && req.pid == pid && req.IsDone == false && req.IsRespondable)
+            var packet = (ZloPacketId)pid;
+            BaseResponsePacket responsePacket;
+            if (req != null && req.PacketId == packet && !req.IsReceived && req.IsRespondable)
             {
-                req.GiveResponce(bytes);
+                req.RaiseResponse(bytes);
+                responsePacket = req.Response;
+            }
+            else
+            {
+                //Get responses that aren't tied to a single request
+                switch (packet)
+                {
+                    case ZloPacketId.Server_List:
+                        responsePacket = new ServerList();
+                        responsePacket.Deserialize(bytes);
+                        break;
+                    default:
+                        Log.WriteLog($"Illogical flow, zclient sent a packet that wasn't requested, skipping it\nPid: {pid}\nData: {Hexlike(bytes)}");
+                        return;
+                }
+            }
+            switch (responsePacket)
+            {
+                case UserInfo userInfo:
+                    UserInfoReceived?.Invoke(userInfo.Id, userInfo.Name);
+                    break;
+                case PlayerInfo playerInfo:
+                    RaiseClanDogTagsReceived(playerInfo.Game, playerInfo.DogTagAdvanced, playerInfo.DogTagBasic, playerInfo.ClanTag);
+                    break;
+
+                case ServerList serverList:
+                    IBFServerList bfServerList;
+                    switch (serverList.Game)
+                    {
+                        case ZloBFGame.BF_3:
+                            bfServerList = BF3Servers;
+                            break;
+                        case ZloBFGame.BF_4:
+                            bfServerList = BF4Servers;
+                            break;
+                        case ZloBFGame.BF_HardLine:
+                            bfServerList = BFHServers;
+                            break;
+                        case ZloBFGame.None:
+                        default:
+                            bfServerList = null;
+                            break;
+                    }
+                    switch (serverList.Game)
+                    {
+                        case ZloBFGame.BF_3:
+                            switch (serverList.Event)
+                            {
+                                case ServerListEvent.ServerChange:
+                                    BF3Servers.UpdateServerInfo(serverList.ServerId, serverList.DataBuffer);
+                                    break;
+                                case ServerListEvent.PlayerListChange:
+                                    BF3Servers.UpdateServerPlayers(serverList.ServerId, serverList.DataBuffer);
+                                    break;
+                                case ServerListEvent.ServerRemove:
+                                    BF3Servers.Remove(serverList.ServerId);
+                                    break;
+                            }
+                            break;
+                        case ZloBFGame.BF_4:
+                            //players : 01, bf4 : 01,server id : 00 00 00 01 ,buffer : 00 
+                            switch (server_event_id)
+                            {
+                                case 0:
+                                    BF4Servers.UpdateServerInfo(server_id, actualbuffer);
+                                    break;
+                                case 1:
+                                    BF4Servers.UpdateServerPlayers(server_id, actualbuffer);
+                                    //WriteLog($"BF4 Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
+                                    break;
+                                case 2:
+                                    BF4Servers.Remove(server_id);
+                                    break;
+                            }
+                            break;
+                        case ZloBFGame.BF_HardLine:
+                            switch (server_event_id)
+                            {
+                                case 0:
+                                    BFHServers.UpdateServerInfo(server_id, actualbuffer);
+                                    break;
+                                case 1:
+                                    BFHServers.UpdateServerPlayers(server_id, actualbuffer);
+                                    //WriteLog($"BFH Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
+                                    break;
+                                case 2:
+                                    BFHServers.Remove(server_id);
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+                default:
+                    break;
             }
             //WriteLog($"Packet Received [pid = {pid},size = {CurrentRequest.data.Length}] : \n{hexlike(bytes)}");
 
@@ -651,45 +658,6 @@ string full path to dll
                          */
                         switch (pid)
                         {
-                            case 0:
-                                //receives just ping
-                                break;
-                            case 1:
-                                {
-                                    try
-                                    {
-                                        uint id = br.ReadZUInt32();
-                                        string name = br.ReadZString();
-
-                                        UserInfoReceived?.Invoke(id, name);
-
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ErrorOccured?.Invoke(ex, "Failed to Parse user info");
-                                    }
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    /*
-                                     * playerinfo - pid 2
-                                     * uint8 act
-                                     * uint8 game
-                                     * 
-                                     * act 0 - will return current dogtags and clantag
-                                     * act 1 - +uint16+uint16+string - set dogtags and clantag*/
-                                    ZloGame game = (ZloGame)br.ReadByte();
-
-                                    Console.WriteLine($"Received clan dogtags : {string.Join(",", bytes)}");
-
-                                    ushort dgadvanced = br.ReadZUInt16();
-                                    ushort dgbasic = br.ReadZUInt16();
-                                    string ct = br.ReadZString();
-
-                                    RaiseClanDogTagsReceived(game, dgadvanced, dgbasic, ct);
-                                    break;
-                                }
                             case 3:
                                 {
                                     try
@@ -701,7 +669,7 @@ string full path to dll
                                          */
                                         byte server_event_id = br.ReadByte();
 
-                                        ZloGame game = (ZloGame)br.ReadByte();
+                                        ZloBFGame game = (ZloBFGame)br.ReadByte();
                                         uint server_id = br.ReadZUInt32();
                                         if (server_id == 0)
                                         {
@@ -709,54 +677,7 @@ string full path to dll
                                         }
 
                                         var actualbuffer = bytes_list.Skip(6).ToArray();
-                                        switch (game)
-                                        {
-                                            case ZloGame.BF_3:
-                                                switch (server_event_id)
-                                                {
-                                                    case 0:
-                                                        BF3Servers.UpdateServerInfo(server_id, actualbuffer);
-                                                        break;
-                                                    case 1:
-                                                        BF3Servers.UpdateServerPlayers(server_id, actualbuffer);
-                                                        break;
-                                                    case 2:
-                                                        BF3Servers.Remove(server_id);
-                                                        break;
-                                                }
-                                                break;
-                                            case ZloGame.BF_4:
-                                                //players : 01, bf4 : 01,server id : 00 00 00 01 ,buffer : 00 
-                                                switch (server_event_id)
-                                                {
-                                                    case 0:
-                                                        BF4Servers.UpdateServerInfo(server_id, actualbuffer);
-                                                        break;
-                                                    case 1:
-                                                        BF4Servers.UpdateServerPlayers(server_id, actualbuffer);
-                                                        //WriteLog($"BF4 Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
-                                                        break;
-                                                    case 2:
-                                                        BF4Servers.Remove(server_id);
-                                                        break;
-                                                }
-                                                break;
-                                            case ZloGame.BF_HardLine:
-                                                switch (server_event_id)
-                                                {
-                                                    case 0:
-                                                        BFHServers.UpdateServerInfo(server_id, actualbuffer);
-                                                        break;
-                                                    case 1:
-                                                        BFHServers.UpdateServerPlayers(server_id, actualbuffer);
-                                                        //WriteLog($"BFH Player Packet Received and updated for server {server_id}\n{Hexlike(actualbuffer)}");
-                                                        break;
-                                                    case 2:
-                                                        BFHServers.Remove(server_id);
-                                                        break;
-                                                }
-                                                break;
-                                        }
+
                                     }
                                     catch (Exception ex)
                                     {
@@ -789,7 +710,7 @@ string full path to dll
                                     }
                                     Task.Run(() =>
                                     {
-                                        API_ZloClient_StatsReceived((ZloGame)game, FinalStats);
+                                        API_ZloClient_StatsReceived((ZloBFGame)game, FinalStats);
                                     });
 
                                     break;
@@ -807,7 +728,7 @@ string full path to dll
                                             string statname = br.ReadZString();
                                             byte statvalue = br.ReadByte();
 
-                                            FinalItems[statname] = new API_Item(statname, statvalue == 1 ? true : false, (ZloGame)game);
+                                            FinalItems[statname] = new API_Item(statname, statvalue == 1 ? true : false, (ZloBFGame)game);
                                         }
                                     }
                                     catch (Exception ex)
@@ -816,7 +737,7 @@ string full path to dll
                                     }
                                     Task.Run(() =>
                                     {
-                                        API_ZloClient_ItemsReceived((ZloGame)game, FinalItems);
+                                        API_ZloClient_ItemsReceived((ZloBFGame)game, FinalItems);
                                     });
                                     break;
                                 }
@@ -841,9 +762,9 @@ string full path to dll
                             case 9:
                                 {
                                     var runState = (GameRunResult)br.ReadByte();
-                                    if (req.RequestInfo is RunGame reqInfo)
+                                    if (req is REQ.RunGame reqInfo)
                                     {
-                                        GameRunResultReceived?.Invoke(reqInfo.game, runState);
+                                        GameRunResultReceived?.Invoke(reqInfo.Game, runState);
                                     }
                                     break;
                                 }
@@ -890,9 +811,9 @@ string full path to dll
             return sb.ToString();
         }
 
-        ///CharINDec-is the character in ascii
+        ///CharINDec-is the character in ASCII
         ///returns true or false.
-        ///is char is printable ascii then returns true and if it's not then false
+        ///is char is printable ASCII then returns true and if it's not then false
         internal static bool Isprint(int CharINDec)
         {
             if (CharINDec >= 32 && CharINDec <= 126)
@@ -902,11 +823,11 @@ string full path to dll
         }
         private void PingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            SendRequest(ZloPacketId.Ping);
+            SendRequest(new REQ.Empty(ZloPacketId.Ping));
         }
 
 
-        private bool ProcessPipeMessage(ZloGame game, byte[] buffer, int readelements)
+        private bool ProcessPipeMessage(ZloBFGame game, byte[] buffer, int readelements)
         {
             using (MemoryStream tempstream = new MemoryStream(buffer))
             using (BinaryReader br = new BinaryReader(tempstream, Encoding.ASCII))
@@ -930,141 +851,95 @@ string full path to dll
             }
         }
 
-        internal void AddToQueue(Request req)
+        internal void AddToQueue(BaseRequestPacket req)
         {
             //if it's the only one in the queue, trigger it
             //else just wait for the rest to finish
-            req.ReceivedResponce -= Req_ReceivedResponce;
-            req.ReceivedResponce += Req_ReceivedResponce;
-            lock (RequestQueue)
-            {
-                RequestQueue.Add(req);
-                if (RequestQueue.Count == 1)
-                {
-                    TriggerQueue();
-                }
-            }
-
-
+            req.ReceivedResponse -= Req_ReceivedResponse;
+            req.ReceivedResponse += Req_ReceivedResponse;
+            RequestQueue.Enqueue(req);
+            TriggerQueue();
         }
-        private void Req_ReceivedResponce(Request Sender)
+        private void Req_ReceivedResponse(BaseRequestPacket request, BaseResponsePacket response)
         {
             //current request just got finished and received
             //remove it from the queue list to trigger the next one
-            Sender.ReceivedResponce -= Req_ReceivedResponce;
+            request.ReceivedResponse -= Req_ReceivedResponse;
             lock (RequestQueue)
             {
-                if (RequestQueue.Contains(Sender))
-                {
-                    RequestQueue.Remove(Sender);
-                }
                 TriggerQueue();
             }
         }
         internal void TriggerQueue()
         {
             //occurs when the next request is ready to be executed
-            //proceed the current request               
-            if (RequestQueue.Count <= 0) return;
-            CurrentRequest = RequestQueue[0];
-            if (CurrentRequest.WaitBeforePeriod != TimeSpan.Zero)
+            //proceed the current request
+            if (RequestQueue.TryDequeue(out var req))
             {
-                var t = new System.Timers.Timer
+                CurrentRequest = req;
+                void doSendReq()
                 {
-                    AutoReset = false,
-                    Interval = CurrentRequest.WaitBeforePeriod.TotalMilliseconds
-                };
-                t.Elapsed += ExecuteCMDTimer;
-                t.Start();
-            }
-            else
-            {
-                if (!ListenerClient.WritePacket(CurrentRequest.data))
-                {
-                    CurrentRequest.GiveResponce(null);
-                    return;
-                }
-                else
-                {
-                    //WriteLog($"Packet Sent [pid = {CurrentRequest.pid},size = {CurrentRequest.data.Length}] : \n{Hexlike(CurrentRequest.data.Skip(5).ToArray())}");
-                    if (!CurrentRequest.IsRespondable)
+                    if (ListenerClient.WritePacket(req.Serialize()))
                     {
-                        CurrentRequest.GiveResponce(null);
-                        return;
+                        req.IsSent = true;
+                        if (!req.IsRespondable)
+                        {
+                            req.RaiseResponse(null);
+                            return;
+                        }
+                        else
+                        {
+                            //should timeout after 2 seconds 
+                            var t = new System.Timers.Timer
+                            {
+                                AutoReset = false,
+                                Interval = TimeSpan.FromSeconds(2).TotalMilliseconds
+                            };
+                            void removeRequestDelegate(object s, ElapsedEventArgs e)
+                            {
+                                t.Elapsed -= removeRequestDelegate;
+                                t.Stop();
+                                if (!req.IsReceived)
+                                    req.RaiseResponse(null);
+                            }
+
+                            t.Elapsed += removeRequestDelegate;
+                            t.Start();
+                        }
                     }
                     else
                     {
-                        //should wait for responce for 5 seconds
-                        var t = new System.Timers.Timer
-                        {
-                            AutoReset = false,
-                            Interval = TimeSpan.FromSeconds(5).TotalMilliseconds
-                        };
-                        void removeRequestDelegate(object s, ElapsedEventArgs e)
-                        {
-                            t.Elapsed -= removeRequestDelegate;
-                            t.Stop();
-                            CurrentRequest.GiveResponce(null);
-                        }
-
-                        t.Elapsed += removeRequestDelegate;
-                        t.Start();
+                        req.RaiseResponse(null);
+                        return;
                     }
                 }
-
-
-            }
-        }
-        private void ExecuteCMDTimer(object sender, ElapsedEventArgs e)
-        {
-            if (CurrentRequest == null)
-            {
-                return;
-            }
-            if (sender is System.Timers.Timer timer)
-            {
-                timer.Stop();
-                timer.Elapsed -= ExecuteCMDTimer;
-            }
-
-            if (!ListenerClient.WritePacket(CurrentRequest.data))
-            {
-                //failed to write
-                CurrentRequest.GiveResponce(null);
-                return;
-            }
-            else
-            {
-                //wrote successfully
-                if (!CurrentRequest.IsRespondable)
+                void ExecuteCMDTimer(object sender, ElapsedEventArgs e)
                 {
-                    CurrentRequest.GiveResponce(null);
+                    if (sender is System.Timers.Timer timer)
+                    {
+                        timer.Stop();
+                        timer.Elapsed -= ExecuteCMDTimer;
+                    }
+                    doSendReq();
                 }
-                else
+                if (req.WaitBeforePeriod != TimeSpan.Zero)
                 {
-                    //should wait for responce for 5 seconds
                     var t = new System.Timers.Timer
                     {
                         AutoReset = false,
-                        Interval = new TimeSpan(0, 0, 5).TotalMilliseconds
+                        Interval = req.WaitBeforePeriod.TotalMilliseconds
                     };
-                    void removeRequestDelegate(object s, ElapsedEventArgs args)
-                    {
-                        t.Elapsed -= removeRequestDelegate;
-                        t.Stop();
-                        CurrentRequest.GiveResponce(null);
-                    }
-
-                    t.Elapsed += removeRequestDelegate;
+                    t.Elapsed += ExecuteCMDTimer;
                     t.Start();
+                }
+                else
+                {
+                    doSendReq();
                 }
             }
         }
 
-        private Request CurrentRequest;
-
-
-
+        private BaseRequestPacket CurrentRequest { get; set; }
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
@@ -1087,31 +962,22 @@ string full path to dll
                         ListenerClient.Dispose();
                     }
                     StopDiscordRPC();
-                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                    // TODO: set large fields to null.
                     disposedValue = true;
                 }
             }
             catch { }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
         ~API_ZloClient()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);
         }
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
-
-
         #endregion
         #endregion
     }

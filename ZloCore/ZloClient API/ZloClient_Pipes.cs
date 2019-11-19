@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Zlo.Extras;
-using Zlo.Extentions;
-using static Zlo.Extentions.Helpers;
 
 namespace Zlo
 {
@@ -19,9 +17,9 @@ namespace Zlo
             BF4_Pipe = new NamedPipeClientStream(".", "warsaw_snowroller");
             BFH_Pipe = new NamedPipeClientStream(".", "omaha_snowroller");
 
-            BF3_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloGame.BF_3)) { IsBackground = true };
-            BF4_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloGame.BF_4)) { IsBackground = true };
-            BFH_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloGame.BF_HardLine)) { IsBackground = true };
+            BF3_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloBFGame.BF_3)) { IsBackground = true };
+            BF4_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloBFGame.BF_4)) { IsBackground = true };
+            BFH_Pipe_Listener = new Thread(() => BF_Pipe_Loop(ZloBFGame.BF_HardLine)) { IsBackground = true };
         }
         private bool ConnectPipes()
         {
@@ -47,25 +45,25 @@ namespace Zlo
         Thread BF4_Pipe_Listener;
         Thread BFH_Pipe_Listener;
 
-        private void BF_Pipe_Loop(ZloGame game)
+        private void BF_Pipe_Loop(ZloBFGame game)
         {
             NamedPipeClientStream stream = null;
             string pipeName = null;
             switch (game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     stream = BF3_Pipe;
                     pipeName = "venice_snowroller";
                     break;
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     stream = BF4_Pipe;
                     pipeName = "warsaw_snowroller";
                     break;
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     stream = BFH_Pipe;
                     pipeName = "omaha_snowroller";
                     break;
-                case ZloGame.None:
+                case ZloBFGame.None:
                 default:
                     break;
             }
@@ -73,7 +71,7 @@ namespace Zlo
             {
                 try
                 {
-                    if (!stream.IsConnected && NamedPipeExists(pipeName))
+                    if (!stream.IsConnected && Helpers.NamedPipeExists(pipeName))
                     {
                         stream.Connect();
                     }
@@ -96,7 +94,7 @@ namespace Zlo
                 { }
             }
         }
-        private void ParsePipeMessage(ZloGame game, string type, string message, out ServerBase Server, out bool IsInGame)
+        private void ParsePipeMessage(ZloBFGame game, string type, string message, out ServerBase Server, out bool IsInGame)
         {
             //StateChanging;State_Connecting State_ClaimReservation 14
             //StateChanging;State_Connecting State_Game 14
@@ -108,19 +106,19 @@ namespace Zlo
 
                 switch (game)
                 {
-                    case ZloGame.BF_3:
+                    case ZloBFGame.BF_3:
                         Server = BF3Servers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
                         IsInGame = true;
                         break;
-                    case ZloGame.BF_4:
+                    case ZloBFGame.BF_4:
                         Server = BF4Servers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
                         IsInGame = true;
                         break;
-                    case ZloGame.BF_HardLine:
+                    case ZloBFGame.BF_HardLine:
                         Server = BFHServers.FirstOrDefault(x => x.Players.Any(z => z.Name == CurrentPlayerName));
                         IsInGame = true;
                         break;
-                    case ZloGame.None:
+                    case ZloBFGame.None:
                     default:
                         Server = null;
                         IsInGame = false;

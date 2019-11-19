@@ -25,7 +25,7 @@ namespace ZloGUILauncher.Views
             InitializeComponent();
         }
 
-        public void StateReceived(ZloGame game , string type , string message)
+        public void StateReceived(ZloBFGame game , string type , string message)
         {
             var t = DateTime.Now;
             Run DateText = new Run($"{t.ToShortTimeString()} : ");

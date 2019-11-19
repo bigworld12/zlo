@@ -18,7 +18,7 @@ namespace Zlo
         bool IsEnableDiscordRPC { get; set; }
 
         TimeSpan ReconnectInterval { get; set; }
-        ZloGame ActiveServerListener { get; }
+        ZloBFGame ActiveServerListener { get; }
 
         JObject BF3_Stats { get; }        
         JObject BF4_Stats { get; }
@@ -42,14 +42,14 @@ namespace Zlo
         void RefreshRunnableGamesList();
 
         bool Connect();
-        List<string> GetDllsList(ZloGame game);
+        List<string> GetDllsList(ZloBFGame game);
         void JoinOnlineServer(OnlinePlayModes playmode, uint serverid = 0);
         void JoinOfflineGame(OfflinePlayModes playmode);
         void JoinOnlineGameWithPassWord(OnlinePlayModes playmode, uint serverid, string password);
         void GetUserInfo();
-        void GetStats(ZloGame game);
-        void GetItems(ZloGame game);
-        void SubToServerList(ZloGame game);
+        void GetStats(ZloBFGame game);
+        void GetItems(ZloBFGame game);
+        void SubToServerList(ZloBFGame game);
         void UnSubServerList();
         void GetClanDogTags();
         void SetClanDogTags(ushort? dt_advanced = null, ushort? dt_basic = null, string clantag = ";");
