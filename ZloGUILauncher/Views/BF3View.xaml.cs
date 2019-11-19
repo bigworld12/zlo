@@ -30,10 +30,10 @@ namespace ZloGUILauncher.Views
             App.Client.ClanDogTagsReceived += Client_ClanDogTagsReceived;
         }
 
-        private void Client_ClanDogTagsReceived(Zlo.Extras.ZloGame game, ushort dogtag1, ushort dogtag2, string clanTag)
+        private void Client_ClanDogTagsReceived(Zlo.Extras.ZloBFGame game, ushort dogtag1, ushort dogtag2, string clanTag)
         {
 
-            if (game == Zlo.Extras.ZloGame.BF_3)
+            if (game == Zlo.Extras.ZloBFGame.BF_3)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -44,9 +44,9 @@ namespace ZloGUILauncher.Views
             }
         }
 
-        private void Client_StatsReceived(Zlo.Extras.ZloGame Game, Dictionary<string, float> List)
+        private void Client_StatsReceived(Zlo.Extras.ZloBFGame Game, Dictionary<string, float> List)
         {
-            if (Game == Zlo.Extras.ZloGame.BF_3)
+            if (Game == Zlo.Extras.ZloBFGame.BF_3)
             {
                 Dispatcher.Invoke(() => { StatsDG.ItemsSource = List; });
             }
@@ -59,7 +59,7 @@ namespace ZloGUILauncher.Views
 
         private void StatsRefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            App.Client.GetStats(Zlo.Extras.ZloGame.BF_3);
+            App.Client.GetStats(Zlo.Extras.ZloBFGame.BF_3);
         }
 
         private void SetterButton_Click(object sender, RoutedEventArgs e)
@@ -85,7 +85,7 @@ namespace ZloGUILauncher.Views
                     }
                 case "ct":
                     {
-                        App.Client.SetClanDogTags(clantag: BF3_CT.Text);
+                        App.Client.SetClanDogTags(clanTag: BF3_CT.Text);
                         break;
                     }
                 case "all":

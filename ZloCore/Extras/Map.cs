@@ -160,7 +160,7 @@ namespace Zlo.Extras
             }
         }
 
-        internal void Parse(string mapsinfo, string mapsraw, ZloGame game)
+        internal void Parse(string mapsinfo, string mapsraw, ZloBFGame game)
         {
             API_MapBase[] oldmaps;
             if (Values != null)

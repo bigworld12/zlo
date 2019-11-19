@@ -18,22 +18,22 @@ namespace Zlo
             switch (playmode)
             {
                 case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3, CurrentPlayerID, serverid, 1);
+                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, serverid, 1);
                     break;
 
 
                 case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 1);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 1);
                     break;
                 case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 3);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 3);
                     break;
                 case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 2);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 2);
                     break;
 
                 case OnlinePlayModes.BFH_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1);
+                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 1);
                     break;
                 default:
                     return;
@@ -69,19 +69,19 @@ namespace Zlo
             switch (playmode)
             {
                 case OfflinePlayModes.BF3_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3, CurrentPlayerID, 0, 0);
+                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, 0, 0);
                     break;
 
                 case OfflinePlayModes.BF4_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, 0, 0);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, 0, 0);
                     break;
                 case OfflinePlayModes.BF4_Test_Range:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, 0, 4);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, 0, 4);
                     break;
 
 
                 case OfflinePlayModes.BFH_Single_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, 0, 0);
+                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, 0, 0);
                     break;
 
                 default:
@@ -119,28 +119,28 @@ namespace Zlo
             switch (playmode)
             {
                 case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_3, CurrentPlayerID, serverid, 1, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, serverid, 1, password);
                     break;
 
                 case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 1, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 1, password);
                     break;
                 case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 3, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 3, password);
                     break;
                 case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloGame.BF_4, CurrentPlayerID, serverid, 2, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 2, password);
                     break;
 
 
                 case OnlinePlayModes.BFH_Multi_Player:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 1, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 1, password);
                     break;
                 case OnlinePlayModes.BFH_Spectator:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 3, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 3, password);
                     break;
                 case OnlinePlayModes.BFH_Commander:
-                    rungame = GetGameJoinID(ZloGame.BF_HardLine, CurrentPlayerID, serverid, 2, password);
+                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 2, password);
                     break;
                 default:
                     return;
@@ -243,7 +243,7 @@ namespace Zlo
         /// 5 = co-op</param>
         /// <param name="pw">The server password</param>
         /// <returns></returns>
-        private ProcessStartInfo GetGameJoinID(ZloGame game, uint PlayerID, uint ServerID, int playmode, string pw = "")
+        private ProcessStartInfo GetGameJoinID(ZloBFGame game, uint PlayerID, uint ServerID, int playmode, string pw = "")
         {
             /*
              play mode : 
@@ -261,7 +261,7 @@ namespace Zlo
             switch (game)
             {
                 //%20password%3D%5C%22{pw}%5C%22%20
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     {
                         title = "Battlefield3";
                         string bf3offers = "70619,71067,DGR01609244,DGR01609245";
@@ -273,7 +273,7 @@ namespace Zlo
                         //state 2 = from origin2
                         return final = PrepareBF3(ps);
                     }
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     {
                         title = "Battlefield4";
                         string bf4offers = "1007968,1011575,1011576,1011577,1010268,1010269,1010270,1010271,1010958,1010959,1010960,1010961,1007077,1016751,1016757,1016754,1015365,1015364,1015363,1015362";
@@ -325,7 +325,7 @@ namespace Zlo
                                 return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
                         }
                     }
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     {
                         //title = BattlefieldHardline
                         //1013920
@@ -379,7 +379,7 @@ namespace Zlo
                                 return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
                         }
                     }
-                case ZloGame.None:
+                case ZloBFGame.None:
                     return null;
                 default:
                     return null;

@@ -9,57 +9,57 @@ namespace Zlo.Extras
 {
     public static class API_Dictionaries
     {
-        public static string GetMapName(ZloGame game,string key)
+        public static string GetMapName(ZloBFGame game,string key)
         {
             switch (game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     if (API_BF3_Maps.ContainsKey(key))
                         return API_BF3_Maps[key];
                     break;
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     if (API_BF4_Maps.ContainsKey(key))
                         return API_BF4_Maps[key];
                     break;
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     if (API_BFH_Maps.ContainsKey(key))
                         return API_BFH_Maps[key];
                     break;
-                case ZloGame.None:
+                case ZloBFGame.None:
                     break;
                 default:
                     break;
             }
             return key;
         }
-        public static string GetGameModeName(ZloGame game, string key)
+        public static string GetGameModeName(ZloBFGame game, string key)
         {
             switch (game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     if (API_BF3_GameModes.ContainsKey(key))
                         return API_BF3_GameModes[key];
                     break;
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     if (API_BF4_GameModes.ContainsKey(key))
                         return API_BF4_GameModes[key];
                     break;
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     if (API_BFH_GameModes.ContainsKey(key))
                         return API_BFH_GameModes[key];
                     break;
-                case ZloGame.None:
+                case ZloBFGame.None:
                     break;
                 default:
                     break;
             }
             return key;
         }
-        public static void GetItemDetails(ZloGame game,string key,out string name,out string desc)
+        public static void GetItemDetails(ZloBFGame game,string key,out string name,out string desc)
         {
             switch (game)
             {
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     var translated = (JObject)GameData.BF4_items[key];
                     if (translated != null)
                     {
@@ -72,9 +72,9 @@ namespace Zlo.Extras
                         desc = string.Empty;
                     }
                     break;
-                case ZloGame.BF_3:
-                case ZloGame.BF_HardLine:
-                case ZloGame.None:
+                case ZloBFGame.BF_3:
+                case ZloBFGame.BF_HardLine:
+                case ZloBFGame.None:
                 default:
                     name = key;
                     desc = string.Empty;

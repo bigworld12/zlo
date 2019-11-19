@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Zlo;
 using ZloGUILauncher.Views;
+using ZloGUILauncher.Views.ListViews;
 
 namespace ZloGUILauncher
 {
@@ -25,6 +26,7 @@ namespace ZloGUILauncher
         private static API_ZloClient m_Client;
         public static API_ZloClient Client => m_Client ?? (m_Client = new API_ZloClient());
 
+        public static BFServerListViewModel BFListViewModel { get; } = new BFServerListViewModel();
 
         private static GameStateViewer m_gamestateviewer;
         public static GameStateViewer GameStateViewer => m_gamestateviewer ?? (m_gamestateviewer = new GameStateViewer());

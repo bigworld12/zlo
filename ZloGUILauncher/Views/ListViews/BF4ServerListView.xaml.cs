@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Zlo.Extras;
+using Zlo.Extras.BF_Servers;
 using ZloGUILauncher.Servers;
 
 namespace ZloGUILauncher.Views
@@ -30,96 +31,13 @@ namespace ZloGUILauncher.Views
         {
             get { return TryFindResource("ServersView") as CollectionViewSource; }
         }
-        private ObservableCollection<BF4_GUI_Server> m_BF4_Servers;
-        public ObservableCollection<BF4_GUI_Server> BF4_GUI_Servers
-        {
-            get
-            {
-                if (m_BF4_Servers == null)
-                {
-                    m_BF4_Servers = new ObservableCollection<BF4_GUI_Server>();
-                }
-                return m_BF4_Servers;
-            }
-        }
-        public API_BF4ServersListBase DataServersList
-        {
-            get
-            {                
-                return App.Client.BF4Servers;
-            }
-        }
 
         public BF4ServerListView()
         {
             InitializeComponent();
-            DataServersList.ServerAdded += DataServersList_ServerAdded;
-            DataServersList.ServerUpdated += DataServersList_ServerUpdated;
-            DataServersList.ServerRemoved += DataServersList_ServerRemoved;
-            ViewSource.Source = BF4_GUI_Servers;
-
-        }       
-        private void DataServersList_ServerRemoved(uint id , API_BF4ServerBase server)
-        {
-            if (server != null)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    //remove from current list
-                    var ser = BF4_GUI_Servers.Find(s => s.ID == id);
-                    if (ser != null)
-                    {
-                        BF4_GUI_Servers.Remove(ser);
-                    }                   
-                });
-            }
-        }
-        private void DataServersList_ServerUpdated(uint id , API_BF4ServerBase server)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var equi = BF4_GUI_Servers.Find(x => x.raw == server);
-                if (equi != null)
-                {
-                    equi.UpdateAllProps();
-                    AnimateRow(equi);
-                }
-            });
-        }
-        private void DataServersList_ServerAdded(uint id , API_BF4ServerBase server)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var newserv = new BF4_GUI_Server(server);
-                BF4_GUI_Servers.Add(newserv);                
-                AnimateRow(newserv);
-            });
-        }
-
-        public void AnimateRow(BF4_GUI_Server element)
-        {
-            var row = ServersDG.ItemContainerGenerator.ContainerFromItem(element) as DataGridRow;
-            if (row == null) return;
-
-
-
-            ColorAnimation switchOnAnimation = new ColorAnimation
-            {
-                From = Colors.White ,
-                To = Colors.Pink ,
-                Duration = TimeSpan.FromSeconds(1) ,
-                AutoReverse = true
-            };
-            Storyboard blinkStoryboard = new Storyboard();
-
-
-            blinkStoryboard.Children.Add(switchOnAnimation);
-            Storyboard.SetTargetProperty(switchOnAnimation , new PropertyPath("Background.Color"));
-            //animate changed server
-            Storyboard.SetTarget(switchOnAnimation , row);
-
-            row.BeginStoryboard(blinkStoryboard);
-        }
+            App.BFListViewModel.DataGrids[ZloBFGame.BF_4] = ServersDG;
+            ViewSource.Source = App.BFListViewModel.BF4_GUI_Servers;
+        }            
 
         private void JoinButton_Click(object sender , RoutedEventArgs e)
         {

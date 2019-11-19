@@ -53,7 +53,7 @@ namespace Zlo
             }
         }
         [JsonProperty("last_game")]
-        public ZloGame ActiveServerListener { get; set; } = ZloGame.None;
+        public ZloBFGame SettingsServerListener { get; set; } = ZloBFGame.None;
 
         public bool IsEnableDiscordRPC { get; set; } = true;
 
@@ -78,7 +78,7 @@ namespace Zlo
         private Dictionary<string, object> _customSettings = new Dictionary<string, object>();
 
         [JsonProperty("gamePaths")]
-        internal Dictionary<ZloGame, string> GamePaths { get; } = new Dictionary<ZloGame, string>();
+        internal Dictionary<ZloBFGame, string> GamePaths { get; } = new Dictionary<ZloBFGame, string>();
         [JsonProperty("discoveryPaths")]
         internal HashSet<string> DiscoveryPaths { get; } = new HashSet<string>();
 
@@ -179,17 +179,17 @@ namespace Zlo
         [JsonProperty("bfh")]
         public List<string> BfH { get; } = new List<string>();
 
-        public List<string> GetDllsList(ZloGame game)
+        public List<string> GetDllsList(ZloBFGame game)
         {
             switch (game)
             {
-                case ZloGame.BF_3:
+                case ZloBFGame.BF_3:
                     return Bf3;
-                case ZloGame.BF_4:
+                case ZloBFGame.BF_4:
                     return Bf4;
-                case ZloGame.BF_HardLine:
+                case ZloBFGame.BF_HardLine:
                     return BfH;
-                case ZloGame.None:
+                case ZloBFGame.None:
                 default:
                     return null;
             }

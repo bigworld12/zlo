@@ -8,14 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Zlo.Extras;
-using static Zlo.Extentions.Helpers;
 namespace Zlo
 {
     internal class ZloTCPClient : IDisposable
     {
         public delegate void ZloPacketReceivedEventHandler(byte pid, byte[] data);
         public event ZloPacketReceivedEventHandler ZloPacketReceived;
-        public event API_ConnectionStateChanged IsConnectedChanged;
+        public event API_ConnectionStateChangedEventHandler IsConnectedChanged;
 
         private bool m_IsConnected;
         private readonly object _lock = new object();
@@ -79,10 +78,10 @@ namespace Zlo
             }
         }
 
-       
+
         Thread ListenerThread { get; }
         private NetworkStream ns;
-        List<byte> CurrentBuffer = new List<byte>();
+        readonly List<byte> CurrentBuffer = new List<byte>();
         int pid = -1;
         uint packetlen;
         bool iswaitingforlen = true;
@@ -115,9 +114,13 @@ namespace Zlo
                         }
                         catch (Exception ex)
                         {
-                            IsConnected = false;
-                            StartReconnectTimer();
-                            break;
+                            if (IsConnected)
+                            {
+                                IsConnected = false;
+                                StartReconnectTimer();
+                            }
+                            else
+                                return;
                         }
                         //wait 200 ms until it is able to read
                         Thread.Sleep(200);

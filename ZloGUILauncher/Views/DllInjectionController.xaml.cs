@@ -31,15 +31,15 @@ namespace ZloGUILauncher.Views
         }
 
 
-        public ZloGame SelectedGame
+        public ZloBFGame SelectedGame
         {
-            get { return (ZloGame)GetValue(SelectedGameProperty); }
+            get { return (ZloBFGame)GetValue(SelectedGameProperty); }
             set { SetValue(SelectedGameProperty , value); }
         }
 
         // Using a DependencyProperty as the backing store for SelectedGame.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedGameProperty =
-            DependencyProperty.Register("SelectedGame" , typeof(ZloGame) , typeof(DllInjectionController) , new PropertyMetadata(default(ZloGame) , SelectedGameChanged));
+            DependencyProperty.Register("SelectedGame" , typeof(ZloBFGame) , typeof(DllInjectionController) , new PropertyMetadata(default(ZloBFGame) , SelectedGameChanged));
 
         private List<string> QuickDlls
         {
@@ -57,7 +57,7 @@ namespace ZloGUILauncher.Views
                 return;
             }
             var owner = d as DllInjectionController;
-            owner.ViewerListBox.ItemsSource = App.Client.GetDllsList((ZloGame)e.NewValue);
+            owner.ViewerListBox.ItemsSource = App.Client.GetDllsList((ZloBFGame)e.NewValue);
         }
         OpenFileDialog of;
         private void AddInjectedDllButton_Click(object sender , RoutedEventArgs e)
