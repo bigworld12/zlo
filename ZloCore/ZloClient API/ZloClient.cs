@@ -146,7 +146,7 @@ namespace Zlo
             CurrentPlayerID = UserID;
             CurrentPlayerName = UserName;
         }
-     
+
         #region Properties
         /*
        connect to localhost:48486
@@ -261,9 +261,11 @@ namespace Zlo
             PingTimer.Start();
             if (ListenerClient.Connect())
             {
-                GetUserInfo();
                 if (IsEnableDiscordRPC)
                     StartDiscordRPC();
+                SendRequest(new REQ.Empty(ZloPacketId.Ping));
+                GetUserInfo();
+                RefreshRunnableGamesList();
                 return true;
             }
             else
@@ -313,41 +315,35 @@ namespace Zlo
             SendRequest(new REQ.GetStatsOrItems(StatsOrItems.Items, game));
         }
 
-        public ZloBFGame ActiveServerListener
+        public ZloBFGame SettingsServerListener
         {
-            get => Settings.CurrentSettings.ActiveServerListener;
-            private set { if (Settings.CurrentSettings.ActiveServerListener == value) return; Settings.CurrentSettings.ActiveServerListener = value; Settings.TrySave(); }
+            get => Settings.CurrentSettings.SettingsServerListener;
+            private set { if (Settings.CurrentSettings.SettingsServerListener == value) return; Settings.CurrentSettings.SettingsServerListener = value; Settings.TrySave(); }
         }
-
+        public ZloBFGame CurrentServerListener { get; private set; } = ZloBFGame.None;
         public void SubToServerList(ZloBFGame game)
         {
-
             //unsub first
             UnSubServerList();
-            ActiveServerListener = game;
+            SettingsServerListener = CurrentServerListener = game;
             //0 == subscribe            
-            SendRequest(new REQ.SubServerList(game));
+            SendRequest(new SubServerList(game));
             GetClanDogTags();
         }
-
-
-
-
-
         public void UnSubServerList()
         {
-            var game = ActiveServerListener;
-            if (game == ZloBFGame.None)
+            if (CurrentServerListener == ZloBFGame.None)
             {
                 return;
             }
-            SendRequest(new REQ.UnsubServerList(game));
-            ActiveServerListener = ZloBFGame.None;
+            SendRequest(new UnsubServerList(CurrentServerListener));
+            CurrentServerListener = ZloBFGame.None;
+            SettingsServerListener = ZloBFGame.None;
         }
         public void GetClanDogTags()
         {
             //bf3 not supported
-            var game = ActiveServerListener;
+            var game = SettingsServerListener;
             if (game == ZloBFGame.None || game == ZloBFGame.BF_3)
             {
                 return;
@@ -370,7 +366,7 @@ namespace Zlo
         /// <param name="clanTag"></param>
         public void SetClanDogTags(ushort? dt_advanced = null, ushort? dt_basic = null, string clanTag = ";")
         {
-            var game = ActiveServerListener;
+            var game = SettingsServerListener;
             if (game == ZloBFGame.None || game == ZloBFGame.BF_3)
             {
                 return;
@@ -384,7 +380,7 @@ namespace Zlo
             }
 
             //1 for set
-            var (adv, basic, prevClanTag) = ClanDogTagsPerGame[ActiveServerListener];
+            var (adv, basic, prevClanTag) = ClanDogTagsPerGame[SettingsServerListener];
             SendRequest(new SetPlayerInfo(game,
                 dt_basic ?? basic,
                 dt_advanced ?? adv,
@@ -457,76 +453,82 @@ namespace Zlo
         }
         private void ListenerClient_DataReceived(byte pid, byte[] bytes)
         {
-            var req = CurrentRequest;
-            var packet = (ZloPacketId)pid;
-            BaseResponsePacket responsePacket;
-            if (req != null && req.PacketId == packet && !req.IsReceived && req.IsRespondable)
+            lock (this)
             {
-                req.RaiseResponse(bytes);
-                responsePacket = req.Response;
-            }
-            else
-            {
-                //Get responses that aren't tied to a single request
-                switch (packet)
+                var req = CurrentRequest;
+                var packet = (ZloPacketId)pid;
+
+                BaseResponsePacket responsePacket;
+                if (req != null && req.PacketId == packet && !req.IsReceived && req.IsRespondable)
                 {
-                    case ZloPacketId.Server_List:
-                        responsePacket = new ServerList();
-                        responsePacket.Deserialize(bytes);
+                    req.RaiseResponse(bytes);
+                    responsePacket = req.Response;
+                }
+                else
+                {
+                    //Get responses that aren't tied to a single request
+                    switch (packet)
+                    {
+                        case ZloPacketId.Server_List:
+                            var sl = new ServerList();
+                            responsePacket = sl;
+                            responsePacket.Deserialize(bytes);
+                            //Console.WriteLine($"Server List packet From : {responsePacket.From}, Event : {sl.Event}, Game : {sl.Game}, Server Id : {sl.ServerId}");
+                            break;
+                        default:
+                            Log.WriteLog($"Illogical flow, zclient sent a packet that wasn't requested, skipping it\nPid: {pid}\nData: {Hexlike(bytes)}");
+                            return;
+                    }
+                }
+                switch (responsePacket)
+                {
+                    case UserInfo userInfo:
+                        UserInfoReceived?.Invoke(userInfo.Id, userInfo.Name);
+                        break;
+                    case PlayerInfo playerInfo:
+                        RaiseClanDogTagsReceived(playerInfo.Game, playerInfo.DogTagAdvanced, playerInfo.DogTagBasic, playerInfo.ClanTag);
+                        break;
+
+                    case ServerList serverList:
+                        IBFServerList bfServerList = serverList.Game switch
+                        {
+                            ZloBFGame.BF_3 => BF3Servers,
+                            ZloBFGame.BF_4 => BF4Servers,
+                            ZloBFGame.BF_HardLine => BFHServers,
+                            _ => null,
+                        };
+                        switch (serverList.Event)
+                        {
+                            case ServerListEvent.ServerChange:
+                                bfServerList.UpdateServerInfo(serverList.ServerId, serverList.DataBuffer);
+                                break;
+                            case ServerListEvent.PlayerListChange:
+                                bfServerList.UpdateServerPlayers(serverList.ServerId, serverList.DataBuffer);
+                                break;
+                            case ServerListEvent.ServerRemove:
+                                bfServerList.RemoveServer(serverList.ServerId);
+                                break;
+                        }
+                        break;
+                    case Stats stats:
+                        API_ZloClient_StatsReceived(stats.Game, stats.Values);
+                        break;
+                    case Items items:
+                        API_ZloClient_ItemsReceived(items.Game, items.Values);
+                        break;
+                    case RESP.RunnableGameList runnableGameListRESP:
+                        RunnableGameList.Clear();
+                        RunnableGameList.IsOSx64 = runnableGameListRESP.Isx64;
+                        RunnableGameList.AddRange(runnableGameListRESP.Values);
+                        RunnableGameListReceived?.Invoke();
+                        break;
+                    case RESP.RunGame runGameRESP:
+                        if (runGameRESP.From is REQ.RunGame runGameREQ)
+                            GameRunResultReceived?.Invoke(runGameREQ.Game, runGameRESP.Result);
                         break;
                     default:
-                        Log.WriteLog($"Illogical flow, zclient sent a packet that wasn't requested, skipping it\nPid: {pid}\nData: {Hexlike(bytes)}");
-                        return;
+                        break;
                 }
-            }
-            switch (responsePacket)
-            {
-                case UserInfo userInfo:
-                    UserInfoReceived?.Invoke(userInfo.Id, userInfo.Name);
-                    break;
-                case PlayerInfo playerInfo:
-                    RaiseClanDogTagsReceived(playerInfo.Game, playerInfo.DogTagAdvanced, playerInfo.DogTagBasic, playerInfo.ClanTag);
-                    break;
-
-                case ServerList serverList:
-                    IBFServerList bfServerList = serverList.Game switch
-                    {
-                        ZloBFGame.BF_3 => BF3Servers,
-                        ZloBFGame.BF_4 => BF4Servers,
-                        ZloBFGame.BF_HardLine => BFHServers,
-                        _ => null,
-                    };
-                    switch (serverList.Event)
-                    {
-                        case ServerListEvent.ServerChange:
-                            bfServerList.UpdateServerInfo(serverList.ServerId, serverList.DataBuffer);
-                            break;
-                        case ServerListEvent.PlayerListChange:
-                            bfServerList.UpdateServerPlayers(serverList.ServerId, serverList.DataBuffer);
-                            break;
-                        case ServerListEvent.ServerRemove:
-                            bfServerList.RemoveServer(serverList.ServerId);
-                            break;
-                    }
-                    break;
-                case Stats stats:
-                    API_ZloClient_StatsReceived(stats.Game, stats.Values);
-                    break;
-                case Items items:
-                    API_ZloClient_ItemsReceived(items.Game, items.Values);
-                    break;
-                case RESP.RunnableGameList runnableGameListRESP:
-                    RunnableGameList.Clear();
-                    RunnableGameList.IsOSx64 = runnableGameListRESP.Isx64;
-                    RunnableGameList.AddRange(runnableGameListRESP.Values);
-                    RunnableGameListReceived?.Invoke();
-                    break;
-                case RESP.RunGame runGameRESP:
-                    if (runGameRESP.From is REQ.RunGame runGameREQ)
-                        GameRunResultReceived?.Invoke(runGameREQ.Game, runGameRESP.Result);
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -623,6 +625,10 @@ namespace Zlo
         {
             //occurs when the next request is ready to be executed
             //proceed the current request
+            if (CurrentRequest != null && !CurrentRequest.IsReceived)
+            {
+                return;
+            }
             if (RequestQueue.TryDequeue(out var req))
             {
                 CurrentRequest = req;
@@ -685,6 +691,10 @@ namespace Zlo
                 {
                     doSendReq();
                 }
+            }
+            else
+            {
+                CurrentRequest = null;
             }
         }
 

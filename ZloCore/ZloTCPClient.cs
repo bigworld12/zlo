@@ -78,10 +78,10 @@ namespace Zlo
             }
         }
 
-       
+
         Thread ListenerThread { get; }
         private NetworkStream ns;
-        List<byte> CurrentBuffer = new List<byte>();
+        readonly List<byte> CurrentBuffer = new List<byte>();
         int pid = -1;
         uint packetlen;
         bool iswaitingforlen = true;
@@ -114,9 +114,13 @@ namespace Zlo
                         }
                         catch (Exception ex)
                         {
-                            IsConnected = false;
-                            StartReconnectTimer();
-                            break;
+                            if (IsConnected)
+                            {
+                                IsConnected = false;
+                                StartReconnectTimer();
+                            }
+                            else
+                                return;
                         }
                         //wait 200 ms until it is able to read
                         Thread.Sleep(200);

@@ -53,7 +53,7 @@ namespace Zlo
             }
         }
         [JsonProperty("last_game")]
-        public ZloBFGame ActiveServerListener { get; set; } = ZloBFGame.None;
+        public ZloBFGame SettingsServerListener { get; set; } = ZloBFGame.None;
 
         public bool IsEnableDiscordRPC { get; set; } = true;
 

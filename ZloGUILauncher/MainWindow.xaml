@@ -9,81 +9,90 @@
     Closing="Window_Closing"
     mc:Ignorable="d"
         Title="Bigworld12 new API launcher" Height="421.981" Width="955.963">
-    <Window.Resources>
-        <ResourceDictionary>
-            <Style TargetType="{x:Type ScrollViewer}">
-                <Style.Setters>
-                    <Setter Property="helpers:ScrollViewerCorrector.FixScrolling" Value="True" />
-                </Style.Setters>
-            </Style>
-        </ResourceDictionary>
-    </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Margin="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock Text="ZClient State : " VerticalAlignment="Center"/>
-                <TextBlock x:Name="IsConnectedTextBlock" Text="DisConnected" Foreground="Red" VerticalAlignment="Center"/>
-            </StackPanel>
-            <StackPanel Margin="3" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Text="Player : "/>
-                <TextBlock VerticalAlignment="Center" x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
-                <CheckBox x:Name="DiscordRPCCheck" Checked="DiscordRPCCheck_Checked" Unchecked="DiscordRPCCheck_Unchecked" VerticalAlignment="Center" Margin="5 0" Content="Discord Rich Presence"/>
-            </StackPanel>            
-            <StackPanel Orientation="Horizontal"  Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Margin="3" VerticalAlignment="Center" Content="Dll Injector" Click="ShowDllInjectorButton_Click"/>
-                <Button Margin="3" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
+  <Window.Resources>
+    <ResourceDictionary>
+      <Style TargetType="{x:Type ScrollViewer}">
+        <Style.Setters>
+          <Setter Property="helpers:ScrollViewerCorrector.FixScrolling" Value="True" />
+        </Style.Setters>
+      </Style>
+    </ResourceDictionary>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel Margin="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+        <TextBlock Text="ZClient State : " VerticalAlignment="Center"/>
+        <TextBlock x:Name="IsConnectedTextBlock" Text="DisConnected" Foreground="Red" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Margin="3" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+        <TextBlock VerticalAlignment="Center" Text="Player : "/>
+        <TextBlock VerticalAlignment="Center" x:Name="PlayerInfoTextBlock"  Text="name (id)" Foreground="Red"/>
+        <CheckBox x:Name="DiscordRPCCheck" Checked="DiscordRPCCheck_Checked" Unchecked="DiscordRPCCheck_Unchecked" VerticalAlignment="Center" Margin="5 0" Content="Discord Rich Presence"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal"  Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Button Margin="3" VerticalAlignment="Center" Content="Dll Injector" Click="ShowDllInjectorButton_Click"/>
+        <Button Margin="3" VerticalAlignment="Center" Content="Restart Launcher" Click="RestartLauncherButton_Click"/>
 
-                <Button Margin="3" VerticalAlignment="Center" Content="Get Evonix Launcher" Click="OfficialDiscordButton_Click"/>
-                <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/m3vEHyN​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </StackPanel>
+        <Button Margin="3" VerticalAlignment="Center" Content="Get Evonix Launcher" Click="OfficialDiscordButton_Click"/>
+        <TextBox Margin="5" IsReadOnly="True" Text="https://discord.gg/m3vEHyN​​​​​​​" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+      </StackPanel>
 
-        </Grid>
-        <TabControl SelectionChanged="MainTabControl_SelectionChanged" Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Battlefield 4"/>
-                </TabItem.Header>
-                <Grid>
-                    <!--BF4-->
-                    <views:BF4View x:Name="Ibf4View"/>
-                </Grid>
-
-            </TabItem>
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Foreground="Red">Battlefield Hardline</TextBlock>
-                </TabItem.Header>
-                <Grid>
-                    <!--BFH-->
-                    <views:BFHView x:Name="IbfhView"/>
-                </Grid>
-
-            </TabItem>
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Battlefield 3"/>
-                </TabItem.Header>
-                <Grid>
-                    <!--BF3-->
-                    <views:BF3View/>
-                </Grid>
-            </TabItem>
-
-        </TabControl>
-        <StatusBar Grid.Row="2">
-            <TextBlock VerticalAlignment="Center" Text="Lastest Game State : "/>
-            <TextBlock VerticalAlignment="Center" x:Name="LatestGameStateTextBlock" Text="[Game] [type] state"></TextBlock>
-            <Button Click="ViewAllGameStatesButton_Click" Content="View All"/>
-        </StatusBar>
     </Grid>
+    <TabControl SelectionChanged="MainTabControl_SelectionChanged" Grid.Row="1" x:Name="MainTabControl" TabStripPlacement="Left">
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock Text="Battlefield 4"/>
+        </TabItem.Header>
+        <Grid>
+          <!--BF4-->
+          <views:BF4View x:Name="Ibf4View"/>
+        </Grid>
+
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock Foreground="Red">Battlefield Hardline</TextBlock>
+        </TabItem.Header>
+        <Grid>
+          <!--BFH-->
+          <views:BFHView x:Name="IbfhView"/>
+        </Grid>
+
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock Text="Battlefield 3"/>
+        </TabItem.Header>
+        <Grid>
+          <!--BF3-->
+          <views:BF3View/>
+        </Grid>
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock Text="Runnable Games"/>
+        </TabItem.Header>
+        <Grid>
+          <!--BF3-->
+          <views:RunnableGames/>
+        </Grid>
+      </TabItem>
+
+    </TabControl>
+    <StatusBar Grid.Row="2">
+      <TextBlock VerticalAlignment="Center" Text="Lastest Game State : "/>
+      <TextBlock VerticalAlignment="Center" x:Name="LatestGameStateTextBlock" Text="[Game] [type] state"></TextBlock>
+      <Button Click="ViewAllGameStatesButton_Click" Content="View All"/>
+    </StatusBar>
+  </Grid>
 </Window>

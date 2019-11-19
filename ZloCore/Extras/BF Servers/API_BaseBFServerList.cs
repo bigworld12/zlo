@@ -7,7 +7,7 @@ using System.Text;
 namespace Zlo.Extras.BF_Servers
 {
     public class API_BFServerListBase<T> : IBFServerList<T> where T : class, IBFServerBase
-    {        
+    {
         internal API_BFServerListBase(Func<uint, T> createServer)
         {
             this.createServer = createServer;
@@ -26,7 +26,8 @@ namespace Zlo.Extras.BF_Servers
         public event API_BFServerEventHandler<T> ServerChanged;
         public T Find(uint ServerID)
         {
-            return storeDict[ServerID];
+            storeDict.TryGetValue(ServerID, out var res);
+            return res;
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -77,7 +78,7 @@ namespace Zlo.Extras.BF_Servers
             }
         }
 
-      
+
 
         void IBFServerList.UpdateServerPlayers(uint ServerID, byte[] info)
         {

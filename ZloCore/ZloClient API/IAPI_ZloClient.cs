@@ -19,7 +19,7 @@ namespace Zlo
         bool IsEnableDiscordRPC { get; set; }
 
         TimeSpan ReconnectInterval { get; set; }
-        ZloBFGame ActiveServerListener { get; }
+        ZloBFGame SettingsServerListener { get; }
 
         JObject BF3_Stats { get; }        
         JObject BF4_Stats { get; }

@@ -176,7 +176,7 @@ namespace Zlo
             string map = null, gameMode = null;
             if (!LatestGameState_Game.HasValue)
             {
-                Choice = ActiveServerListener;
+                Choice = SettingsServerListener;
                 GetGameName();
                 //state = "Browsing Servers";
                 detail = $"Browsing {shortGameName} Servers";

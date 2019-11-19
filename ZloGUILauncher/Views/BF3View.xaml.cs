@@ -85,7 +85,7 @@ namespace ZloGUILauncher.Views
                     }
                 case "ct":
                     {
-                        App.Client.SetClanDogTags(clantag: BF3_CT.Text);
+                        App.Client.SetClanDogTags(clanTag: BF3_CT.Text);
                         break;
                     }
                 case "all":

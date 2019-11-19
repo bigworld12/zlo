@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Zlo.Extras;
+using Zlo.Extras.BF_Servers;
 using ZloGUILauncher.Servers;
 
 namespace ZloGUILauncher.Views
@@ -28,97 +29,14 @@ namespace ZloGUILauncher.Views
         public CollectionViewSource ViewSource
         {
             get { return TryFindResource("ServersView") as CollectionViewSource; }
-        }
-        private ObservableCollection<BFH_GUI_Server> m_BFH_Servers;
-        public ObservableCollection<BFH_GUI_Server> BFH_GUI_Servers
-        {
-            get
-            {
-                if (m_BFH_Servers == null)
-                {
-                    m_BFH_Servers = new ObservableCollection<BFH_GUI_Server>();
-                }
-                return m_BFH_Servers;
-            }
-        }
-        public API_BFHServersListBase DataServersList
-        {
-            get
-            {
-                return App.Client.BFHServers;
-            }
-        }
-
+        }      
         public BFHServerListView()
         {
             InitializeComponent();
-            DataServersList.ServerAdded += DataServersList_ServerAdded;
-            DataServersList.ServerUpdated += DataServersList_ServerUpdated;
-            DataServersList.ServerRemoved += DataServersList_ServerRemoved;
-            ViewSource.Source = BFH_GUI_Servers;
 
-        }
-        private void DataServersList_ServerRemoved(uint id, API_BFHServerBase server)
-        {
-            if (server != null)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    //remove from current list
-                    var ser = BFH_GUI_Servers.Find(s => s.ID == id);
-                    if (ser != null)
-                    {
-                        BFH_GUI_Servers.Remove(ser);
-                    }
-                });
-            }
-        }
-        private void DataServersList_ServerUpdated(uint id, API_BFHServerBase server)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var equi = BFH_GUI_Servers.Find(x => x.raw == server);
-                if (equi != null)
-                {
-                    equi.UpdateAllProps();
-                    AnimateRow(equi);
-                }
-            });
-        }
-        private void DataServersList_ServerAdded(uint id, API_BFHServerBase server)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var newserv = new BFH_GUI_Server(server);
-                BFH_GUI_Servers.Add(newserv);
-                AnimateRow(newserv);
-            });
-        }
-
-        public void AnimateRow(BFH_GUI_Server element)
-        {
-            var row = ServersDG.ItemContainerGenerator.ContainerFromItem(element) as DataGridRow;
-            if (row == null) return;
-
-
-
-            ColorAnimation switchOnAnimation = new ColorAnimation
-            {
-                From = Colors.White,
-                To = Colors.Pink,
-                Duration = TimeSpan.FromSeconds(1),
-                AutoReverse = true
-            };
-            Storyboard blinkStoryboard = new Storyboard();
-
-
-            blinkStoryboard.Children.Add(switchOnAnimation);
-            Storyboard.SetTargetProperty(switchOnAnimation, new PropertyPath("Background.Color"));
-            //animate changed server
-            Storyboard.SetTarget(switchOnAnimation, row);
-
-            row.BeginStoryboard(blinkStoryboard);
-        }
+            App.BFListViewModel.DataGrids[ZloBFGame.BF_HardLine] = ServersDG;
+            ViewSource.Source = App.BFListViewModel.BFH_GUI_Servers;
+        }     
 
         private void JoinButton_Click(object sender, RoutedEventArgs e)
         {

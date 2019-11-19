@@ -38,16 +38,16 @@ namespace ZloGUILauncher
 
             //Settings.CurrentSettings.SetCustomSetting("testFavs",new uint[] { 5 , 6 , 7 });
             //var saved = Settings.TrySave();
-           
-            App.Client.Connect();            
+
+            App.Client.Connect();
             DiscordRPCCheck.IsChecked = App.Client.IsEnableDiscordRPC;
         }
-        
+
         public void AfterSuccessfulConnect()
         {
             IsConnectedTextBlock.Text = "Connected";
             IsConnectedTextBlock.Foreground = Brushes.Green;
-            switch (App.Client.ActiveServerListener)
+            switch (App.Client.SettingsServerListener)
             {
                 case ZloBFGame.BF_3:
                     MainTabControl.SelectedIndex = 2;
@@ -97,7 +97,7 @@ namespace ZloGUILauncher
             });
         }
 
-        
+
 
         //private void Client_APIVersionReceived(Version Current , Version Latest , bool IsNeedUpdate , string DownloadAdress)
         //{
@@ -213,12 +213,15 @@ namespace ZloGUILauncher
                 switch (tc.SelectedIndex)
                 {
                     case 0:
-                        App.Client.SubToServerList(ZloBFGame.BF_4);
+                        if (App.Client.CurrentServerListener != ZloBFGame.BF_4)
+                            App.Client.SubToServerList(ZloBFGame.BF_4);
                         break;
                     case 1:
+                        if (App.Client.CurrentServerListener != ZloBFGame.BF_HardLine)
                         App.Client.SubToServerList(ZloBFGame.BF_HardLine);
                         break;
                     case 2:
+                        if (App.Client.CurrentServerListener != ZloBFGame.BF_3)
                         App.Client.SubToServerList(ZloBFGame.BF_3);
                         break;
                     default:
@@ -238,7 +241,7 @@ namespace ZloGUILauncher
             di.Show();
         }
 
-        
+
 
         private void DiscordRPCCheck_Checked(object sender, RoutedEventArgs e)
         {
