@@ -36,7 +36,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient : IAPI_ZloClient
     {
-        public Version CurrentApiVersion { get; } = new Version(16, 8, 0, 0);
+        public Version CurrentApiVersion { get; } = new Version(20, 0, 1);
         private static bool IsInitlaized = false;
 
 
