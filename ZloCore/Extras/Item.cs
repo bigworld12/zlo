@@ -49,7 +49,7 @@ namespace Zlo.Extras
         /// <returns>{ItemName} = {ItemExists}</returns>
         public override string ToString()
         {
-            return $"{ItemName} = {ItemExists}";
+            return $"{FlagName} ({ItemName}) = {ItemExists} ({ItemDescription})";
         }
     }
 }

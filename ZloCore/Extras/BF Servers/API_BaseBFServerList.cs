@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Zlo.Extras.BF_Servers
 {
-    public abstract class API_BaseBFServerList<T> : IBFServerList<T> where T : class, IBFServerBase
+    public class API_BFServerListBase<T> : IBFServerList<T> where T : class, IBFServerBase
     {        
-        internal API_BaseBFServerList(Func<uint, T> createServer)
+        internal API_BFServerListBase(Func<uint, T> createServer)
         {
             this.createServer = createServer;
         }
@@ -49,7 +49,7 @@ namespace Zlo.Extras.BF_Servers
             return store.GetEnumerator();
         }
 
-        void IBFServerList<T>.RemoveServer(uint ServerID)
+        void IBFServerList.RemoveServer(uint ServerID)
         {
             if (storeDict.TryGetValue(ServerID, out var server))
             {
@@ -58,7 +58,7 @@ namespace Zlo.Extras.BF_Servers
                 ServerChanged?.Invoke(this, server.ServerID, server, ServerChangeTypes.Remove);
             }
         }
-        void IBFServerList<T>.UpdateServerInfo(uint ServerID, byte[] info)
+        void IBFServerList.UpdateServerInfo(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -79,7 +79,7 @@ namespace Zlo.Extras.BF_Servers
 
       
 
-        void IBFServerList<T>.UpdateServerPlayers(uint ServerID, byte[] info)
+        void IBFServerList.UpdateServerPlayers(uint ServerID, byte[] info)
         {
             var serv = Find(ServerID);
             if (serv == null)
@@ -89,7 +89,7 @@ namespace Zlo.Extras.BF_Servers
                 AsEditable.AddServer(serv);
             }
             //server exists
-            serv.ParsePlayers(info);
+            serv.Players.Parse(info);
             ServerChanged?.Invoke(this, ServerID, serv, ServerChangeTypes.Update);
         }
     }

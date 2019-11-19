@@ -111,55 +111,22 @@ namespace Zlo.Extras
         public API_MapRotationBase MapRotation { get; } = new API_MapRotationBase();
 
         #endregion
-
+        /// <summary>
+        /// initiate parsing of the server
+        /// </summary>
+        /// <param name="serverbuffer"></param>
         internal virtual void Parse(byte[] serverbuffer)
         {
-            Attributes.Clear();
-            using (var ms = new MemoryStream(serverbuffer))
-            using (var br = new BinaryReader(ms, Encoding.ASCII))
-            {
-
-                ServerIP = br.ReadZUInt32();
-                ServerPort = br.ReadZUInt16();
-                INIP = br.ReadZUInt32();
-                INPORT = br.ReadZUInt16();
-                byte t = br.ReadByte();
-
-                for (byte i = 0; i < t; ++i)
-                {
-                    string key = br.ReadZString();
-                    string value = br.ReadZString();
-                    Attributes.Add(key, value);
-                }
-
-
-                ServerName = br.ReadZString();
-                GameSet = br.ReadZUInt32();
-                ServerState = br.ReadByte();
-                IGNO = br.ReadByte();
-                MaxPlayers = br.ReadByte();
-                //was 64
-                NATT = br.ReadZUInt64();
-                //=========
-                NRES = br.ReadByte();
-                NTOP = br.ReadByte();
-                PGID = br.ReadZString();
-                PRES = br.ReadByte();
-                SlotCapacity = br.ReadByte();
-                SEED = br.ReadZUInt32();
-                UUID = br.ReadZString();
-                VOIP = br.ReadByte();
-                VSTR = br.ReadZString();
-            }
+            using var ms = new MemoryStream(serverbuffer);
+            using var br = new BinaryReader(ms, Encoding.ASCII);
+            ParseBinaryReader(br);
             FixAttrs();
-
         }
 
         readonly char[] numbs = new char[]
             { '0' , '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' };
-        private void FixAttrs()
+        protected virtual void FixAttrs()
         {
-            ServerSettings.Clear();
             List<string> KeysToRemove = new List<string>();
             for (int i = 0; i < Attributes.Count; i++)
             {
@@ -191,23 +158,25 @@ namespace Zlo.Extras
             {
                 Attributes.Remove(item);
             }
-            if (Attributes.ContainsKey("settings"))
+            ServerSettings.Clear();
+            if (Attributes.TryGetValue("settings", out var settings))
             {
-                var pairset = Attributes["settings"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var pairset = settings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                //ServerSettings.Clear();
                 foreach (var item in pairset)
                 {
                     var splitpair = item.Split('=');
-                    ServerSettings.Add(splitpair[0], splitpair[1]);
+                    ServerSettings[splitpair[0]] = splitpair[1];
                 }
                 Attributes.Remove("settings");
             }
-            if (ServerSettings.ContainsKey("vmsp"))
+            if (ServerSettings.TryGetValue("vmsp", out var vmspStr) && bool.TryParse(vmspStr, out var vmsp))
             {
-                if (Attributes.ContainsKey("servertype"))
+                if (Attributes.TryGetValue("servertype", out var serverType))
                 {
-                    if (Attributes["servertype"] == "PRIVATE")
+                    if (serverType == "PRIVATE")
                     {
-                        IsPasswordProtected = bool.Parse(ServerSettings["vmsp"]);
+                        IsPasswordProtected = vmsp;
                     }
                     else
                     {
@@ -216,7 +185,7 @@ namespace Zlo.Extras
                 }
                 else
                 {
-                    IsPasswordProtected = bool.Parse(ServerSettings["vmsp"]);
+                    IsPasswordProtected = vmsp;
                 }
                 ServerSettings.Remove("vmsp");
             }
@@ -224,47 +193,55 @@ namespace Zlo.Extras
             {
                 IsPasswordProtected = false;
             }
+
+
+            if (Attributes.TryGetValue("maps", out var mapsRaw) && Attributes.TryGetValue("mapsinfo", out var mapsInfo))
+            {
+                MapRotation.Parse(mapsInfo, mapsRaw, Game);
+                Attributes.Remove("maps");
+                Attributes.Remove("mapsinfo");
+            }
+            if (Attributes.TryGetValue("level", out var level))
+            {
+                MapRotation.CurrentActualMap.MapName = API_Dictionaries.GetMapName(Game, level);
+                Attributes.Remove("level");
+            }
         }
 
-        internal virtual void ParsePlayers(byte[] playersbuffer)
-        {
-            if (playersbuffer.Length == 0)
-            {
-                return;
-            }
-            Players.Parse(playersbuffer);
-        }
 
         public override string ToString()
         {
-            return !string.IsNullOrWhiteSpace(ServerName) ? ServerName : string.Empty;
+            return ServerName ?? "(Unknown server)";
         }
 
-        public virtual void ParseBinaryReader(BinaryReader br)
+        //all children must override this
+        internal virtual void ParseBinaryReader(BinaryReader br)
         {
-            Attributes.Clear();
-
-            ServerIP = br.ReadZUInt32();
+            //===========================
+            //socket info
+            ServerIP = br.ReadZUInt32();  
             ServerPort = br.ReadZUInt16();
             INIP = br.ReadZUInt32();
             INPORT = br.ReadZUInt16();
+            //===========================
+            //attributes
             byte t = br.ReadByte();
 
+            Attributes.Clear();
             for (byte i = 0; i < t; ++i)
             {
                 string key = br.ReadZString();
                 string value = br.ReadZString();
                 Attributes.Add(key, value);
             }
+            //===========================
 
             ServerName = br.ReadZString();
             GameSet = br.ReadZUInt32();
             ServerState = br.ReadByte();
             IGNO = br.ReadByte();
             MaxPlayers = br.ReadByte();
-            //was 64
             NATT = br.ReadZUInt64();
-            //=========
             NRES = br.ReadByte();
             NTOP = br.ReadByte();
             PGID = br.ReadZString();
@@ -274,18 +251,10 @@ namespace Zlo.Extras
             UUID = br.ReadZString();
             VOIP = br.ReadByte();
             VSTR = br.ReadZString();
-
-            FixAttrs();
         }
         void IBFServerBase.Parse(byte[] info)
         {
-
+            Parse(info);
         }
-
-        void IBFServerBase.ParsePlayers(byte[] playersbuffer)
-        {
-            ParsePlayers(playersbuffer);
-        }
-        string IBFServerBase.ToString() => ToString();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Zlo.Extras;
+using Zlo.Extras.BF_Servers;
 
 namespace Zlo
 {
@@ -54,8 +55,8 @@ namespace Zlo
         void GetClanDogTags();
         void SetClanDogTags(ushort? dt_advanced = null, ushort? dt_basic = null, string clantag = ";");
 
-        API_BF3ServersListBase BF3Servers { get; }
-        API_BF4ServersListBase BF4Servers { get; }
-        API_BFHServersListBase BFHServers { get; }
+        API_BFServerListBase<API_BF3ServerBase> BF3Servers { get; }
+        API_BFServerListBase<API_BF4ServerBase> BF4Servers { get; }
+        API_BFServerListBase<API_BFHServerBase> BFHServers { get; }
     }
 }

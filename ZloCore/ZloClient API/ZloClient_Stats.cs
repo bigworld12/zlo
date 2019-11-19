@@ -11,67 +11,62 @@ namespace Zlo
 {
     public partial class API_ZloClient
     {
-        private void API_ZloClient_ItemsReceived(ZloBFGame Game , Dictionary<string,API_Item> List)
+        private void API_ZloClient_ItemsReceived(ZloBFGame Game, Dictionary<string, API_Item> List)
         {
-
-            switch (Game)
+            Task.Run(() =>
             {
-                case ZloBFGame.BF_4:
-                    {
-                        //var finaldef = BF4_stats_def;
-                        //foreach (var item in List)
-                        //{
-                        //    finaldef = finaldef.Replace($@"""item.{item.FlagName}""" , item.ItemExists.ToString());
-                        //}
-                        //m_BF4_Stats = JObject.Parse(finaldef);
-
-                        //File.WriteAllText($".\\{CurrentPlayerName}_BF4_stats.json" , BF4_Stats.ToString());
-                        File.WriteAllLines($".\\{CurrentPlayerName}_BF4_items_raw.txt" , List.Select(x => $"{x.Key} = {x.Value.ItemExists.ToString()}"));
+                switch (Game)
+                {
+                    case ZloBFGame.BF_4:
+                        File.WriteAllLines($"{CurrentPlayerName}_BF4_items_raw.txt", List.Select(x => x.Value.ToString()));
                         break;
-                    }
-                case ZloBFGame.BF_HardLine:
-                    File.WriteAllLines($".\\{CurrentPlayerName}_BFH_items_raw.txt", List.Select(x => $"{x.Key} = {x.Value.ItemExists.ToString()}"));
-                    break;
-                case ZloBFGame.None:
-                    break;
-                default:
-                    break;
-            }
-            RaiseItemsReceived(Game , List);
+                    case ZloBFGame.BF_HardLine:
+                        File.WriteAllLines($"{CurrentPlayerName}_BFH_items_raw.txt", List.Select(x => x.Value.ToString()));
+                        break;
+                    case ZloBFGame.None:
+                        break;
+                    default:
+                        break;
+                }
+                RaiseItemsReceived(Game, List);
+            });
         }
 
-        private void API_ZloClient_StatsReceived(ZloBFGame Game , Dictionary<string , float> List)
+        private void API_ZloClient_StatsReceived(ZloBFGame Game, Dictionary<string, float> List)
         {
-            switch (Game)
+            Task.Run(() =>
             {
-                case ZloBFGame.BF_3:
-                    {
-                        m_BF3_Stats = JObject.Parse(BF3_stats_def);
-                        AssignStats(List , BF3_Stats);
-                        BF3_Stats_Handler();
-                        File.WriteAllText($".\\{CurrentPlayerName}_BF3_stats.json" , BF3_Stats.ToString());
+                switch (Game)
+                {
+                    case ZloBFGame.BF_3:
+                        {
+                            m_BF3_Stats = JObject.Parse(BF3_stats_def);
+                            AssignStats(List, BF3_Stats);
+                            BF3_Stats_Handler();
+                            File.WriteAllText(@$"{CurrentPlayerName}_BF3_stats.json", BF3_Stats.ToString());
+                            break;
+                        }
+                    case ZloBFGame.BF_4:
+                        {
+                            m_BF4_Stats = JObject.Parse(BF4_stats_def);
+                            AssignStats(List, BF4_Stats);
+                            BF4_Stats_Handler();
+                            var str = BF4_Stats.ToString();
+                            File.WriteAllText($"{CurrentPlayerName}_BF4_stats.json", str);
+                            File.WriteAllLines($"{CurrentPlayerName}_BF4_stats_raw.txt", List.Select(x => x.ToString()));
+                            break;
+                        }
+                    case ZloBFGame.BF_HardLine:
+                        BFH_Stats_Handler();
+                        File.WriteAllLines($"{CurrentPlayerName}_BFH_stats_raw.txt", List.Select(x => x.ToString()));
                         break;
-                    }
-                case ZloBFGame.BF_4:
-                    {
-                        m_BF4_Stats = JObject.Parse(BF4_stats_def);
-                        AssignStats(List , BF4_Stats);
-                        BF4_Stats_Handler();
-                        var str = BF4_Stats.ToString();
-                        File.WriteAllText($".\\{CurrentPlayerName}_BF4_stats.json" , str);
-                        File.WriteAllLines($".\\{CurrentPlayerName}_BF4_stats_raw.txt" , List.Select(x => x.ToString()));
+                    case ZloBFGame.None:
                         break;
-                    }
-                case ZloBFGame.BF_HardLine:
-                    BFH_Stats_Handler();
-                    File.WriteAllLines($".\\{CurrentPlayerName}_BFH_stats_raw.txt", List.Select(x => x.ToString()));
-                    break;
-                case ZloBFGame.None:
-                    break;
-                default:
-                    break;
-            }
-            RaiseStatsReceived(Game , List);
+                    default:
+                        break;
+                }
+                RaiseStatsReceived(Game, List);
+            });
         }
 
         private void BF3_Stats_Handler()
@@ -90,24 +85,24 @@ namespace Zlo
             var scores = s["scores"];
 
             var vehicles = SumIfNum(
-               scores["vehicleaa"] ,
-               scores["vehicleah"] ,
-               scores["vehicleifv"] ,
-               scores["vehiclejet"] ,
-               scores["vehiclembt"] ,
-               scores["vehiclesh"] ,
-               scores["vehiclelbt"] ,
+               scores["vehicleaa"],
+               scores["vehicleah"],
+               scores["vehicleifv"],
+               scores["vehiclejet"],
+               scores["vehiclembt"],
+               scores["vehiclesh"],
+               scores["vehiclelbt"],
                scores["vehicleart"]);
             scores["vehicleall"] = vehicles;
             var combat = SumIfNum(
-                scores["support"] ,
-                scores["assault"] ,
-                scores["engineer"] ,
+                scores["support"],
+                scores["assault"],
+                scores["engineer"],
                 scores["recon"]) +
                 vehicles;
 
             double allscore = 0;
-            allscore = combat + SumIfNum(scores["unlock"] , scores["award"] , scores["special"]);
+            allscore = combat + SumIfNum(scores["unlock"], scores["award"], scores["special"]);
 
             scores["maxxp"] = GetRankMaxScore(rank);
             scores["shortxp"] = allscore - Sumfrom0to(rank);
@@ -134,7 +129,7 @@ namespace Zlo
             var relScore = score - curmin;
             var curmax = nextrankdets["XP Min Relative"].ToObject<long>();
 
-            todoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace("140" , rank.ToString());
+            todoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace("140", rank.ToString());
             todoRankObject["img"] = $"r{rank}";
             todoRankObject["name"] = rankdets["Rank Title"];
             todoRankObject["Unlocks"] = rankdets["Unlocks"];
@@ -145,7 +140,7 @@ namespace Zlo
 
             var nextTodoRankObject = (JObject)(todoRankObject["next"] = new JObject());
 
-            nextTodoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace($"r{rank.ToString()}" , $"r{(rank + 1).ToString()}");
+            nextTodoRankObject["imgLarge"] = todoRankObject.Value<string>("imgLarge").Replace($"r{rank.ToString()}", $"r{(rank + 1).ToString()}");
             nextTodoRankObject["img"] = $"r{rank + 1}";
             nextTodoRankObject["name"] = nextrankdets["Rank Title"];
             nextTodoRankObject["Unlocks"] = nextrankdets["Unlocks"];
@@ -293,13 +288,13 @@ namespace Zlo
                 }
 
             }
-        }       
+        }
 
         private void BFH_Stats_Handler()
         {
 
         }
-        private void AssignStats(Dictionary<string , float> List , JObject parent)
+        private void AssignStats(Dictionary<string, float> List, JObject parent)
         {
             foreach (var item in parent)
             {
@@ -315,7 +310,7 @@ namespace Zlo
                 }
                 else if (item.Value.Type == JTokenType.Object)
                 {
-                    AssignStats(List , (JObject)item.Value);
+                    AssignStats(List, (JObject)item.Value);
                 }
                 else if (item.Value.Type == JTokenType.Array)
                 {
@@ -324,7 +319,7 @@ namespace Zlo
                     {
                         if (JAri.Type == JTokenType.Object)
                         {
-                            AssignStats(List , (JObject)JAri);
+                            AssignStats(List, (JObject)JAri);
                         }
                     }
                 }
@@ -338,6 +333,6 @@ namespace Zlo
                 finalsum += GetRankMaxScore(i);
             }
             return finalsum;
-        }        
+        }
     }
 }

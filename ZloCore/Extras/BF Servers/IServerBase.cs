@@ -32,9 +32,6 @@ namespace Zlo.Extras
         byte VOIP { get; }
         string VSTR { get; }
 
-        internal void Parse(byte[] info);        
-        internal void ParsePlayers(byte[] playersbuffer);
-
-        string ToString();
+        internal void Parse(byte[] info);
     }
 }
