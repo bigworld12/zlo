@@ -10,9 +10,9 @@
     <RootNamespace>Zlo</RootNamespace>
     <PackageProjectUrl>https://github.com/bigworld12/zlo</PackageProjectUrl>
     <PackageTags>z zl zlo zloa zloap zloapi</PackageTags>
-    <AssemblyVersion>20.0.0.0</AssemblyVersion>
-    <FileVersion>20.0.0.0</FileVersion>
-    <Version>20.0.0</Version>
+    <AssemblyVersion>20.0.1</AssemblyVersion>
+    <FileVersion>20.0.1</FileVersion>
+    <Version>20.0.1</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
