@@ -31,11 +31,7 @@ namespace Zlo.Extras
         /// <summary>
         /// whether  the server is protected by a password or not
         /// </summary>
-        public bool IsPasswordProtected
-        {
-            get { return false; }
-            private set { /*do noting , yet*/}
-        }
+        public bool IsPasswordProtected { get; set; }
 
         /// <summary>
         /// Actual server ip
@@ -115,14 +111,7 @@ namespace Zlo.Extras
         /// initiate parsing of the server
         /// </summary>
         /// <param name="serverbuffer"></param>
-        internal virtual void Parse(byte[] serverbuffer)
-        {
-            using var ms = new MemoryStream(serverbuffer);
-            using var br = new BinaryReader(ms, Encoding.ASCII);
-            ParseBinaryReader(br);
-            FixAttrs();
-        }
-
+       
         readonly char[] numbs = new char[]
             { '0' , '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' };
         protected virtual void FixAttrs()
@@ -254,7 +243,10 @@ namespace Zlo.Extras
         }
         void IBFServerBase.Parse(byte[] info)
         {
-            Parse(info);
+            using var ms = new MemoryStream(info);
+            using var br = new BinaryReader(ms, Encoding.ASCII);
+            ParseBinaryReader(br);
+            FixAttrs();
         }
     }
 }

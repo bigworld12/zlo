@@ -146,6 +146,7 @@ namespace Zlo
             CurrentPlayerID = UserID;
             CurrentPlayerName = UserName;
         }
+     
         #region Properties
         /*
        connect to localhost:48486
