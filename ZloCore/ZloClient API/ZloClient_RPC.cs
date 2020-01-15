@@ -138,7 +138,7 @@ namespace Zlo
                 return;
             }
             DiscordRPCState = newRPC;
-            if (!RpcClient.Disposed)
+            if (!RpcClient.IsDisposed)
                 RpcClient.SetPresence(newRPC);
         }
         uint? latestServerID;
