@@ -17,10 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Dlls\DiscordRpc.dll" />
-    <None Remove="Dlls\DiscordRPC.pdb" />
-    <None Remove="Dlls\Newtonsoft.Json.dll" />
-    <None Remove="Dlls\System.Interactive.Async.dll" />
     <None Remove="FodyWeavers.xml" />
     <None Remove="GamesData\BF3\BF3_stats.json" />
     <None Remove="GamesData\BF4\BF4_Items.json" />
@@ -33,10 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Dlls\DiscordRpc.dll" />
-    <EmbeddedResource Include="Dlls\DiscordRPC.pdb" />
-    <EmbeddedResource Include="Dlls\Newtonsoft.Json.dll" />
-    <EmbeddedResource Include="Dlls\System.Interactive.Async.dll" />
     <EmbeddedResource Include="GamesData\BF3\BF3_stats.json" />
     <EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
     <EmbeddedResource Include="GamesData\BF4\BF4_RanksDetails.json" />
@@ -49,6 +41,7 @@
 
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="4.0.0" />
+    <PackageReference Include="DiscordRichPresence.Core" Version="1.0.121" />
     <PackageReference Include="Fody" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -58,9 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="DiscordRpc">
+    <!--<Reference Include="DiscordRpc">
       <HintPath>Dlls\DiscordRpc.dll</HintPath>
-    </Reference>
+    </Reference>-->
   </ItemGroup>
 
 </Project>
