@@ -36,7 +36,7 @@ namespace Zlo
     /// </summary>
     public partial class API_ZloClient : IAPI_ZloClient
     {
-        public Version CurrentApiVersion { get; } = new Version(20, 0, 1);
+        public Version CurrentApiVersion { get; } = new Version(21, 0, 0);
         private static bool IsInitlaized = false;
 
 
@@ -281,7 +281,11 @@ namespace Zlo
         }
         public void SendRunGameRequest(RunnableGame game, string cmd = "")
         {
-            SendRequest(new REQ.RunGame(game, cmd));
+            SendRunGameRequest(game.RunName, cmd);
+        }
+        public void SendRunGameRequest(string runName, string cmd = "")
+        {
+            SendRequest(new REQ.RunGame(runName, cmd));
         }
         public List<string> GetDllsList(ZloBFGame game)
         {
@@ -524,7 +528,14 @@ namespace Zlo
                         break;
                     case RESP.RunGame runGameRESP:
                         if (runGameRESP.From is REQ.RunGame runGameREQ)
-                            GameRunResultReceived?.Invoke(runGameREQ.Game, runGameRESP.Result);
+                        {
+                            RunnableGame? res = null;
+                            if (RunnableGameList.Any(x => x.RunName == runGameREQ.RunName))
+                            {
+                                res = RunnableGameList.First(x => x.RunName == runGameREQ.RunName);
+                            }
+                            GameRunResultReceived?.Invoke(res ?? new RunnableGame(string.Empty, runGameREQ.RunName, string.Empty), runGameRESP.Result);
+                        }
                         break;
                     default:
                         break;

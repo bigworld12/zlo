@@ -49,7 +49,7 @@ namespace ZloGUILauncher.Views
                 if (ish.HasValue && ish.Value)
                 {
                     var pw = inb.OutPut;
-                    App.Client.JoinOnlineGameWithPassWord(OnlinePlayModes.BFH_Multi_Player, server.ID, pw);
+                    App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Multi_Player, server.ID, pw);
                 }
             }
             else
@@ -69,7 +69,7 @@ namespace ZloGUILauncher.Views
                 if (ish.HasValue && ish.Value)
                 {
                     var pw = inb.OutPut;
-                    App.Client.JoinOnlineGameWithPassWord(OnlinePlayModes.BFH_Spectator, server.ID, pw);
+                    App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Spectator, server.ID, pw);
                 }
             }
             else
@@ -88,7 +88,7 @@ namespace ZloGUILauncher.Views
                 if (ish.HasValue && ish.Value)
                 {
                     var pw = inb.OutPut;
-                    App.Client.JoinOnlineGameWithPassWord(OnlinePlayModes.BFH_Commander, server.ID, pw);
+                    App.Client.JoinOnlineServer(OnlinePlayModes.BFH_Commander, server.ID, pw);
                 }
             }
             else

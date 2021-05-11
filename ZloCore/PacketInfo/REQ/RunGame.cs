@@ -6,20 +6,20 @@ using Zlo.Extras;
 namespace Zlo.PacketInfo.REQ
 {
     internal class RunGame : BaseRequestPacket
-    {    
-        public RunGame(RunnableGame game, string commandLineParameters)
+    {
+        public RunGame(string runName, string commandLineParameters)
         {
-            Game = game;
+            RunName = runName;
             CommandLineParameters = commandLineParameters;
         }
 
-        public RunnableGame Game { get; }
+        public string RunName { get; }
         public string CommandLineParameters { get; }
 
         public override ZloPacketId PacketId => ZloPacketId.RunGame;
         public override void SerializeCustom(List<byte> bytes)
         {
-            bytes.AddRange(Game.RunName.QBitConv());
+            bytes.AddRange(RunName.QBitConv());
             bytes.AddRange(CommandLineParameters.QBitConv());
         }
     }

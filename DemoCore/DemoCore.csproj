@@ -1,13 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>7.1</LangVersion>
+    <StartupObject>DemoCore.Program</StartupObject>
   </PropertyGroup>
 
+
   <ItemGroup>
-    <PackageReference Include="Zlo" Version="15.2.0" />
+    <ProjectReference Include="..\ZloCore\ZloCore.csproj" />
   </ItemGroup>
 
 </Project>

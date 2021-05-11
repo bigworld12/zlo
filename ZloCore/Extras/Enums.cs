@@ -18,11 +18,11 @@ namespace Zlo.Extras
         /// <summary>
         /// Add or edit server
         /// </summary>
-        ServerChange=0,
+        ServerChange = 0,
         /// <summary>
         /// player list changed
         /// </summary>
-        PlayerListChange=1,
+        PlayerListChange = 1,
         /// <summary>
         /// Server removed
         /// </summary>
@@ -117,5 +117,9 @@ namespace Zlo.Extras
         BF4_Single_Player,
         BFH_Single_Player,
         BF4_Test_Range
+    }
+    public enum HostCoopModes
+    {
+        BF3_Host_Coop,
     }
 }

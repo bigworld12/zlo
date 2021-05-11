@@ -32,10 +32,13 @@ namespace DemoCore
 
             //Subscripe to servers list
             //only call it ONCE
-            Client.SubToServerList(ZloGame.BF_3);
-            Client.SubToServerList(ZloGame.BF_4);
-            ////not implmented yet
+            Client.SubToServerList(ZloBFGame.BF_3);
+            Client.SubToServerList(ZloBFGame.BF_4);
             ////Client.SubToServerList(ZloGame.BF_HardLine);
+
+
+            Client.RunnableGameListReceived += Client_RunnableGameListReceived;
+            Client.RefreshRunnableGamesList();
 
             ////call this right before closing the application
             ////Client.Close()
@@ -93,7 +96,28 @@ namespace DemoCore
             Console.WriteLine("Press any key to Close the application ...");
             Console.ReadKey();
             //the end of the application
-            Client.Close();
+            Client.Dispose();
+        }
+        private static bool isRunGameListHandled = false;
+        private static void Client_RunnableGameListReceived()
+        {
+
+            if (isRunGameListHandled) return;
+            isRunGameListHandled = true;
+            Console.WriteLine("===========Start RunnableGameList=================");
+            foreach (var item in Client.RunnableGameList)
+            {
+                Console.WriteLine($"Friendly name: {item.FriendlyName}, Run name: {item.RunName}, Zname:  {item.ZName}");
+            }
+            Console.WriteLine("===========End RunnableGameList=================");
+            /*
+             Friendly name: Battlefield 3T Limited Edition, Run name: Z.BF3, Zname:  Z.BF3
+             Friendly name: Battlefield 4T Premium Edition x32, Run name: Z.BF4x32, Zname:  Z.BF4
+             Friendly name: Battlefield 4T Premium Edition x64, Run name: Z.BF4x64, Zname:  Z.BF4
+             Friendly name: Command & ConquerT Generals and Zero Hour, Run name: Z.CNC.GENERALS, Zname:  Z.CNC.GENERALS
+             */
+            //Client.SendRunGameRequest(Client.RunnableGameList.First(x => x.RunName == "Z.BF3"));
+            Client.JoinOfflineGame(OfflinePlayModes.BF4_Single_Player);
         }
 
         /*
@@ -145,22 +169,11 @@ namespace DemoCore
         public static void SubscribeToEvents()
         {
             Client.ConnectionStateChanged += Client_ConnectionStateChanged;
-            Client.Disconnected += Client_Disconnected;
             Client.ErrorOccured += Client_ErrorOccured;
             Client.GameStateReceived += Client_GameStateReceived;
             Client.ItemsReceived += Client_ItemsReceived;
             Client.StatsReceived += Client_StatsReceived;
             Client.UserInfoReceived += Client_UserInfoReceived;
-
-            //all methods related to BF3 servers should be accessed from the BF3Servers Property
-            Client.BF3Servers.ServerAdded += BF3Servers_ServerAdded;
-            Client.BF3Servers.ServerRemoved += BF3Servers_ServerRemoved;
-            Client.BF3Servers.ServerUpdated += BF3Servers_ServerUpdated;
-
-            //all methods related to BF4 servers should be accessed from the BF4Servers Property
-            Client.BF4Servers.ServerAdded += BF4Servers_ServerAdded;
-            Client.BF4Servers.ServerRemoved += BF4Servers_ServerRemoved;
-            Client.BF4Servers.ServerUpdated += BF4Servers_ServerUpdated;
         }
         #region Event Methods
         private static void BF4Servers_ServerUpdated(uint id, API_BF4ServerBase server)
@@ -198,21 +211,6 @@ namespace DemoCore
         }
 
 
-
-        private static void BF3Servers_ServerUpdated(uint id, API_BF3ServerBase server)
-        {
-            Console.WriteLine($"BF3 Server Updated : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
-        }
-        private static void BF3Servers_ServerRemoved(uint id, API_BF3ServerBase server)
-        {
-            Console.WriteLine($"BF3 Server Removed : id = {id},server name : {(server == null ? string.Empty : server.ServerName)},Players = {server.Players.Count}");
-        }
-        private static void BF3Servers_ServerAdded(uint id, API_BF3ServerBase server)
-        {
-            Console.WriteLine($"BF3 Server Added : id = {id},server name : {server.ServerName},Players = {server.Players.Count}");
-        }
-
-
         //Note : this method gets called everytime you connect to zclient
         private static void Client_UserInfoReceived(uint UserID, string UserName)
         {
@@ -221,27 +219,23 @@ namespace DemoCore
         }
 
 
-        private static void Client_StatsReceived(ZloGame Game, Dictionary<string, float> List)
+        private static void Client_StatsReceived(ZloBFGame Game, Dictionary<string, float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private static void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
+        private static void Client_ItemsReceived(ZloBFGame Game, Dictionary<string, API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }
 
 
-        private static void Client_GameStateReceived(ZloGame game, string type, string message)
+        private static void Client_GameStateReceived(ZloBFGame game, string type, string message)
         {
             Console.WriteLine($"[{game}] [{type}] {message}");
         }
         private static void Client_ErrorOccured(Exception Error, string CustomMessage)
         {
             Console.WriteLine($"{CustomMessage}\n{Error.ToString()}");
-        }
-        private static void Client_Disconnected(DisconnectionReasons Reason)
-        {
-            Console.WriteLine($"Client disconnected for reason : {Reason}");
         }
         private static void Client_ConnectionStateChanged(bool IsConnectedToZloClient)
         {
@@ -325,32 +319,23 @@ namespace DemoCore
 
             Client.Connect();
 
-            Client.SubToServerList(ZloGame.BF_3);
-            Client.SubToServerList(ZloGame.BF_4);
+            Client.SubToServerList(ZloBFGame.BF_3);
+            Client.SubToServerList(ZloBFGame.BF_4);
 
-            Client.GetItems(ZloGame.BF_3);
-            Client.GetItems(ZloGame.BF_4);
+            Client.GetItems(ZloBFGame.BF_3);
+            Client.GetItems(ZloBFGame.BF_4);
 
-            Client.GetStats(ZloGame.BF_3);
-            Client.GetStats(ZloGame.BF_4);
+            Client.GetStats(ZloBFGame.BF_3);
+            Client.GetStats(ZloBFGame.BF_4);
         }
         public void SubscribeEvents()
         {
             Client.ConnectionStateChanged += Client_ConnectionStateChanged;
-            Client.Disconnected += Client_Disconnected;
             Client.ErrorOccured += Client_ErrorOccured;
             Client.GameStateReceived += Client_GameStateReceived;
             Client.ItemsReceived += Client_ItemsReceived;
             Client.StatsReceived += Client_StatsReceived;
             Client.UserInfoReceived += Client_UserInfoReceived;
-
-            Client.BF3Servers.ServerAdded += BF3Servers_ServerAdded;
-            Client.BF3Servers.ServerRemoved += BF3Servers_ServerRemoved;
-            Client.BF3Servers.ServerUpdated += BF3Servers_ServerUpdated;
-
-            Client.BF4Servers.ServerAdded += BF4Servers_ServerAdded;
-            Client.BF4Servers.ServerRemoved += BF4Servers_ServerRemoved;
-            Client.BF4Servers.ServerUpdated += BF4Servers_ServerUpdated;
         }
 
         private void BF4Servers_ServerUpdated(uint id, API_BF4ServerBase server)
@@ -389,17 +374,17 @@ namespace DemoCore
         }
 
 
-        private void Client_StatsReceived(ZloGame Game, Dictionary<string, float> List)
+        private void Client_StatsReceived(ZloBFGame Game, Dictionary<string, float> List)
         {
             Console.WriteLine($"Stats Received for game : {Game},count = {List.Count}");
         }
-        private void Client_ItemsReceived(ZloGame Game, Dictionary<string, API_Item> List)
+        private void Client_ItemsReceived(ZloBFGame Game, Dictionary<string, API_Item> List)
         {
             Console.WriteLine($"Items Received for game : {Game},count = {List.Count}");
         }
 
 
-        private void Client_GameStateReceived(ZloGame game, string type, string message)
+        private void Client_GameStateReceived(ZloBFGame game, string type, string message)
         {
             Console.WriteLine($"[{game}] [{type}] {message}");
         }

@@ -1,59 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Zlofenix, bigworld12</Authors>
-    <Company>Zlofenix, bigworld12</Company>
-    <Description>.net api for zclient</Description>
-    <AssemblyName>Zlo</AssemblyName>
-    <RootNamespace>Zlo</RootNamespace>
-    <PackageProjectUrl>https://github.com/bigworld12/zlo</PackageProjectUrl>
-    <PackageTags>z zl zlo zloa zloap zloapi</PackageTags>
-    <AssemblyVersion>20.2.0</AssemblyVersion>
-    <FileVersion>20.2.0</FileVersion>
-    <Version>20.2.0</Version>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Zlofenix, bigworld12</Authors>
+		<Company>Zlofenix, bigworld12</Company>
+		<Description>.net api for zclient</Description>
+		<AssemblyName>Zlo</AssemblyName>
+		<RootNamespace>Zlo</RootNamespace>
+		<PackageProjectUrl>https://github.com/bigworld12/zlo</PackageProjectUrl>
+		<PackageTags>z zl zlo zloa zloap zloapi</PackageTags>
+		<AssemblyVersion>21.0.0</AssemblyVersion>
+		<FileVersion>21.0.0</FileVersion>
+		<Version>21.0.0</Version>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="FodyWeavers.xml" />
-    <None Remove="GamesData\BF3\BF3_stats.json" />
-    <None Remove="GamesData\BF4\BF4_Items.json" />
-    <None Remove="GamesData\BF4\BF4_RanksDetails.json" />
-    <None Remove="GamesData\BF4\BF4_Stats.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="FodyWeavers.xml" />
+		<None Remove="GamesData\BF3\BF3_stats.json" />
+		<None Remove="GamesData\BF4\BF4_Items.json" />
+		<None Remove="GamesData\BF4\BF4_RanksDetails.json" />
+		<None Remove="GamesData\BF4\BF4_Stats.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="FodyWeavers.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="GamesData\BF3\BF3_stats.json" />
-    <EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
-    <EmbeddedResource Include="GamesData\BF4\BF4_RanksDetails.json" />
-    <EmbeddedResource Include="GamesData\BF4\BF4_Stats.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="GamesData\BF3\BF3_stats.json" />
+		<EmbeddedResource Include="GamesData\BF4\BF4_Items.json" />
+		<EmbeddedResource Include="GamesData\BF4\BF4_RanksDetails.json" />
+		<EmbeddedResource Include="GamesData\BF4\BF4_Stats.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="GamesData\BFH\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="GamesData\BFH\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="4.0.0" />
-    <PackageReference Include="DiscordRichPresence.Core" Version="1.0.121" />
-    <PackageReference Include="Fody" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Costura.Fody" Version="5.3.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="DiscordRichPresence.Core" Version="1.0.121" />
+		<PackageReference Include="Fody" Version="6.5.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <!--<Reference Include="DiscordRpc">
-      <HintPath>Dlls\DiscordRpc.dll</HintPath>
-    </Reference>-->
-  </ItemGroup>
 
 </Project>

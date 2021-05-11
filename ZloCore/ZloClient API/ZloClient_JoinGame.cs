@@ -11,383 +11,155 @@ namespace Zlo
 {
     public partial class API_ZloClient
     {
-        public void JoinOnlineServer(OnlinePlayModes playmode, uint serverid = 0)
+        public void JoinOnlineServer(OnlinePlayModes playmode, uint serverid, string password = null)
         {
-
-            ProcessStartInfo rungame = null;
+            //Z.BF3 Z.BF4x32 Z.BF4x64 z.BFHL
+            const string State_ClaimReservation = "State_ClaimReservation";
+            const string MP = "mp";
+            string runName;
+            string cmd;
             switch (playmode)
             {
                 case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, serverid, 1);
+                    runName = "Z.BF3";
+                    cmd = GetBfCmd(mode: MP,
+                                   requestState: State_ClaimReservation,
+                                   ServerID: serverid,
+                                   putInSquad: true,
+                                   role: "soldier",
+                                   pw: password);
                     break;
-
-
                 case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 1);
+                    runName = RunnableGameList.IsOSx64 ? "Z.BF4x64" : "Z.BF4x32";
+                    cmd = GetBfCmd(mode: MP,
+                                   requestState: State_ClaimReservation,
+                                   ServerID: serverid,
+                                   putInSquad: true,
+                                   role: "soldier",
+                                   pw: password);
                     break;
                 case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 3);
+                    runName = RunnableGameList.IsOSx64 ? "Z.BF4x64" : "Z.BF4x32";
+                    cmd = GetBfCmd(mode: MP,
+                                   requestState: State_ClaimReservation,
+                                   ServerID: serverid,
+                                   putInSquad: true,
+                                   isSpectator: true,
+                                   role: "soldier",
+                                   pw: password);
                     break;
                 case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 2);
+                    runName = RunnableGameList.IsOSx64 ? "Z.BF4x64" : "Z.BF4x32";
+                    cmd = GetBfCmd(mode: MP,
+                                   requestState: State_ClaimReservation,
+                                   ServerID: serverid,
+                                   putInSquad: true,
+                                   role: "commander",
+                                   pw: password);
                     break;
-
                 case OnlinePlayModes.BFH_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 1);
+                    runName = "Z.BFHL";
+                    cmd = GetBfCmd(mode: MP,
+                                   requestState: State_ClaimReservation,
+                                   ServerID: serverid,
+                                   putInSquad: true,
+                                   role: "soldier",
+                                   pw: password);
                     break;
                 default:
                     return;
             }
-            if (rungame == null)
-            {
-                return;
-            }
-            else
-            {
-                try
-                {
-                    if (rungame.FileName.StartsWith("origin2"))
-                    {
-                        Process.Start(rungame.FileName);
-                    }
-                    else
-                    {
-                        rungame.UseShellExecute = false;
-                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                        Process.Start(rungame);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
-                }
-            }
+            SendRunGameRequest(runName, cmd);
         }
         public void JoinOfflineGame(OfflinePlayModes playmode)
         {
-            ProcessStartInfo rungame = null;
+            const string State_ResumeCampaign = "State_ResumeCampaign";
+            const string State_LaunchPlayground = "State_LaunchPlayground";
+            const string SP = "SP";
+            const string MP = "MP";
+            string runName;
+            string cmd;
             switch (playmode)
             {
                 case OfflinePlayModes.BF3_Single_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, 0, 0);
+                    runName = "Z.BF3";
+                    cmd = GetBfCmd(mode: SP,
+                                   requestState: State_ResumeCampaign,
+                                   role: "soldier");
                     break;
-
                 case OfflinePlayModes.BF4_Single_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, 0, 0);
+                    runName = RunnableGameList.IsOSx64 ? "Z.BF4x64" : "Z.BF4x32";
+                    cmd = GetBfCmd(mode: SP,
+                                   requestState: State_ResumeCampaign,
+                                   role: "soldier");
                     break;
                 case OfflinePlayModes.BF4_Test_Range:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, 0, 4);
+                    runName = RunnableGameList.IsOSx64 ? "Z.BF4x64" : "Z.BF4x32";
+                    cmd = GetBfCmd(mode: MP, //check if valid
+                                   requestState: State_LaunchPlayground,
+                                   role: "soldier");
                     break;
-
-
                 case OfflinePlayModes.BFH_Single_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, 0, 0);
+                    runName = "Z.BFHL";
+                    cmd = GetBfCmd(mode: SP,
+                                   requestState: State_ResumeCampaign,
+                                   role: "soldier");
                     break;
-
                 default:
                     return;
             }
-
-            try
+            SendRunGameRequest(runName, cmd);
+        }
+        private string GetBfCmd(string mode,
+                                string requestState,
+                                uint? ServerID = null,
+                                bool? putInSquad = null,
+                                string role = null,
+                                string pw = null,
+                                bool? isSpectator = null,
+                                uint? friendpersonaid = null,
+                                string level = null,
+                                string difficulty = null,
+                                Dictionary<string, string> extraRequestStateParams = null)
+        {
+            const string loginToken = "WAHAHA_IMMA_ZLO_TOKEN";
+            string formatIfNotNull(string key, string value)
             {
-                if (rungame == null)
+                if (string.IsNullOrWhiteSpace(value))
                 {
-                    return;
+                    return string.Empty;
                 }
                 else
                 {
-                    if (rungame.FileName.StartsWith("origin2"))
-                    {
-                        Process.Start(rungame.FileName);
-                    }
-                    else
-                    {
-                        rungame.UseShellExecute = false;
-                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                        Process.Start(rungame);
-                    }
+                    return $@"{key}=\""{value}\""";
                 }
             }
-            catch (Exception ex)
+            var requestStateParamsSubSb = new StringBuilder();
+            void appendSpace(string toAdd)
             {
-                RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
+                requestStateParamsSubSb.Append($"{toAdd} ");
             }
-        }
-        public void JoinOnlineGameWithPassWord(OnlinePlayModes playmode, uint serverid, string password)
-        {
-            ProcessStartInfo rungame = null;
-            switch (playmode)
+            appendSpace(formatIfNotNull("password", pw));
+            appendSpace(formatIfNotNull("putinsquad", putInSquad?.ToString()?.ToLower()));
+            appendSpace(formatIfNotNull("gameid", ServerID?.ToString()));
+            appendSpace(formatIfNotNull("role", role));
+            appendSpace(formatIfNotNull("personaref", "%ZID%"));
+            appendSpace(formatIfNotNull("levelmode", mode.ToLower()));
+            appendSpace(formatIfNotNull("logintoken", loginToken));
+            appendSpace(formatIfNotNull("isspectator", isSpectator?.ToString()?.ToLower()));
+            appendSpace(formatIfNotNull("friendpersonaid", friendpersonaid?.ToString()));
+            appendSpace(formatIfNotNull("level", level));
+            appendSpace(formatIfNotNull("difficulty", difficulty?.ToString()));
+            if (extraRequestStateParams != null)
             {
-                case OnlinePlayModes.BF3_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_3, CurrentPlayerID, serverid, 1, password);
-                    break;
-
-                case OnlinePlayModes.BF4_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 1, password);
-                    break;
-                case OnlinePlayModes.BF4_Spectator:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 3, password);
-                    break;
-                case OnlinePlayModes.BF4_Commander:
-                    rungame = GetGameJoinID(ZloBFGame.BF_4, CurrentPlayerID, serverid, 2, password);
-                    break;
-
-
-                case OnlinePlayModes.BFH_Multi_Player:
-                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 1, password);
-                    break;
-                case OnlinePlayModes.BFH_Spectator:
-                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 3, password);
-                    break;
-                case OnlinePlayModes.BFH_Commander:
-                    rungame = GetGameJoinID(ZloBFGame.BF_HardLine, CurrentPlayerID, serverid, 2, password);
-                    break;
-                default:
-                    return;
-            }
-            if (rungame == null)
-            {
-                return;
-            }
-            else
-            {
-                try
+                foreach (var item in extraRequestStateParams)
                 {
-                    if (rungame.FileName.StartsWith("origin2"))
-                    {
-                        Process.Start(rungame.FileName);
-                    }
-                    else
-                    {
-                        rungame.UseShellExecute = false;
-                        rungame.WorkingDirectory = Path.GetDirectoryName(rungame.FileName);
-                        Process.Start(rungame);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    RaiseError(ex, $"Error occured when Starting the game with:\nfile name : {rungame.FileName}\nand arguments : {rungame.Arguments}\nuse shell execute ? {rungame.UseShellExecute}");
+                    appendSpace(formatIfNotNull(item.Key, item.Value));
                 }
             }
+            string requestStateParams = $@"""<data {requestStateParamsSubSb}></data>""";
+            return $@"-webMode {mode.ToUpper()} -Origin_NoAppFocus -loginToken {loginToken} -requestState {requestState} -requestStateParams {requestStateParams}";
         }
-        private ProcessStartInfo PrepareBF3(string ps)
-        {
-            var title = "Battlefield3";
-            string bf3offers = "70619,71067,DGR01609244,DGR01609245";
-            ProcessStartInfo final = null;
-            int state = 2;
-            if (File.Exists("bf3.exe"))
-            {
-                final = new ProcessStartInfo(Path.GetFullPath("bf3.exe"));
-                state = 1;
-            }
-            else
-            {
-                try
-                {
-                    //check registry 
-                    using (var reg = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\EA Games\Battlefield 3"))
-                    {
-                        if (reg != null)
-                        {
-                            var val = reg.GetValue("Install Dir", null) as string;
-                            if (string.IsNullOrWhiteSpace(val))
-                            {
-                                state = 2;
-                                //doesn't exist in registry                                            
-                            }
-                            else
-                            {
-                                string bf3Path = Path.Combine(val, "bf3.exe");
-                                if (File.Exists(bf3Path))
-                                {
-                                    state = 1;
-                                    final = new ProcessStartInfo(bf3Path);
-                                }
-                                else
-                                {
-                                    state = 2;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    state = 2;
-                }
-            }
-
-            if (state == 2)
-            {
-                final = new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf3offers}&title={title}&cmdParams={ps}");
-            }
-            else if (state == 1)
-            {
-                final.Arguments = Uri.UnescapeDataString(ps);
-            }
-            return final;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="game"></param>
-        /// <param name="PlayerID"></param>
-        /// <param name="ServerID"></param>
-        /// <param name="playmode">0 = single player
-        /// 1 = multi player
-        /// 2 = commander
-        /// 3 = spectator
-        /// 4 = test range
-        /// 5 = co-op</param>
-        /// <param name="pw">The server password</param>
-        /// <returns></returns>
-        private ProcessStartInfo GetGameJoinID(ZloBFGame game, uint PlayerID, uint ServerID, int playmode, string pw = "")
-        {
-            /*
-             play mode : 
-             0 = single player
-             1 = multi player
-             2 = commander
-             3 = spectator
-             4 = test range
-             5 = co-op
-             */
-            string q = "\\" + "\"";
-            ProcessStartInfo final = null;
-            var title = string.Empty;
-            var pwExpression = playmode == 1 && !string.IsNullOrWhiteSpace(pw) ? $@"password={q}{pw}{q}" : string.Empty;
-            switch (game)
-            {
-                //%20password%3D%5C%22{pw}%5C%22%20
-                case ZloBFGame.BF_3:
-                    {
-                        title = "Battlefield3";
-                        string bf3offers = "70619,71067,DGR01609244,DGR01609245";
-                        string requestState = playmode == 1 ? "State_ClaimReservation" : "State_ResumeCampaign";
-                        string levelmode = playmode == 1 ? "mp" : "sp";
-                        string gameIDstr = playmode == 1 ? $@"putinsquad={q}true{q} gameid={q}{ServerID}{q}" : string.Empty;
-                        string ps = Uri.EscapeDataString($@"-webMode {levelmode.ToUpper()} -Origin_NoAppFocus -loginToken WAHAHA_IMMA_ZLO_TOKEN -requestState {requestState} -requestStateParams ""<data {pwExpression} {gameIDstr} role={q}soldier{q} personaref={q}{PlayerID}{q} levelmode={q}{levelmode}{q} logintoken={q}WAHAHA_IMMA_ZLO_TOKEN{q}></data>""");
-                        //state 1 = from path
-                        //state 2 = from origin2
-                        return final = PrepareBF3(ps);
-                    }
-                case ZloBFGame.BF_4:
-                    {
-                        title = "Battlefield4";
-                        string bf4offers = "1007968,1011575,1011576,1011577,1010268,1010269,1010270,1010271,1010958,1010959,1010960,1010961,1007077,1016751,1016757,1016754,1015365,1015364,1015363,1015362";
-                        switch (playmode)
-                        {
-                            case 0:
-                                //single
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                            case 1:
-                                //multi
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 2:
-                                //commander
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 3:
-                                //spectator
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 4:
-                                //test range
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_LaunchPlayground%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                            case 5:
-                                //co-op
-                                //currently returns single player
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                            default:
-                                //default is single player
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bf4offers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                        }
-                    }
-                case ZloBFGame.BF_HardLine:
-                    {
-                        //title = BattlefieldHardline
-                        //1013920
-                        title = "BattlefieldHardline";
-                        string bfhoffers = "1013920";
-                        switch (playmode)
-                        {
-                            case 0:
-                                //single
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers}&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                            case 1:
-                                //multi
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 2:
-                                //commander
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22commander%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 3:
-                                //spectator
-                                if (pw != "")
-                                {
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20password%3D%5C%22{pw}%5C%22%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                                else
-                                {
-
-                                    return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20MP%20-Origin_NoAppFocus%20-requestState%20State_ClaimReservation%20-requestStateParams%20%22%3Cdata%20putinsquad%3D%5C%22true%5C%22%20isspectator%3D%5C%22true%5C%22%20gameid%3D%5C%22{ServerID}%5C%22%20role%3D%5C%22soldier%5C%22%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                                }
-                            case 4:
-                                //test range
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_LaunchPlayground%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22mp%5C%22%3E%3C/data%3E%22");
-                            case 5:
-                                //co-op
-                                //currently returns single player
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                            default:
-                                //default is single player
-                                return new ProcessStartInfo($@"origin2://game/launch/?offerIds={bfhoffers }&title={title}&cmdParams=-webMode%20SP%20-Origin_NoAppFocus%20-requestState%20State_ResumeCampaign%20-requestStateParams%20%22%3Cdata%20personaref%3D%5C%22{PlayerID}%5C%22%20levelmode%3D%5C%22sp%5C%22%3E%3C/data%3E%22");
-                        }
-                    }
-                case ZloBFGame.None:
-                    return null;
-                default:
-                    return null;
-            }
-        }
-
-
-     
 
         /*
              coop client params
@@ -398,21 +170,22 @@ coop server
 persona - own, level - any coop level
 */
 
-        public ProcessStartInfo HostBf3Coop(BF3_COOP_LEVELS level, COOP_Difficulty difficulty)
-        {            
-            string q = "\\" + "\"";
-            var personaId = CurrentPlayerID;
-            string ps = Uri.EscapeDataString($@"-webMode COOP -Origin_NoAppFocus -AuthCode WAHAHA_IMMA_ZLO_TOKEN -requestState State_CreateCoOpPeer -requestStateParams ""<data level={q}Levels/{level.ToString().ToUpper()}/{level.ToString().ToUpper()}{q} difficulty={q}{difficulty.ToString().ToUpper()}{q} personaref={q}{personaId}{q} levelmode={q}coop{q} logintoken={q}WAHAHA_IMMA_ZLO_TOKEN{q}></data>""");
-            var pinfo = PrepareBF3(ps);
-            return pinfo;
-        }
-        public ProcessStartInfo JoinBf3Coop(uint FriendId)
+        public void HostBf3Coop(BF3_COOP_LEVELS level, COOP_Difficulty difficulty)
         {
-            string q = "\\" + "\"";
-            var personaId = CurrentPlayerID;
-            string ps = Uri.EscapeDataString($@"-webMode COOP -Origin_NoAppFocus -AuthCode WAHAHA_IMMA_ZLO_TOKEN -requestState State_ConnectToUserId -requestStateParams ""<data friendpersonaid={q}{FriendId}{q} personaref={q}{personaId}{q} levelmode={q}coop{q} logintoken={q}WAHAHA_IMMA_ZLO_TOKEN{q}></data>""");
-            var pinfo = PrepareBF3(ps);
-            return pinfo;
+            string runName = "Z.BF3";
+            string cmd = GetBfCmd(mode: "coop",
+                                  requestState: "State_CreateCoOpPeer",
+                                  level: $"Levels/{level.ToString().ToUpper()}/{level.ToString().ToUpper()}",
+                                  difficulty: difficulty.ToString().ToUpper());
+            SendRunGameRequest(runName, cmd);
+        }
+        public void JoinBf3Coop(uint FriendId)
+        {
+            string runName = "Z.BF3";
+            string cmd = GetBfCmd(mode: "coop",
+                                  requestState: "State_ConnectToUserId",
+                                  friendpersonaid: FriendId);
+            SendRunGameRequest(runName, cmd);
         }
     }
 }

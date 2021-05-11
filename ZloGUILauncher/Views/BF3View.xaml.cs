@@ -116,18 +116,15 @@ namespace ZloGUILauncher.Views
         {
             var level = (BF3_COOP_LEVELS)COOPLevelSelector.SelectedIndex;
             var diff = (COOP_Difficulty)COOPDiffSelector.SelectedIndex;
-            var host = App.Client.HostBf3Coop(level, diff);
-            if (host != null)
-                Process.Start(host);
+            App.Client.HostBf3Coop(level, diff);
+
         }
         private void JoinCOOPButton_Click(object sender, RoutedEventArgs e)
         {
             var friendId = FriendId.Text;
             if (uint.TryParse(friendId, out var fid))
             {
-                var join = App.Client.JoinBf3Coop(fid);
-                if (join != null)
-                    Process.Start(join);
+                App.Client.JoinBf3Coop(fid);
             }
         }
     }

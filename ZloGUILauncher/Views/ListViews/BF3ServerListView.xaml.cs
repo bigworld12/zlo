@@ -42,7 +42,7 @@ namespace ZloGUILauncher.Views
                 if (ish.HasValue && ish.Value)
                 {
                     var pw = inb.OutPut;
-                    App.Client.JoinOnlineGameWithPassWord(OnlinePlayModes.BF3_Multi_Player, server.ID, pw);
+                    App.Client.JoinOnlineServer(OnlinePlayModes.BF3_Multi_Player, server.ID, pw);
                 }
             }
             else

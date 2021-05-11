@@ -117,7 +117,7 @@ namespace Zlo
 
         private void StopDiscordRPC()
         {
-            RpcClient.Dispose();
+            RpcClient?.Dispose();
         }
 
         //start update pesence timer

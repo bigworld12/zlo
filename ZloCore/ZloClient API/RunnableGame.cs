@@ -7,15 +7,13 @@ namespace Zlo
 {
     public struct RunnableGame
     {
-        internal RunnableGame(string friendlyName, string runName, string zName, bool foundLocal = false)
+        internal RunnableGame(string friendlyName, string runName, string zName)
         {
             FriendlyName = friendlyName;
             RunName = runName;
             ZName = zName;
-            IsLocal = foundLocal;
         }
 
-        public bool IsLocal { get; set; }
 
         /// <summary>
         /// Name to display

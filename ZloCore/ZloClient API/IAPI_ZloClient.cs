@@ -21,7 +21,7 @@ namespace Zlo
         TimeSpan ReconnectInterval { get; set; }
         ZloBFGame SettingsServerListener { get; }
 
-        JObject BF3_Stats { get; }        
+        JObject BF3_Stats { get; }
         JObject BF4_Stats { get; }
 
         /// <summary>
@@ -44,9 +44,9 @@ namespace Zlo
 
         bool Connect();
         List<string> GetDllsList(ZloBFGame game);
-        void JoinOnlineServer(OnlinePlayModes playmode, uint serverid = 0);
+        void JoinOnlineServer(OnlinePlayModes playmode, uint serverid, string password = null);
         void JoinOfflineGame(OfflinePlayModes playmode);
-        void JoinOnlineGameWithPassWord(OnlinePlayModes playmode, uint serverid, string password);
+
         void GetUserInfo();
         void GetStats(ZloBFGame game);
         void GetItems(ZloBFGame game);
